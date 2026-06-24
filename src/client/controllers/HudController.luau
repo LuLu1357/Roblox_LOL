@@ -35,7 +35,7 @@ function HudController.start()
 	panel.Name = "StatusPanel"
 	panel.AnchorPoint = Vector2.new(0.5, 1)
 	panel.Position = UDim2.fromScale(0.5, 0.975)
-	panel.Size = UDim2.fromOffset(520, 178)
+	panel.Size = UDim2.fromOffset(520, 270)
 	panel.BackgroundColor3 = Color3.fromRGB(17, 24, 34)
 	panel.BackgroundTransparency = 0.12
 	panel.BorderSizePixel = 0
@@ -46,7 +46,7 @@ function HudController.start()
 
 	local itemDetailsPanel = Instance.new("Frame")
 	itemDetailsPanel.Name = "ItemDetailsPanel"
-	itemDetailsPanel.Size = UDim2.fromOffset(260, 170)
+	itemDetailsPanel.Size = UDim2.fromOffset(260, 220)
 	itemDetailsPanel.Position = UDim2.fromOffset(20, 210)
 	itemDetailsPanel.BackgroundColor3 = Color3.fromRGB(16, 20, 30)
 	itemDetailsPanel.BackgroundTransparency = 0.05
@@ -90,7 +90,7 @@ function HudController.start()
 
 	local sellItemButton = Instance.new("TextButton")
 	sellItemButton.Name = "SellItemButton"
-	sellItemButton.Position = UDim2.fromOffset(14, 132)
+	sellItemButton.Position = UDim2.new(0, 14, 1, -38)
 	sellItemButton.Size = UDim2.fromOffset(74, 26)
 	sellItemButton.BackgroundColor3 = Color3.fromRGB(105, 38, 45)
 	sellItemButton.BorderSizePixel = 0
@@ -158,6 +158,30 @@ function HudController.start()
 			end
 		else
 			table.insert(lines, "No stats")
+		end
+
+		local recipe = item.Recipe
+		if typeof(recipe) == "table" then
+			local recipeParts: { string } = {}
+			local components = recipe.Components
+			if typeof(components) == "table" then
+				for _, componentItemId in components do
+					if typeof(componentItemId) == "string" then
+						table.insert(recipeParts, componentItemId)
+					end
+				end
+			end
+
+			local combineCost = recipe.CombineCost
+			if typeof(combineCost) == "number" then
+				table.insert(recipeParts, tostring(combineCost) .. "g")
+			end
+
+			if #recipeParts > 0 then
+				table.insert(lines, "")
+				table.insert(lines, "Recipe:")
+				table.insert(lines, table.concat(recipeParts, " + "))
+			end
 		end
 
 		itemDetailsText.Text = table.concat(lines, "\n")
@@ -310,6 +334,38 @@ function HudController.start()
 	createShopButton("LongSword", "Sword\n350g", UDim2.fromOffset(18, 88))
 	createShopButton("RubyCrystal", "Ruby\n400g", UDim2.fromOffset(166, 88))
 	createShopButton("Boots", "Boots\n300g", UDim2.fromOffset(314, 88))
+	createShopButton("BFSword", "B.F. Sword\n1300g", UDim2.fromOffset(18, 132))
+	createShopButton("GiantBelt", "Giant Belt\n1100g", UDim2.fromOffset(166, 132))
+	createShopButton("SwiftBoots", "Swift Boots\n900g", UDim2.fromOffset(314, 132))
+
+	local craftButtons: { [string]: TextButton } = {}
+
+	local function createCraftButton(targetItemId: string, text: string, position: UDim2): TextButton
+		local button = Instance.new("TextButton")
+		button.Name = "Craft" .. targetItemId
+		button.Position = position
+		button.Size = UDim2.fromOffset(128, 38)
+		button.BackgroundColor3 = Color3.fromRGB(48, 68, 52)
+		button.BackgroundTransparency = 0.05
+		button.BorderSizePixel = 0
+		button.Font = Enum.Font.GothamBold
+		button.TextScaled = true
+		button.TextColor3 = Color3.fromRGB(220, 255, 225)
+		button.TextStrokeTransparency = 0.65
+		button.Text = text
+		button.Parent = panel
+
+		local buttonCorner = Instance.new("UICorner")
+		buttonCorner.CornerRadius = UDim.new(0, 8)
+		buttonCorner.Parent = button
+
+		craftButtons[targetItemId] = button
+		return button
+	end
+
+	createCraftButton("BFSword", "Craft BF\n300g", UDim2.fromOffset(18, 176))
+	createCraftButton("GiantBelt", "Craft Belt\n300g", UDim2.fromOffset(166, 176))
+	createCraftButton("SwiftBoots", "Craft Swift\n500g", UDim2.fromOffset(314, 176))
 
 	local inventorySlots: { [number]: TextButton } = {}
 
@@ -363,12 +419,12 @@ function HudController.start()
 		return label
 	end
 
-	createInventorySlot(1, UDim2.fromOffset(18, 132))
-	createInventorySlot(2, UDim2.fromOffset(92, 132))
-	createInventorySlot(3, UDim2.fromOffset(166, 132))
-	createInventorySlot(4, UDim2.fromOffset(240, 132))
-	createInventorySlot(5, UDim2.fromOffset(314, 132))
-	createInventorySlot(6, UDim2.fromOffset(388, 132))
+	createInventorySlot(1, UDim2.fromOffset(18, 222))
+	createInventorySlot(2, UDim2.fromOffset(92, 222))
+	createInventorySlot(3, UDim2.fromOffset(166, 222))
+	createInventorySlot(4, UDim2.fromOffset(240, 222))
+	createInventorySlot(5, UDim2.fromOffset(314, 222))
+	createInventorySlot(6, UDim2.fromOffset(388, 222))
 
 	local function updateTeam()
 		local teamName = player:GetAttribute("Team")
@@ -547,6 +603,18 @@ function HudController.start()
 		selectedInventorySlot = nil
 		itemDetailsPanel.Visible = false
 	end)
+
+	local shopCraftRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_CRAFT_REQUEST, 10)
+	if not shopCraftRequest or not shopCraftRequest:IsA("RemoteEvent") then
+		warn("[MOBA] RemoteEvent ShopCraftRequest indisponible.")
+		return
+	end
+
+	for targetItemId, button in craftButtons do
+		button.MouseButton1Click:Connect(function()
+			shopCraftRequest:FireServer(targetItemId)
+		end)
+	end
 
 	local matchRemote = remotes:WaitForChild(SharedConstants.REMOTES.MATCH_STATE_UPDATE, 10)
 	if not matchRemote or not matchRemote:IsA("RemoteEvent") then

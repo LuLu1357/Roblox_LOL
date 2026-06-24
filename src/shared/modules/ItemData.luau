@@ -25,8 +25,49 @@ ItemData.Items = {
 		Id = "Boots",
 		DisplayName = "Boots",
 		Cost = 300,
+		Unique = true,
 		Stats = {
 			MoveSpeed = 8,
+		},
+	},
+
+	BFSword = {
+		Id = "BFSword",
+		DisplayName = "B.F. Sword",
+		Cost = 1300,
+		Stats = {
+			AttackDamage = 30,
+		},
+		Recipe = {
+			Components = { "LongSword", "LongSword" },
+			CombineCost = 300,
+		},
+	},
+
+	GiantBelt = {
+		Id = "GiantBelt",
+		DisplayName = "Giant Belt",
+		Cost = 1100,
+		Stats = {
+			MaxHealth = 400,
+		},
+		Recipe = {
+			Components = { "RubyCrystal", "RubyCrystal" },
+			CombineCost = 300,
+		},
+	},
+
+	SwiftBoots = {
+		Id = "SwiftBoots",
+		DisplayName = "Swift Boots",
+		Cost = 900,
+		Unique = true,
+		Stats = {
+			MoveSpeed = 18,
+		},
+		Recipe = {
+			Components = { "Boots" },
+			CombineCost = 500,
 		},
 	},
 }

@@ -8,9 +8,6 @@ local ChampionService = require(script.Parent.ChampionService)
 local ShopService = {}
 
 local MAX_INVENTORY_SLOTS = 6
-local UNIQUE_ITEMS = {
-	Boots = true,
-}
 
 local function getNumberAttribute(instance: Instance, name: string, fallback: number): number
 	local value = instance:GetAttribute(name)
@@ -57,6 +54,38 @@ end
 local function setInventorySlot(champion: Model, slotIndex: number, itemId: string)
 	champion:SetAttribute("InventorySlot" .. tostring(slotIndex), itemId)
 	champion:SetAttribute("InventoryCount", getInventoryCount(champion))
+end
+
+local function clearInventorySlot(champion: Model, slotIndex: number)
+	champion:SetAttribute("InventorySlot" .. tostring(slotIndex), "")
+end
+
+local function findItemSlots(champion: Model, requiredComponents: { string }): { number }?
+	local matchedSlots: { number } = {}
+	local usedSlots: { [number]: boolean } = {}
+
+	for _, requiredItemId in requiredComponents do
+		local matchedSlot: number? = nil
+
+		for slotIndex = 1, MAX_INVENTORY_SLOTS do
+			if not usedSlots[slotIndex] then
+				local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+				if itemId == requiredItemId then
+					matchedSlot = slotIndex
+					break
+				end
+			end
+		end
+
+		if not matchedSlot then
+			return nil
+		end
+
+		usedSlots[matchedSlot] = true
+		table.insert(matchedSlots, matchedSlot)
+	end
+
+	return matchedSlots
 end
 
 local function applyItemStats(champion: Model, item)
@@ -172,7 +201,7 @@ function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
 		return false, "Champion is dead"
 	end
 
-	if UNIQUE_ITEMS[itemId] and hasItem(champion, itemId) then
+	if item.Unique == true and hasItem(champion, itemId) then
 		return false, "Unique item already owned"
 	end
 
@@ -280,6 +309,108 @@ function ShopService.sellItem(player: Player, slotIndex: number): (boolean, stri
 	))
 
 	return true, "Sold"
+end
+
+function ShopService.craftItem(player: Player, targetItemId: string): (boolean, string)
+	local targetItem = ItemData.Items[targetItemId]
+	if typeof(targetItem) ~= "table" then
+		return false, "Unknown item"
+	end
+
+	local recipe = targetItem.Recipe
+	if typeof(recipe) ~= "table" then
+		return false, "Item has no recipe"
+	end
+
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	local components = recipe.Components
+	if typeof(components) ~= "table" then
+		return false, "Invalid recipe components"
+	end
+
+	local requiredComponents: { string } = {}
+	local componentItems: { any } = {}
+	for _, componentItemId in components do
+		if typeof(componentItemId) ~= "string" then
+			return false, "Invalid recipe component"
+		end
+
+		local componentItem = ItemData.Items[componentItemId]
+		if typeof(componentItem) ~= "table" then
+			return false, "Unknown recipe component"
+		end
+
+		table.insert(requiredComponents, componentItemId)
+		table.insert(componentItems, componentItem)
+	end
+
+	if #requiredComponents == 0 then
+		return false, "Recipe has no components"
+	end
+
+	local combineCost = recipe.CombineCost
+	if typeof(combineCost) ~= "number" or combineCost < 0 then
+		return false, "Invalid combine cost"
+	end
+
+	if targetItem.Unique == true and hasItem(champion, targetItemId) then
+		return false, "Unique item already owned"
+	end
+
+	local componentSlots = findItemSlots(champion, requiredComponents)
+	if not componentSlots then
+		return false, "Missing components"
+	end
+
+	local firstConsumedSlot = componentSlots[1]
+	if not firstConsumedSlot then
+		return false, "Recipe has no components"
+	end
+
+	local gold = getNumberAttribute(champion, "Gold", 0)
+	if gold < combineCost then
+		return false, "Not enough gold"
+	end
+
+	for componentIndex, slotIndex in componentSlots do
+		removeItemStats(champion, componentItems[componentIndex])
+		clearInventorySlot(champion, slotIndex)
+	end
+
+	champion:SetAttribute("Gold", gold - combineCost)
+	setInventorySlot(champion, firstConsumedSlot, targetItemId)
+	applyItemStats(champion, targetItem)
+
+	local itemName = if typeof(targetItem.DisplayName) == "string" then targetItem.DisplayName else targetItemId
+	print(string.format(
+		"[MOBA] %s crafted %s using %s and %d gold",
+		player.Name,
+		itemName,
+		table.concat(requiredComponents, ", "),
+		combineCost
+	))
+
+	print(string.format(
+		"[MOBA][SHOP] %s stats after crafting %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s Inventory=[%s]",
+		player.Name,
+		itemName,
+		tostring(champion:GetAttribute("Gold")),
+		tostring(champion:GetAttribute("MaxHealth")),
+		tostring(champion:GetAttribute("AttackDamage")),
+		tostring(champion:GetAttribute("MoveSpeed")),
+		tostring(champion:GetAttribute("InventoryCount")),
+		getInventoryDebugText(champion)
+	))
+
+	return true, "Crafted"
 end
 
 function ShopService.start()

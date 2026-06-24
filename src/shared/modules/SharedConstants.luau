@@ -52,6 +52,7 @@ SharedConstants.REMOTES = {
 	MATCH_STATE_UPDATE = "MatchStateUpdate",
 	SHOP_BUY_REQUEST = "ShopBuyRequest",
 	SHOP_SELL_REQUEST = "ShopSellRequest",
+	SHOP_CRAFT_REQUEST = "ShopCraftRequest",
 	DEBUG_ADD_GOLD_REQUEST = "DebugAddGoldRequest",
 }
 SharedConstants.DEBUG = {
