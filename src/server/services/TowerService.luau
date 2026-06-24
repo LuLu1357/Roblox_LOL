@@ -17,9 +17,10 @@ type AggroState = {
 	expiresAt: number,
 }
 
-local function getRange(tower: Model): number
-	local value = tower:GetAttribute("AttackRange")
-	return if typeof(value) == "number" then value else 90
+local TOWER_ATTACK_RANGE = 50
+
+local function getRange(_tower: Model): number
+	return TOWER_ATTACK_RANGE
 end
 
 local function isValidTowerTarget(tower: Model, candidate: Instance, range: number): boolean
@@ -47,6 +48,21 @@ local function getForcedTarget(tower: Model, range: number): Instance?
 	return state.target
 end
 
+local TARGET_PRIORITY = {
+	Minion = 1,
+	Champion = 2,
+	Inhibitor = 3,
+	Nexus = 4,
+}
+
+local function getTargetPriority(candidate: Instance): number
+	local unitType = candidate:GetAttribute("UnitType")
+	if typeof(unitType) ~= "string" then
+		return 999
+	end
+	return TARGET_PRIORITY[unitType] or 999
+end
+
 local function findNearestTarget(tower: Model, range: number): Instance?
 	local units = Workspace:FindFirstChild("Units")
 	if not units then
@@ -54,16 +70,22 @@ local function findNearestTarget(tower: Model, range: number): Instance?
 	end
 
 	local bestTarget = nil
+	local bestPriority = math.huge
 	local bestDistance = math.huge
+
 	for _, candidate in units:GetChildren() do
 		if isValidTowerTarget(tower, candidate, range) then
+			local priority = getTargetPriority(candidate)
 			local distance = Utility.distance(tower, candidate)
-			if distance < bestDistance then
+
+			if priority < bestPriority or (priority == bestPriority and distance < bestDistance) then
 				bestTarget = candidate
+				bestPriority = priority
 				bestDistance = distance
 			end
 		end
 	end
+
 	return bestTarget
 end
 

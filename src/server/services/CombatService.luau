@@ -10,6 +10,19 @@ local VisionService = require(script.Parent.VisionService)
 local CombatService = {}
 local lastAttackByUnit = setmetatable({}, { __mode = "k" })
 
+type DamageListener = (Instance, Instance, number) -> ()
+local damageListeners: { DamageListener } = {}
+
+function CombatService.onDamage(listener: DamageListener)
+	table.insert(damageListeners, listener)
+end
+
+local function emitDamage(attacker: Instance, target: Instance, damage: number)
+	for _, listener in damageListeners do
+		task.spawn(listener, attacker, target, damage)
+	end
+end
+
 local championAggroEvent = ServerStorage:FindFirstChild("MobaChampionAggro")
 if not championAggroEvent or not championAggroEvent:IsA("BindableEvent") then
 	if championAggroEvent then
@@ -108,8 +121,10 @@ function CombatService.applyDamage(attacker: Instance, target: Instance, amount:
 	end
 	local damage = math.min(math.max(amount, 0), health)
 	Utility.setHealth(target, health - damage)
+
 	if damage > 0 then
 		emitCombatFeedback(attacker, target, damage)
+		emitDamage(attacker, target, damage)
 	end
 	if target:GetAttribute("Dead") == true then
 		CombatService.handleDeath(attacker, target)
