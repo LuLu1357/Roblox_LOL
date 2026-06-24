@@ -24938,6 +24938,7 @@ return EconomyProgressionService]]></ProtectedString>
 						<ProtectedString name="Source"><![CDATA[--!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local ItemData = require(ReplicatedStorage.Modules.ItemData)
 local ChampionService = require(script.Parent.ChampionService)
@@ -24945,6 +24946,46 @@ local ChampionService = require(script.Parent.ChampionService)
 local ShopService = {}
 
 local MAX_INVENTORY_SLOTS = 6
+
+local function isChampionInPart(champion: Model, part: BasePart): boolean
+	local root = champion:FindFirstChild("HumanoidRootPart")
+	if not root or not root:IsA("BasePart") then
+		return false
+	end
+
+	local relativePosition = part.CFrame:PointToObjectSpace(root.Position)
+	local halfSize = part.Size * 0.5
+
+	return math.abs(relativePosition.X) <= halfSize.X
+		and math.abs(relativePosition.Y) <= halfSize.Y
+		and math.abs(relativePosition.Z) <= halfSize.Z
+end
+
+local function canUseShop(player: Player, champion: Model): boolean
+	local map = Workspace:FindFirstChild("Map")
+	if not map then
+		return false
+	end
+
+	local shopZones = map:FindFirstChild("ShopZones")
+	if not shopZones then
+		return false
+	end
+
+	local teamName = player:GetAttribute("Team")
+	if typeof(teamName) ~= "string" then
+		return false
+	end
+
+	local shopZoneName = teamName .. "Shop"
+	local shopZone = shopZones:FindFirstChild(shopZoneName)
+	if not shopZone or not shopZone:IsA("BasePart") then
+		warn("[MOBA][SHOP] Missing shop zone " .. shopZoneName)
+		return false
+	end
+
+	return isChampionInPart(champion, shopZone)
+end
 
 local function getNumberAttribute(instance: Instance, name: string, fallback: number): number
 	local value = instance:GetAttribute(name)
@@ -25177,6 +25218,10 @@ function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
 		return false, "Champion is dead"
 	end
 
+	if not canUseShop(player, champion) then
+		return false, "Not in shop zone"
+	end
+
 	local uniqueGroup = item.UniqueGroup
 	if typeof(uniqueGroup) == "string" and hasUniqueGroupItem(champion, uniqueGroup) then
 		return false, "Unique group item already owned"
@@ -25245,6 +25290,10 @@ function ShopService.sellItem(player: Player, slotIndex: number): (boolean, stri
 		return false, "Champion is dead"
 	end
 
+	if not canUseShop(player, champion) then
+		return false, "Not in shop zone"
+	end
+
 	local attributeName = "InventorySlot" .. tostring(slotIndex)
 	local itemId = champion:GetAttribute(attributeName)
 	if typeof(itemId) ~= "string" or itemId == "" then
@@ -25310,6 +25359,10 @@ function ShopService.craftItem(player: Player, targetItemId: string): (boolean, 
 
 	if champion:GetAttribute("Dead") == true then
 		return false, "Champion is dead"
+	end
+
+	if not canUseShop(player, champion) then
+		return false, "Not in shop zone"
 	end
 
 	local components = recipe.Components
@@ -25425,6 +25478,7 @@ return ShopService
 						<ProtectedString name="Source"><![CDATA[--!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local ItemData = require(ReplicatedStorage.Modules.ItemData)
 local ChampionService = require(script.Parent.ChampionService)
@@ -25432,6 +25486,46 @@ local ChampionService = require(script.Parent.ChampionService)
 local ShopService = {}
 
 local MAX_INVENTORY_SLOTS = 6
+
+local function isChampionInPart(champion: Model, part: BasePart): boolean
+	local root = champion:FindFirstChild("HumanoidRootPart")
+	if not root or not root:IsA("BasePart") then
+		return false
+	end
+
+	local relativePosition = part.CFrame:PointToObjectSpace(root.Position)
+	local halfSize = part.Size * 0.5
+
+	return math.abs(relativePosition.X) <= halfSize.X
+		and math.abs(relativePosition.Y) <= halfSize.Y
+		and math.abs(relativePosition.Z) <= halfSize.Z
+end
+
+local function canUseShop(player: Player, champion: Model): boolean
+	local map = Workspace:FindFirstChild("Map")
+	if not map then
+		return false
+	end
+
+	local shopZones = map:FindFirstChild("ShopZones")
+	if not shopZones then
+		return false
+	end
+
+	local teamName = player:GetAttribute("Team")
+	if typeof(teamName) ~= "string" then
+		return false
+	end
+
+	local shopZoneName = teamName .. "Shop"
+	local shopZone = shopZones:FindFirstChild(shopZoneName)
+	if not shopZone or not shopZone:IsA("BasePart") then
+		warn("[MOBA][SHOP] Missing shop zone " .. shopZoneName)
+		return false
+	end
+
+	return isChampionInPart(champion, shopZone)
+end
 
 local function getNumberAttribute(instance: Instance, name: string, fallback: number): number
 	local value = instance:GetAttribute(name)
@@ -25664,6 +25758,10 @@ function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
 		return false, "Champion is dead"
 	end
 
+	if not canUseShop(player, champion) then
+		return false, "Not in shop zone"
+	end
+
 	local uniqueGroup = item.UniqueGroup
 	if typeof(uniqueGroup) == "string" and hasUniqueGroupItem(champion, uniqueGroup) then
 		return false, "Unique group item already owned"
@@ -25732,6 +25830,10 @@ function ShopService.sellItem(player: Player, slotIndex: number): (boolean, stri
 		return false, "Champion is dead"
 	end
 
+	if not canUseShop(player, champion) then
+		return false, "Not in shop zone"
+	end
+
 	local attributeName = "InventorySlot" .. tostring(slotIndex)
 	local itemId = champion:GetAttribute(attributeName)
 	if typeof(itemId) ~= "string" or itemId == "" then
@@ -25797,6 +25899,10 @@ function ShopService.craftItem(player: Player, targetItemId: string): (boolean, 
 
 	if champion:GetAttribute("Dead") == true then
 		return false, "Champion is dead"
+	end
+
+	if not canUseShop(player, champion) then
+		return false, "Not in shop zone"
 	end
 
 	local components = recipe.Components
