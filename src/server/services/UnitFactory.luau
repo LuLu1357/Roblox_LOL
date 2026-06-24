@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local JungleData = require(ReplicatedStorage.Modules.JungleData)
 local MinionData = require(ReplicatedStorage.Modules.MinionData)
+local Utility = require(script.Parent.Utility)
 
 local UnitFactory = {}
 
@@ -46,8 +47,14 @@ local function createVisualUnit(name: string, position: Vector3, color: Color3, 
 end
 
 function UnitFactory.createMinion(teamName: string, minionType: string, position: Vector3): Model?
-	local data = MinionData.Types[minionType]
+	if not minionType then
+		warn("[MOBA] Minion has no minion type")
+		return nil
+	end
+
+	local data = MinionData and MinionData.Types and MinionData.Types[minionType]
 	if not data then
+		warn("[MOBA] Invalid or missing minion data for minion type:", minionType)
 		return nil
 	end
 
@@ -65,12 +72,19 @@ function UnitFactory.createMinion(teamName: string, minionType: string, position
 	minion:SetAttribute("GoldReward", data.GoldReward)
 	minion:SetAttribute("XPReward", data.XPReward)
 	minion:SetAttribute("Dead", false)
+	Utility.attachHealthBar(minion)
 	return minion
 end
 
 function UnitFactory.createJungleMonster(campType: string, position: Vector3): Model?
-	local data = JungleData.Camps[campType]
+	if not campType then
+		warn("[MOBA] Jungle camp has no CampType attribute")
+		return nil
+	end
+
+	local data = JungleData and JungleData.Camps and JungleData.Camps[campType]
 	if not data then
+		warn("[MOBA] Invalid or missing jungle camp data for camp type:", campType)
 		return nil
 	end
 
@@ -86,6 +100,7 @@ function UnitFactory.createJungleMonster(campType: string, position: Vector3): M
 	monster:SetAttribute("GoldReward", data.GoldReward)
 	monster:SetAttribute("XPReward", data.XPReward)
 	monster:SetAttribute("Dead", false)
+	Utility.attachHealthBar(monster)
 	return monster
 end
 

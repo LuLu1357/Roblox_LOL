@@ -1,6 +1,7 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local Utility = require(script.Parent.Utility)
@@ -8,6 +9,16 @@ local VisionService = require(script.Parent.VisionService)
 
 local CombatService = {}
 local lastAttackByUnit = setmetatable({}, { __mode = "k" })
+
+local championAggroEvent = ServerStorage:FindFirstChild("MobaChampionAggro")
+if not championAggroEvent or not championAggroEvent:IsA("BindableEvent") then
+	if championAggroEvent then
+		championAggroEvent:Destroy()
+	end
+	championAggroEvent = Instance.new("BindableEvent")
+	championAggroEvent.Name = "MobaChampionAggro"
+	championAggroEvent.Parent = ServerStorage
+end
 
 local VALID_ATTACKERS = {
 	Champion = true,
@@ -22,6 +33,7 @@ local VALID_TARGETS = {
 	Tower = true,
 	JungleMonster = true,
 	Nexus = true,
+	Inhibitor = true,
 }
 
 local function emitCombatFeedback(attacker: Instance, target: Instance, damage: number)
@@ -125,6 +137,9 @@ function CombatService.tryAutoAttack(attacker: Instance, target: Instance, playe
 	lastAttackByUnit[attacker] = os.clock()
 	local damage = getNumberAttribute(attacker, "AttackDamage", SharedConstants.COMBAT.BASE_ATTACK_DAMAGE)
 	CombatService.applyDamage(attacker, target, damage)
+	if getUnitType(attacker) == "Champion" and getUnitType(target) == "Champion" then
+		(championAggroEvent :: BindableEvent):Fire(attacker, target)
+	end
 	return true, "Attack success"
 end
 

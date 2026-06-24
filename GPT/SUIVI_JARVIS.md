@@ -57,6 +57,7 @@ Périmètre volontairement limité :
 - `VisionService.luau` : visibilité prototype par distance.
 - `CombatService.luau` : validation serveur des attaques, dégâts, cooldowns et feedback réseau.
 - `TowerService.luau` : ciblage et attaque automatiques des tours.
+- `MapValidatorService.luau` : validation non bloquante des bâtiments, chemins, spawns, camps et barres de vie.
 - `JungleService.luau` : apparition, attaque et respawn des monstres.
 - `MinionService.luau` : vagues et déplacement par waypoints.
 - `NexusService.luau` : destruction du Nexus et victoire.
@@ -84,7 +85,8 @@ La caméra utilise le comportement Roblox standard, sans contrôleur personnalis
 - Top : longe le côté gauche puis le côté supérieur.
 - Bot : longe le côté inférieur puis le côté droit.
 - Neuf waypoints par lane et par équipe ; les chemins Red sont les inverses exacts des chemins Blue.
-- Douze tours : deux par lane et par équipe, décalées du centre de la trajectoire pour conserver une lecture claire.
+- Vingt-deux tours : Outer, Inner et Inhibitor Tower sur chaque lane, plus deux Nexus Towers par équipe.
+- Six inhibiteurs passifs et destructibles : Top, Mid et Bot pour chaque équipe. Aucun super-minion ni respawn d'inhibiteur.
 - Jungle : quatre camps symétriques par côté au maximum et un seul objectif neutre, le Dragon en `(70, 70)`.
 - Rivière simple en diagonale opposée à Mid.
 - Quatre murs périphériques empêchent la sortie de l'arène.
@@ -95,7 +97,10 @@ La caméra utilise le comportement Roblox standard, sans contrôleur personnalis
 - Le clic client transmet uniquement la cible souhaitée.
 - Le serveur vérifie le propriétaire du champion, le type des unités, les équipes, la vision, la distance et le cooldown.
 - Une attaque acceptée applique les dégâts côté serveur puis diffuse `CombatFeedback` aux clients.
+- Une tour cible normalement l'ennemi valide le plus proche.
+- Si un champion attaque un champion allié sous une tour, un signal serveur partagé force l'aggro sur l'agresseur pendant 3 secondes, puis la tour revient à la cible valide la plus proche.
 - Feedback présent : cible sélectionnée, flash rouge sur la victime, rayon bref entre attaquant et cible, écran rouge et montant des dégâts pour le joueur.
+- Des barres de vie `MobaHealthBar` sont attachées aux champions, sbires, monstres, tours, inhibiteurs et Nexus.
 - Aucun son externe ou animation complexe n'a été ajouté.
 
 ## Tests validés le 24 juin 2026
@@ -105,7 +110,8 @@ La caméra utilise le comportement Roblox standard, sans contrôleur personnalis
 - `GameTest-editable.rbxlx` sauvegardé avec le blockout actuel.
 - XML de la place valide avec `xmllint`.
 - `rojo build default.project.json` réussi.
-- Carte confirmée dans Studio avec 12 tours, 2 Nexus et 9 camps/monstres de jungle.
+- Sauvegarde préalable : `backups/GameTest-editable-before-map-v2-buildings-20260624-194238.rbxlx`.
+- Carte confirmée dans Studio avec 22 tours, 6 inhibiteurs, 2 Nexus et 9 camps/monstres de jungle.
 
 ### Test Play Studio
 
@@ -116,23 +122,28 @@ Output attendu observé sans erreur rouge :
 [MOBA] Client started — ZQSD, default Roblox camera, attack and HUD ready
 [MOBA] Match started
 [MOBA] Wave 1 spawned
+[MOBA] Map validation passed — 22 towers, 6 inhibitors, 2 Nexus
+[MOBA] Health bar validation passed — 76 units checked
 ```
 
 - Top, Mid et Bot avancent sur leurs trajectoires respectives.
 - Les vagues opposées se rencontrent à environ 6 studs sur chaque lane.
 - Top et Bot restent symétriques et longent les côtés de la carte.
-- Les 12 tours ont attaqué une cible ennemie de test.
+- Les 22 tours sont présentes et les tours attaquent normalement la cible ennemie valide la plus proche.
+- Test d'aggro spéciale réussi : l'agresseur champion a reçu 150 dégâts tandis qu'un minion ennemi plus proche est resté à 1000/1000.
+- Après 3 secondes, la priorité spéciale expire et la tour revient au minion le plus proche.
+- Les 6 inhibiteurs sont présents, ont une barre de vie et acceptent les dégâts validés serveur (`3500 → 3499` au test).
 - Les identifiants de jungle sont valides et les neuf monstres apparaissent sans warning.
+- Les offsets de formation `-4`, `0`, `4` sont présents ; melee devant et ranged derrière.
+- Écart maximal des sbires à leur corridor : environ 8,4 studs ; ils ne traversent pas la jungle.
 - Test de dégâts joueur : santé `650 → 625`, rayon présent et HUD `-25` visible.
 - `CombatFeedbackGui`, `SelectedTarget` et le RemoteEvent `CombatFeedback` sont présents.
 
 ## Limites connues
 
 - Le pathfinding est une succession simple de waypoints, sans évitement sophistiqué.
-- Les minions peuvent s'agglutiner pendant les combats.
-- La tour cible actuellement l'ennemi valide le plus proche, sans priorité avancée.
+- Les offsets réduisent l'agglutination en déplacement, mais les minions peuvent encore se rapprocher pendant un combat.
 - La vision reste un prototype client et n'est pas un fog of war sécurisé.
-- Pas encore de barres de vie au-dessus des unités.
 - Pas encore de respawn complet du champion, gold, XP ou sélection de champion.
 - Pas de test multijoueur réel à dix joueurs ni de contrôle mobile.
 - Les proportions et la vitesse doivent encore être évaluées manuellement en conditions de jeu prolongées.
@@ -141,9 +152,9 @@ Output attendu observé sans erreur rouge :
 
 1. Faire une session manuelle de cinq minutes et noter uniquement les problèmes de distance, vitesse et lisibilité.
 2. Ajuster les positions de tours et camps dans Studio si le ressenti le justifie, sans reconstruire la carte.
-3. Ajouter des barres de vie simples au-dessus des unités.
-4. Corriger l'agglutination des sbires sans introduire un pathfinding complexe.
-5. Ajouter gold et XP seulement après validation durable du combat de base.
+3. Vérifier visuellement que les 22 tours restent lisibles autour des bases sur plusieurs résolutions.
+4. Décider plus tard si la destruction des objectifs doit être séquentielle ; ne pas ajouter ce système sans demande de Lucas.
+5. Conserver gold, XP, sorts et super-minions hors périmètre pour l'instant.
 
 ## Règle de transmission
 
@@ -164,3 +175,9 @@ Après chaque changement important, consigner : date, décision, fichiers ou obj
 - Feedback de combat minimal ajouté sans réduire l'autorité serveur.
 - Tests Play instrumentés réussis sur les trois lanes, les tours, la jungle et le feedback joueur.
 - Place sauvegardée, build Rojo validé et projet publié dans le dépôt GitHub privé `LuLu1357/Roblox_LOL` sur `main`.
+- Information obsolète corrigée : les barres de vie existaient déjà dans Studio mais n'étaient pas reflétées dans les anciens fichiers locaux ; elles sont désormais consolidées dans `Utility`, `UnitFactory`, `ChampionService`, `TowerService` et `NexusService`.
+- Map V2 conservée sans reconstruction : Top/Bot périphériques, Mid diagonale et jungle inchangées car déjà conformes.
+- Structure étendue à 22 tours, 6 inhibiteurs et 2 Nexus ; place sauvegardée après une copie de sécurité locale.
+- Validateur de map ajouté et validé sans warning.
+- Aggro de tour champion contre champion corrigée avec un signal serveur partagé ; priorité 3 secondes et fallback sur la cible la plus proche testés.
+- Formation des sbires légèrement espacée avec trois offsets latéraux, sans pathfinding complexe.

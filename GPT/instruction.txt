@@ -1,0 +1,355 @@
+Tu es un assistant développeur Roblox / Luau / Rojo.
+
+Projet :
+/Users/lucassimonnet/Dev/RobloxProjects/GameTest
+
+Document de suivi à lire et mettre à jour :
+GPT/SUIVI_JARVIS.md
+
+Contexte :
+Le prototype démarre et fonctionne. Le Play Test a déjà validé :
+- démarrage serveur ;
+- démarrage client ;
+- match started ;
+- vagues de sbires ;
+- auto-attaque ;
+- feedback de combat ;
+- barres de vie visibles au-dessus des tours, sbires, monstres et joueur.
+
+Objectif général :
+Améliorer la Map V2 et les règles de tours pour obtenir une structure plus proche d’un vrai MOBA 5v5, sans ajouter de systèmes complexes.
+
+Vision du jeu :
+- MOBA Roblox original inspiré du genre LoL / Paragon ;
+- 5v5 ;
+- 3 lanes : Top, Mid, Bot ;
+- jungle simple ;
+- déplacement AZERTY ZQSD ;
+- caméra Roblox standard ;
+- auto-attaque ;
+- combat validé serveur ;
+- pas de sorts QWER pour le moment.
+
+Règles absolues :
+- Ne pas ajouter de spells QWER.
+- Ne pas ajouter boutique, ranked, skins, matchmaking ou nouveaux champions.
+- Ne pas importer d’assets externes.
+- Ne pas ajouter gold/XP pour cette mission.
+- Ne pas ajouter de super-minions.
+- Ne pas ajouter de respawn inhibiteur.
+- Ne pas relancer tools/generate_editable_place.mjs.
+- Ne pas reconstruire toute la carte depuis zéro.
+- Ne pas écraser GameTest-editable.rbxlx sans sauvegarde préalable.
+- La map doit rester éditable dans Roblox Studio.
+- Le code reste synchronisé via Rojo.
+- Le client envoie des intentions ; le serveur valide toujours les dégâts, portées, cooldowns, équipes et cibles.
+- Ne pas créer de deuxième système parallèle si un système existe déjà.
+
+Instruction obligatoire — éviter les doublons et mettre à jour le suivi :
+
+Avant chaque mission, vérifier d’abord si elle est déjà implémentée dans l’état réel du projet, en inspectant :
+- les fichiers src ;
+- Workspace.Map dans Roblox Studio ;
+- l’Output Play Studio si nécessaire ;
+- le document GPT/SUIVI_JARVIS.md.
+
+Si une mission est déjà implémentée et fonctionne :
+- ne pas la recréer ;
+- ne pas créer de deuxième système parallèle ;
+- ne pas modifier inutilement le code ;
+- passer à la mission suivante ;
+- mettre à jour GPT/SUIVI_JARVIS.md pour indiquer que cette mission est déjà faite, avec la date, les preuves observées et le test réel effectué.
+
+Si GPT/SUIVI_JARVIS.md contredit l’état réel observé dans Roblox Studio ou dans le code :
+- considérer l’état réel comme prioritaire ;
+- corriger GPT/SUIVI_JARVIS.md ;
+- noter clairement l’ancienne information obsolète et la nouvelle information validée.
+
+Exemple concret :
+Les barres de vie au-dessus des tours, sbires, monstres et joueurs sont déjà présentes en Play Studio.
+Donc :
+- ne pas les recréer ;
+- ne pas ajouter un nouveau HealthBarController parallèle ;
+- vérifier seulement qu’elles restent fonctionnelles après les modifications ;
+- retirer des limites connues toute phrase disant “Pas encore de barres de vie au-dessus des unités” ;
+- consigner dans GPT/SUIVI_JARVIS.md que les barres de vie sont présentes et validées.
+
+Mission 0 — Sauvegarde obligatoire :
+
+Avant toute modification de Workspace.Map :
+- créer une sauvegarde locale de GameTest-editable.rbxlx dans backups/ ;
+- noter le nom de la sauvegarde dans GPT/SUIVI_JARVIS.md ;
+- ne jamais relancer tools/generate_editable_place.mjs ;
+- ne pas reconstruire la carte depuis zéro ;
+- modifier seulement Workspace.Map en conservant la carte éditable.
+
+Mission 1 — Diagnostic map avant modification :
+
+Inspecter Workspace.Map et produire un court diagnostic avant d’agir.
+
+Vérifier :
+1. Position des Nexus Blue/Red.
+2. Position des spawns joueurs.
+3. Position des spawns minions.
+4. Position des tours Top/Mid/Bot.
+5. Position des camps jungle.
+6. Waypoints Paths.Blue.Top/Mid/Bot.
+7. Waypoints Paths.Red.Top/Mid/Bot.
+8. Cohérence des trajectoires des sbires.
+9. Présence des barres de vie existantes.
+10. Présence des feedbacks de combat existants.
+
+Mesurer approximativement :
+- Blue spawn → centre Mid ;
+- Blue spawn → centre Top ;
+- Blue spawn → centre Bot ;
+- Blue spawn → premier camp jungle ;
+- distance entre les tours d’une même lane ;
+- temps de rencontre des sbires sur Top/Mid/Bot.
+
+Objectifs :
+- Top/Bot doivent être plus longues que Mid ;
+- les sbires doivent se rencontrer vers le milieu de chaque lane ;
+- les tours ne doivent pas être trop proches les unes des autres ;
+- la jungle doit être accessible mais ne doit pas couper les lanes.
+
+Mission 2 — Map V2 :
+
+Nouvelle décision de Lucas :
+- Top lane et Bot lane doivent être collées aux parois de l’arène.
+- Top doit longer le bord gauche puis le bord haut.
+- Bot doit longer le bord bas puis le bord droit.
+- Mid doit rester une diagonale centrale.
+- La jungle doit être placée entre les lanes, sans couper les trajectoires des sbires.
+- Blue base reste en bas-gauche.
+- Red base reste en haut-droite.
+
+Modifier Workspace.Map en mode Edit pour obtenir :
+- Top lane collée aux parois ;
+- Bot lane collée aux parois ;
+- Mid lane claire et directe ;
+- jungle lisible et symétrique ;
+- bases claires ;
+- zones de combat lisibles.
+
+Ne pas chercher à rendre la map belle.
+Le but est : jouable, lisible, testable.
+
+Mission 3 — Waypoints des sbires :
+
+Corriger les chemins :
+- Paths.Blue.Top
+- Paths.Red.Top
+- Paths.Blue.Bot
+- Paths.Red.Bot
+- vérifier aussi Paths.Blue.Mid et Paths.Red.Mid.
+
+Contraintes :
+- Les chemins Red doivent être l’inverse logique des chemins Blue.
+- Les sbires Top doivent longer les parois de l’arène.
+- Les sbires Bot doivent longer les parois de l’arène.
+- Les sbires Mid doivent rester sur la diagonale centrale.
+- Les sbires Top doivent se rencontrer environ au centre de Top.
+- Les sbires Bot doivent se rencontrer environ au centre de Bot.
+- Les sbires Mid doivent se rencontrer environ au centre de Mid.
+- Les sbires ne doivent pas traverser la jungle inutilement.
+- Chaque path doit avoir au moins 7 waypoints.
+- Conserver des noms de waypoints simples et ordonnés.
+
+Mission 4 — Structure bâtiments MOBA :
+
+Corriger la structure cible.
+
+Par équipe :
+- 1 Nexus ;
+- 3 inhibiteurs : Top, Mid, Bot ;
+- 11 tours :
+  - Top Outer Tower ;
+  - Top Inner Tower ;
+  - Top Inhibitor Tower ;
+  - Mid Outer Tower ;
+  - Mid Inner Tower ;
+  - Mid Inhibitor Tower ;
+  - Bot Outer Tower ;
+  - Bot Inner Tower ;
+  - Bot Inhibitor Tower ;
+  - Nexus Tower 1 ;
+  - Nexus Tower 2.
+
+Total map :
+- 2 Nexus ;
+- 6 inhibiteurs ;
+- 22 tours.
+
+Important :
+- Ne pas confondre Nexus et inhibiteur.
+- Les inhibiteurs peuvent être passifs pour l’instant.
+- Ne pas implémenter de super-minions.
+- Ne pas implémenter de respawn inhibiteur.
+
+Attributs recommandés pour les inhibiteurs :
+- UnitType = "Inhibitor"
+- Team = "Blue" ou "Red"
+- Lane = "Top", "Mid" ou "Bot"
+- Health
+- MaxHealth
+
+Les tours doivent être alignées avec les trajectoires des sbires.
+Aucune tour ne doit être perdue dans la jungle.
+
+Mission 5 — Validation automatique de la map :
+
+Créer ou améliorer un validateur de map côté serveur ou outil dev.
+
+Au démarrage, vérifier :
+- 2 Nexus ;
+- 6 inhibiteurs ;
+- 22 tours ;
+- Paths.Blue.Top/Mid/Bot présents ;
+- Paths.Red.Top/Mid/Bot présents ;
+- chaque path a au moins 7 waypoints ;
+- MinionSpawns Blue/Red Top/Mid/Bot présents ;
+- PlayerSpawns Blue/Red présents ;
+- JungleCamps présents ;
+- tous les JungleCamps ont un CampType valide dans JungleData ;
+- les barres de vie existantes sont encore présentes/fonctionnelles.
+
+Si quelque chose manque :
+- afficher un warning clair dans Output ;
+- ne pas crash brutalement si possible ;
+- documenter le problème dans le rapport final.
+
+Mission 6 — TowerService : aggro type MOBA/LoL simplifiée :
+
+Corriger le comportement des tours.
+
+Règle actuelle souhaitée par Lucas :
+Les tours doivent focus l’ennemi/bot le plus proche, sauf si un joueur attaque un autre joueur sous la tour, comme dans LoL.
+
+Règle d’aggro prototype :
+
+Cas normal :
+- La tour attaque l’ennemi valide le plus proche dans sa portée.
+- Les ennemis valides prioritaires sont les unités ennemies proches, notamment minions et champions.
+- Une cible morte, invalide ou hors portée doit être abandonnée.
+
+Cas spécial champion :
+- Si un champion ennemi attaque un champion allié dans la portée d’une tour alliée, cette tour doit immédiatement focus ce champion ennemi pendant quelques secondes.
+- Durée recommandée : 3 secondes.
+- Cette priorité doit passer devant les minions.
+- Si le champion sort de portée, meurt ou devient invalide, la tour revient à la cible ennemie valide la plus proche.
+- Attaquer un minion sous tour ne doit pas déclencher cette aggro spéciale.
+- L’aggro spéciale concerne champion contre champion.
+- Le serveur décide toujours.
+
+Implémentation recommandée :
+- Dans CombatService, quand une attaque champion → champion réussit, notifier TowerService ou enregistrer un événement d’aggro.
+- TowerService vérifie si l’attaque s’est produite dans sa portée et si la victime est alliée à la tour.
+- TowerService garde l’aggro pendant environ 3 secondes.
+- Si pas d’aggro active, fallback sur cible ennemie la plus proche.
+
+Mission 7 — Corriger légèrement l’agglutination des sbires :
+
+Corriger seulement de manière simple.
+
+Contraintes :
+- Ne pas ajouter de pathfinding complexe.
+- Ne pas réécrire tout MinionService.
+- Ajouter seulement un petit offset latéral par minion au spawn ou dans les waypoints.
+- Les melee doivent être devant.
+- Les ranged doivent rester légèrement derrière.
+- Éviter que tous les sbires occupent exactement la même position.
+- Les sbires doivent rester sur leur lane.
+
+Mission 8 — Préserver les feedbacks existants :
+
+Ne pas recréer les barres de vie.
+Ne pas recréer le système de feedback si déjà présent.
+
+Vérifier seulement que ces éléments fonctionnent encore après modifications :
+- barres de vie au-dessus des tours ;
+- barres de vie au-dessus des sbires ;
+- barres de vie au-dessus des monstres ;
+- barre de vie au-dessus du joueur ;
+- cible sélectionnée ;
+- flash rouge quand une unité prend des dégâts ;
+- rayon temporaire ou feedback d’attaque ;
+- HUD ou signal visuel quand le joueur prend des dégâts.
+
+Si un élément existe déjà et fonctionne :
+- ne pas le dupliquer ;
+- le noter comme validé dans GPT/SUIVI_JARVIS.md.
+
+Mission 9 — Tests Play obligatoires :
+
+Après modifications, lancer Play.
+
+Vérifier dans Output :
+- pas d’erreur rouge ;
+- serveur started ;
+- client started ;
+- match started ;
+- Wave 1 spawned.
+
+Vérifier en jeu :
+- Top longe bien les murs ;
+- Bot longe bien les murs ;
+- Mid reste diagonale ;
+- les minions opposés se rencontrent correctement sur les trois lanes ;
+- les minions ne traversent pas la jungle ;
+- les tours sont au bon endroit ;
+- les tours attaquent l’ennemi valide le plus proche ;
+- une tour focus un champion ennemi qui attaque un champion allié sous sa portée ;
+- les 22 tours sont présentes ;
+- les 6 inhibiteurs sont présents ;
+- les 2 Nexus sont présents ;
+- les barres de vie existantes sont encore visibles ;
+- les feedbacks de combat existants fonctionnent toujours.
+
+Mission 10 — Mise à jour obligatoire de GPT/SUIVI_JARVIS.md :
+
+À la fin, mettre à jour GPT/SUIVI_JARVIS.md avec :
+- date ;
+- décision de Lucas ;
+- état réel observé ;
+- fichiers modifiés ;
+- objets Studio/map modifiés ;
+- sauvegarde créée ;
+- tests Play réellement effectués ;
+- erreurs restantes ;
+- prochaines actions recommandées.
+
+Corriger aussi les informations obsolètes du suivi.
+Par exemple :
+- si les barres de vie sont déjà présentes, retirer toute phrase disant qu’elles ne sont pas encore implémentées ;
+- noter qu’elles sont présentes et validées.
+
+Résultat final attendu :
+
+Donner un rapport clair avec :
+
+1. Missions déjà implémentées et donc non refaites.
+2. Missions réellement modifiées.
+3. Fichiers code modifiés.
+4. Objets Studio modifiés.
+5. Positions ou structures importantes changées.
+6. Tests Play effectués.
+7. Résultat des tests.
+8. Erreurs restantes.
+9. Prochaine étape recommandée.
+
+Priorité absolue :
+Map V2 + waypoints Top/Bot collés aux parois + 22 tours + 6 inhibiteurs + 2 Nexus + aggro de tour correcte.
+
+Ne pas faire :
+- spells ;
+- boutique ;
+- gold ;
+- XP ;
+- ranked ;
+- skins ;
+- matchmaking ;
+- nouveaux champions ;
+- super-minions ;
+- respawn inhibiteur ;
+- grosse refonte artistique.

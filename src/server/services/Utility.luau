@@ -35,14 +35,21 @@ function Utility.isAlive(unit: Instance?): boolean
 	if not unit or not unit.Parent then
 		return false
 	end
+	if unit:GetAttribute("Dead") == true then
+		return false
+	end
+
+	local health = unit:GetAttribute("Health")
+	if typeof(health) == "number" then
+		return health > 0
+	end
 
 	local humanoid = unit:FindFirstChildOfClass("Humanoid")
 	if humanoid then
 		return humanoid.Health > 0
 	end
 
-	local health = unit:GetAttribute("Health")
-	return typeof(health) == "number" and health > 0 and unit:GetAttribute("Dead") ~= true
+	return false
 end
 
 function Utility.getTeam(unit: Instance?): string?
@@ -57,6 +64,9 @@ function Utility.areEnemies(a: Instance?, b: Instance?): boolean
 	local teamA = Utility.getTeam(a)
 	local teamB = Utility.getTeam(b)
 	if not teamA or not teamB then
+		return false
+	end
+	if teamA == "Neutral" and teamB == "Neutral" then
 		return false
 	end
 	return teamA ~= teamB
@@ -77,6 +87,52 @@ function Utility.setHealth(unit: Instance, value: number)
 	if newHealth <= 0 then
 		unit:SetAttribute("Dead", true)
 	end
+end
+
+function Utility.attachHealthBar(unit: Instance)
+	local root = Utility.getRoot(unit)
+	if not root then
+		warn("[MOBA] Impossible d'ajouter une barre de vie, root manquant pour", unit:GetFullName())
+		return
+	end
+	if root:FindFirstChild("MobaHealthBar") then
+		return
+	end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "MobaHealthBar"
+	billboard.AlwaysOnTop = true
+	billboard.Size = UDim2.fromOffset(80, 10)
+	billboard.StudsOffsetWorldSpace = Vector3.new(0, math.max(root.Size.Y * 0.75, 3), 0)
+	billboard.Parent = root
+
+	local background = Instance.new("Frame")
+	background.Name = "Background"
+	background.Size = UDim2.fromScale(1, 1)
+	background.BackgroundColor3 = Color3.fromRGB(50, 15, 18)
+	background.BorderSizePixel = 0
+	background.Parent = billboard
+
+	local fill = Instance.new("Frame")
+	fill.Name = "Fill"
+	fill.Size = UDim2.fromScale(1, 1)
+	fill.BackgroundColor3 = Color3.fromRGB(55, 205, 105)
+	fill.BorderSizePixel = 0
+	fill.Parent = background
+
+	local function update()
+		local health = unit:GetAttribute("Health")
+		local maxHealth = unit:GetAttribute("MaxHealth")
+		if typeof(health) == "number" and typeof(maxHealth) == "number" and maxHealth > 0 then
+			fill.Size = UDim2.fromScale(math.clamp(health / maxHealth, 0, 1), 1)
+			billboard.Enabled = health > 0
+		end
+	end
+
+	unit:GetAttributeChangedSignal("Health"):Connect(update)
+	unit:GetAttributeChangedSignal("MaxHealth"):Connect(update)
+	unit:GetAttributeChangedSignal("Dead"):Connect(update)
+	update()
 end
 
 return Utility

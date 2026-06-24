@@ -4,6 +4,7 @@ local Workspace = game:GetService("Workspace")
 
 local ChampionService = require(script.services.ChampionService)
 local JungleService = require(script.services.JungleService)
+local MapValidatorService = require(script.services.MapValidatorService)
 local MatchStateService = require(script.services.MatchStateService)
 local MinionService = require(script.services.MinionService)
 local NexusService = require(script.services.NexusService)
@@ -24,6 +25,7 @@ end
 assert(units:IsA("Folder"), "[MOBA] Workspace.Units must be a Folder")
 
 RemoteService.start()
+MapValidatorService.start()
 TeamService.start()
 ChampionService.start()
 TowerService.start()

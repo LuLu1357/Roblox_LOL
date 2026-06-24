@@ -11,9 +11,31 @@ local Utility = require(script.Parent.Utility)
 
 local MinionService = {}
 local waveNumber = 0
+local FORMATION_SLOTS = { -4, 0, 4 }
+
+local function getMapFolder(childName: string): Instance?
+	local map = Workspace:FindFirstChild("Map")
+	if not map then
+		warn("[MOBA] Workspace.Map manquant :", childName, "indisponible.")
+		return nil
+	end
+	local child = map:FindFirstChild(childName)
+	if not child then
+		warn("[MOBA] Workspace.Map." .. childName .. " manquant.")
+		return nil
+	end
+	return child
+end
 
 local function sortedWaypoints(teamName: string, laneName: string): { BasePart }
-	local lane = Workspace.Map.Paths[teamName][laneName]
+	local paths = getMapFolder("Paths")
+	local teamFolder = paths and paths:FindFirstChild(teamName)
+	local lane = teamFolder and teamFolder:FindFirstChild(laneName)
+	if not lane then
+		warn(string.format("[MOBA] Chemin minion manquant : Paths.%s.%s", teamName, laneName))
+		return {}
+	end
+
 	local waypoints = {}
 	for _, child in lane:GetChildren() do
 		if child:IsA("BasePart") then
@@ -23,6 +45,9 @@ local function sortedWaypoints(teamName: string, laneName: string): { BasePart }
 	table.sort(waypoints, function(a, b)
 		return a.Name < b.Name
 	end)
+	if #waypoints == 0 then
+		warn(string.format("[MOBA] Aucun waypoint pour %s %s", teamName, laneName))
+	end
 	return waypoints
 end
 
@@ -62,7 +87,21 @@ local function moveToward(minion: Model, targetPosition: Vector3, speed: number,
 	return false
 end
 
-local function runMinionAI(minion: Model, waypoints: { BasePart })
+local function getOffsetWaypoint(waypoints: { BasePart }, index: number, lateralOffset: number): Vector3
+	local waypoint = waypoints[index]
+	local previous = waypoints[math.max(1, index - 1)]
+	local following = waypoints[math.min(#waypoints, index + 1)]
+	local delta = following.Position - previous.Position
+	local flatDirection = Vector3.new(delta.X, 0, delta.Z)
+	if flatDirection.Magnitude < 0.1 then
+		return waypoint.Position
+	end
+	local direction = flatDirection.Unit
+	local normal = Vector3.new(-direction.Z, 0, direction.X)
+	return waypoint.Position + normal * lateralOffset
+end
+
+local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset: number)
 	task.spawn(function()
 		local waypointIndex = 1
 		local moveSpeedAttribute = minion:GetAttribute("MoveSpeed")
@@ -84,7 +123,8 @@ local function runMinionAI(minion: Model, waypoints: { BasePart })
 			else
 				local waypoint = waypoints[waypointIndex]
 				if waypoint then
-					if moveToward(minion, waypoint.Position, moveSpeed, 0.1) then
+					local targetPosition = getOffsetWaypoint(waypoints, waypointIndex, lateralOffset)
+					if moveToward(minion, targetPosition, moveSpeed, 0.1) then
 						waypointIndex += 1
 					end
 				end
@@ -99,37 +139,60 @@ local function runMinionAI(minion: Model, waypoints: { BasePart })
 	end)
 end
 
-local function spawnSingle(teamName: string, laneName: string, minionType: string, position: Vector3)
+local function spawnSingle(
+	teamName: string,
+	laneName: string,
+	minionType: string,
+	position: Vector3,
+	lateralOffset: number,
+	waypoints: { BasePart }
+)
 	local minion = UnitFactory.createMinion(teamName, minionType, position)
 	if not minion then
+		warn("[MOBA] Type de minion invalide :", minionType)
+		return
+	end
+	local units = Workspace:FindFirstChild("Units")
+	if not units or not units:IsA("Folder") then
+		warn("[MOBA] Workspace.Units manquant : minion non créé.")
 		return
 	end
 	minion:SetAttribute("Lane", laneName)
-	minion.Parent = Workspace:WaitForChild("Units")
-	runMinionAI(minion, sortedWaypoints(teamName, laneName))
+	minion:SetAttribute("FormationOffset", lateralOffset)
+	minion.Parent = units
+	runMinionAI(minion, waypoints, lateralOffset)
 end
 
 function MinionService.spawnWaveForTeamAndLane(teamName: string, laneName: string)
-	local spawnPoint = Workspace.Map.MinionSpawns[teamName][laneName]
-	local forward = if teamName == "Blue" then 1 else -1
+	local spawns = getMapFolder("MinionSpawns")
+	local teamSpawns = spawns and spawns:FindFirstChild(teamName)
+	local spawnPoint = teamSpawns and teamSpawns:FindFirstChild(laneName)
+	if not spawnPoint or not spawnPoint:IsA("BasePart") then
+		warn(string.format("[MOBA] Spawn minion manquant : MinionSpawns.%s.%s", teamName, laneName))
+		return
+	end
+
+	local waypoints = sortedWaypoints(teamName, laneName)
+	if #waypoints == 0 then
+		return
+	end
+	local firstDelta = waypoints[1].Position - spawnPoint.Position
+	local flatDirection = Vector3.new(firstDelta.X, 0, firstDelta.Z)
+	local direction = if flatDirection.Magnitude > 0.1 then flatDirection.Unit else Vector3.new(1, 0, 0)
+	local normal = Vector3.new(-direction.Z, 0, direction.X)
+
 	for index = 1, MinionData.Wave.MeleeCount do
-		spawnSingle(
-			teamName,
-			laneName,
-			"Melee",
-			spawnPoint.Position + Vector3.new(-index * 4 * forward, 0, index * 2 - 4)
-		)
+		local lateralOffset = FORMATION_SLOTS[index] or 0
+		local position = spawnPoint.Position + direction * (8 - index * 2) + normal * lateralOffset
+		spawnSingle(teamName, laneName, "Melee", position, lateralOffset, waypoints)
 	end
 	for index = 1, MinionData.Wave.RangedCount do
-		spawnSingle(
-			teamName,
-			laneName,
-			"Ranged",
-			spawnPoint.Position + Vector3.new(-index * 4 * forward, 0, index * 2 + 5)
-		)
+		local lateralOffset = FORMATION_SLOTS[index] or 0
+		local position = spawnPoint.Position - direction * (7 + index * 2) + normal * lateralOffset
+		spawnSingle(teamName, laneName, "Ranged", position, lateralOffset, waypoints)
 	end
 	if waveNumber % MinionData.Wave.SiegeEveryNWaves == 0 then
-		spawnSingle(teamName, laneName, "Siege", spawnPoint.Position + Vector3.new(-18 * forward, 0, 0))
+		spawnSingle(teamName, laneName, "Siege", spawnPoint.Position - direction * 17, 0, waypoints)
 	end
 end
 
