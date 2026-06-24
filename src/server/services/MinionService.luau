@@ -18,6 +18,20 @@ local FORMATION_SLOTS = { -4, 0, 4 }
 local TARGET_SEARCH_RANGE = 50
 local TARGET_DROP_RANGE = 50
 
+local function getGameSpeed(): number
+	local debugConfig = SharedConstants.DEBUG
+	if typeof(debugConfig) ~= "table" then
+		return 1
+	end
+
+	local speed = debugConfig.GAME_SPEED
+	if typeof(speed) ~= "number" or speed <= 0 then
+		return 1
+	end
+
+	return speed
+end
+
 local function getMapFolder(childName: string): Instance?
 	local map = Workspace:FindFirstChild("Map")
 	if not map then
@@ -197,7 +211,8 @@ local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset
 					local targetRoot = Utility.getRoot(currentTarget)
 
 					if targetRoot then
-						moveToward(minion, targetRoot.Position, moveSpeed, 0.1)
+						local gameSpeed = getGameSpeed()
+						moveToward(minion, targetRoot.Position, moveSpeed * gameSpeed, 0.1)
 					else
 						currentTarget = nil
 						minion:SetAttribute("AggroTarget", nil)
@@ -208,8 +223,9 @@ local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset
 
 				if waypoint then
 					local targetPosition = getOffsetWaypoint(waypoints, waypointIndex, lateralOffset)
+					local gameSpeed = getGameSpeed()
 
-					if moveToward(minion, targetPosition, moveSpeed, 0.1) then
+					if moveToward(minion, targetPosition, moveSpeed * gameSpeed, 0.1) then
 						waypointIndex += 1
 					end
 				end
@@ -257,6 +273,17 @@ local function spawnSingle(
 end
 
 function MinionService.spawnWaveForTeamAndLane(teamName: string, laneName: string)
+	local debugConfig = SharedConstants.DEBUG
+
+	if typeof(debugConfig) == "table" then
+		if teamName == "Blue" and debugConfig.SPAWN_BLUE_MINIONS == false then
+			return
+		end
+
+		if teamName == "Red" and debugConfig.SPAWN_RED_MINIONS == false then
+			return
+		end
+	end
 	local spawns = getMapFolder("MinionSpawns")
 	local teamSpawns = spawns and spawns:FindFirstChild(teamName)
 	local spawnPoint = teamSpawns and teamSpawns:FindFirstChild(laneName)
@@ -313,7 +340,7 @@ function MinionService.start()
 
 		while true do
 			MinionService.spawnWave()
-			task.wait(SharedConstants.MATCH.MINION_WAVE_INTERVAL)
+			task.wait(SharedConstants.MATCH.MINION_WAVE_INTERVAL / getGameSpeed())
 		end
 	end)
 end

@@ -67,6 +67,20 @@ local function getUnitType(unit: Instance): string?
 	return if typeof(unitType) == "string" then unitType else nil
 end
 
+local function getGameSpeed(): number
+	local debugConfig = SharedConstants.DEBUG
+	if typeof(debugConfig) ~= "table" then
+		return 1
+	end
+
+	local speed = debugConfig.GAME_SPEED
+	if typeof(speed) ~= "number" or speed <= 0 then
+		return 1
+	end
+
+	return speed
+end
+
 local function canAttack(attacker: Instance, target: Instance, player: Player?): (boolean, string)
 	local attackerType = getUnitType(attacker)
 	local targetType = getUnitType(target)
@@ -103,7 +117,7 @@ local function canAttack(attacker: Instance, target: Instance, player: Player?):
 	local now = os.clock()
 	local lastAttack = lastAttackByUnit[attacker] or 0
 	local cooldown = getNumberAttribute(attacker, "AttackCooldown", SharedConstants.COMBAT.AUTO_ATTACK_COOLDOWN)
-	if now - lastAttack < cooldown then
+	if now - lastAttack < cooldown / getGameSpeed() then
 		return false, "Attack cooldown"
 	end
 
