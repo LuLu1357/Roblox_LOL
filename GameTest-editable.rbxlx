@@ -94,27 +94,27 @@
 		<Item class="Camera" referent="RBXf50fc75f83fe4f0eb124bbeddeca51c2">
 			<Properties>
 				<CoordinateFrame name="CFrame">
-					<X>330.163513</X>
-					<Y>30.2900028</Y>
-					<Z>-356.968384</Z>
-					<R00>0.0765033662</R00>
-					<R01>0.866096735</R01>
-					<R02>-0.493987799</R02>
+					<X>337.250061</X>
+					<Y>27.9343262</Y>
+					<Z>-338.675171</Z>
+					<R00>-0.787875354</R00>
+					<R01>-0.156247497</R01>
+					<R02>0.595683753</R02>
 					<R10>-0</R10>
-					<R11>0.495439798</R11>
-					<R12>0.86864239</R12>
-					<R20>0.997069359</R20>
-					<R21>-0.0664540678</R21>
-					<R22>0.0379028134</R22>
+					<R11>0.9672786</R11>
+					<R12>0.253716618</R12>
+					<R20>-0.615834713</R20>
+					<R21>0.199897066</R21>
+					<R22>-0.762094975</R22>
 				</CoordinateFrame>
 				<Ref name="CameraSubject">null</Ref>
 				<token name="CameraType">0</token>
 				<float name="FieldOfView">70</float>
 				<token name="FieldOfViewMode">0</token>
 				<CoordinateFrame name="Focus">
-					<X>331.151489</X>
-					<Y>28.5527172</Y>
-					<Z>-357.044189</Z>
+					<X>336.058685</X>
+					<Y>27.4268894</Y>
+					<Z>-337.15097</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -19824,8 +19824,8 @@ Yml0b3I=]]></BinaryString>
 						</Vector3>
 						<Vector3 name="size">
 							<X>31.0100002</X>
-							<Y>1</Y>
-							<Z>21.6199989</Z>
+							<Y>40</Y>
+							<Z>21.6200008</Z>
 						</Vector3>
 						<BinaryString name="AttributesSerialize"></BinaryString>
 						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -19925,7 +19925,7 @@ Yml0b3I=]]></BinaryString>
 						</Vector3>
 						<Vector3 name="size">
 							<X>23.7099991</X>
-							<Y>1</Y>
+							<Y>40</Y>
 							<Z>26.1599998</Z>
 						</Vector3>
 						<BinaryString name="AttributesSerialize"></BinaryString>
@@ -22036,7 +22036,7 @@ local ChampionData = {}
 ChampionData.Default = {
 	Id = "Default",
 	DisplayName = "Prototype Hero",
-	MaxHealth = 100,
+	MaxHealth = 10000,
 	HealthRegen = 3,
 	AttackDamage = 200,
 	AttackRange = 18,
