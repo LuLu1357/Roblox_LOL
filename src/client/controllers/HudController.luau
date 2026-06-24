@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
+local ItemData = require(ReplicatedStorage.Modules.ItemData)
 
 local HudController = {}
 local player = Players.LocalPlayer
@@ -34,7 +35,7 @@ function HudController.start()
 	panel.Name = "StatusPanel"
 	panel.AnchorPoint = Vector2.new(0.5, 1)
 	panel.Position = UDim2.fromScale(0.5, 0.975)
-	panel.Size = UDim2.fromOffset(380, 76)
+	panel.Size = UDim2.fromOffset(460, 138)
 	panel.BackgroundColor3 = Color3.fromRGB(17, 24, 34)
 	panel.BackgroundTransparency = 0.12
 	panel.BorderSizePixel = 0
@@ -77,7 +78,7 @@ function HudController.start()
 	local healthBack = Instance.new("Frame")
 	healthBack.Name = "HealthBack"
 	healthBack.Position = UDim2.fromOffset(18, 38)
-	healthBack.Size = UDim2.fromOffset(344, 22)
+	healthBack.Size = UDim2.fromOffset(424, 22)
 	healthBack.BackgroundColor3 = Color3.fromRGB(55, 25, 30)
 	healthBack.BorderSizePixel = 0
 	healthBack.Parent = panel
@@ -104,6 +105,83 @@ function HudController.start()
 	local xpLabel = createLabel(panel, "XP", UDim2.fromOffset(228, 60), UDim2.fromOffset(134, 18), "XP: 0")
 	xpLabel.TextXAlignment = Enum.TextXAlignment.Right
 
+	local statsToggleButton = Instance.new("TextButton")
+	statsToggleButton.Name = "StatsToggleButton"
+	statsToggleButton.Position = UDim2.fromOffset(378, 8)
+	statsToggleButton.Size = UDim2.fromOffset(64, 24)
+	statsToggleButton.BackgroundColor3 = Color3.fromRGB(50, 66, 88)
+	statsToggleButton.BorderSizePixel = 0
+	statsToggleButton.Font = Enum.Font.GothamBold
+	statsToggleButton.Text = "STATS"
+	statsToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	statsToggleButton.TextScaled = true
+	statsToggleButton.Parent = panel
+
+	local statsToggleCorner = Instance.new("UICorner")
+	statsToggleCorner.CornerRadius = UDim.new(0, 6)
+	statsToggleCorner.Parent = statsToggleButton
+
+	local statsPanel = Instance.new("Frame")
+	statsPanel.Name = "StatsPanel"
+	statsPanel.AnchorPoint = Vector2.new(1, 1)
+	statsPanel.Position = UDim2.new(1, 0, 0, -10)
+	statsPanel.Size = UDim2.fromOffset(220, 238)
+	statsPanel.BackgroundColor3 = Color3.fromRGB(17, 24, 34)
+	statsPanel.BackgroundTransparency = 0.08
+	statsPanel.BorderSizePixel = 0
+	statsPanel.Visible = false
+	statsPanel.Parent = panel
+
+	local statsPanelCorner = Instance.new("UICorner")
+	statsPanelCorner.CornerRadius = UDim.new(0, 10)
+	statsPanelCorner.Parent = statsPanel
+
+	local statsText = Instance.new("TextLabel")
+	statsText.Name = "StatsText"
+	statsText.Position = UDim2.fromOffset(14, 12)
+	statsText.Size = UDim2.new(1, -28, 1, -24)
+	statsText.BackgroundTransparency = 1
+	statsText.Font = Enum.Font.GothamMedium
+	statsText.TextColor3 = Color3.fromRGB(235, 240, 248)
+	statsText.TextSize = 18
+	statsText.TextXAlignment = Enum.TextXAlignment.Left
+	statsText.TextYAlignment = Enum.TextYAlignment.Top
+	statsText.Text = ""
+	statsText.Parent = statsPanel
+
+	statsToggleButton.MouseButton1Click:Connect(function()
+		statsPanel.Visible = not statsPanel.Visible
+	end)
+
+	local shopButtons: { [string]: TextButton } = {}
+
+	local function createShopButton(itemId: string, text: string, position: UDim2): TextButton
+		local button = Instance.new("TextButton")
+		button.Name = itemId
+		button.Position = position
+		button.Size = UDim2.fromOffset(128, 38)
+		button.BackgroundColor3 = Color3.fromRGB(38, 48, 64)
+		button.BackgroundTransparency = 0.05
+		button.BorderSizePixel = 0
+		button.Font = Enum.Font.GothamBold
+		button.TextScaled = true
+		button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		button.TextStrokeTransparency = 0.65
+		button.Text = text
+		button.Parent = panel
+
+		local buttonCorner = Instance.new("UICorner")
+		buttonCorner.CornerRadius = UDim.new(0, 8)
+		buttonCorner.Parent = button
+
+		shopButtons[itemId] = button
+		return button
+	end
+
+	createShopButton("LongSword", "Sword\n350g", UDim2.fromOffset(18, 88))
+	createShopButton("RubyCrystal", "Ruby\n400g", UDim2.fromOffset(166, 88))
+	createShopButton("Boots", "Boots\n300g", UDim2.fromOffset(314, 88))
+
 	local function updateTeam()
 		local teamName = player:GetAttribute("Team")
 		teamLabel.Text = "ÉQUIPE " .. tostring(teamName or "?")
@@ -121,6 +199,46 @@ function HudController.start()
 				healthLabel.Text = string.format("%d / %d", math.floor(health), math.floor(maxHealth))
 			end
 		end
+		local function updateStatsPanel()
+			local level = character:GetAttribute("Level")
+			local gold = character:GetAttribute("Gold")
+			local xp = character:GetAttribute("XP")
+			local health = character:GetAttribute("Health")
+			local maxHealth = character:GetAttribute("MaxHealth")
+			local attackDamage = character:GetAttribute("AttackDamage")
+			local attackRange = character:GetAttribute("AttackRange")
+			local attackCooldown = character:GetAttribute("AttackCooldown")
+			local moveSpeed = character:GetAttribute("MoveSpeed")
+			local inventoryCount = character:GetAttribute("InventoryCount")
+
+			statsText.Text = string.format(
+				"LVL: %s\nGold: %s\nXP: %s\nHP: %s / %s\nAD: %s\nRange: %s\nCooldown: %s\nSpeed: %s\nItems: %s",
+				tostring(level or 1),
+				tostring(gold or 0),
+				tostring(xp or 0),
+				tostring(health or 0),
+				tostring(maxHealth or 0),
+				tostring(attackDamage or 0),
+				tostring(attackRange or 0),
+				tostring(attackCooldown or 0),
+				tostring(moveSpeed or 0),
+				tostring(inventoryCount or 0)
+			)
+		end
+
+		local statsAttributeNames = {
+			"Level",
+			"Gold",
+			"XP",
+			"Health",
+			"MaxHealth",
+			"AttackDamage",
+			"AttackRange",
+			"AttackCooldown",
+			"MoveSpeed",
+			"InventoryCount",
+		}
+
 		local function updateProgression()
 			local level = character:GetAttribute("Level")
 			local gold = character:GetAttribute("Gold")
@@ -129,14 +247,39 @@ function HudController.start()
 			levelLabel.Text = "LVL " .. tostring(level or 1)
 			goldLabel.Text = "Gold: " .. tostring(gold or 0)
 			xpLabel.Text = "XP: " .. tostring(xp or 0)
+
+			local currentGold = if typeof(gold) == "number" then gold else 0
+
+			for itemId, button in shopButtons do
+				local item = ItemData.Items[itemId]
+				local cost = if typeof(item) == "table" and typeof(item.Cost) == "number" then item.Cost else 0
+				local canBuy = currentGold >= cost
+
+				button.AutoButtonColor = canBuy
+				button.Active = canBuy
+
+				if canBuy then
+					button.BackgroundColor3 = Color3.fromRGB(38, 48, 64)
+					button.TextColor3 = Color3.fromRGB(255, 255, 255)
+					button.TextTransparency = 0
+				else
+					button.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
+					button.TextColor3 = Color3.fromRGB(145, 145, 145)
+					button.TextTransparency = 0.25
+				end
+			end
 		end
 		character:GetAttributeChangedSignal("Health"):Connect(updateHealth)
 		character:GetAttributeChangedSignal("MaxHealth"):Connect(updateHealth)
 		character:GetAttributeChangedSignal("Level"):Connect(updateProgression)
 		character:GetAttributeChangedSignal("Gold"):Connect(updateProgression)
 		character:GetAttributeChangedSignal("XP"):Connect(updateProgression)
+		for _, attributeName in statsAttributeNames do
+			character:GetAttributeChangedSignal(attributeName):Connect(updateStatsPanel)
+		end
 		updateHealth()
 		updateProgression()
+		updateStatsPanel()
 	end
 
 	player:GetAttributeChangedSignal("Team"):Connect(updateTeam)
@@ -150,6 +293,18 @@ function HudController.start()
 	if not remotes or not remotes:IsA("Folder") then
 		warn("[MOBA] Remotes indisponibles : vérifie que le serveur a démarré et que Workspace.Map existe.")
 		return
+	end
+
+	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST, 10)
+	if not shopBuyRequest or not shopBuyRequest:IsA("RemoteEvent") then
+		warn("[MOBA] RemoteEvent ShopBuyRequest indisponible.")
+		return
+	end
+
+	for itemId, button in shopButtons do
+		button.MouseButton1Click:Connect(function()
+			shopBuyRequest:FireServer(itemId)
+		end)
 	end
 
 	local matchRemote = remotes:WaitForChild(SharedConstants.REMOTES.MATCH_STATE_UPDATE, 10)

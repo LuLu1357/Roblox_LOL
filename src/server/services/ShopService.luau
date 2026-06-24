@@ -87,6 +87,18 @@ function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
 
 	print(string.format("[MOBA] %s bought %s for %d gold", player.Name, item.DisplayName or itemId, cost))
 
+	local itemName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
+	print(string.format(
+		"[MOBA][SHOP] %s stats after %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s",
+		player.Name,
+		itemName,
+		tostring(champion:GetAttribute("Gold")),
+		tostring(champion:GetAttribute("MaxHealth")),
+		tostring(champion:GetAttribute("AttackDamage")),
+		tostring(champion:GetAttribute("MoveSpeed")),
+		tostring(champion:GetAttribute("InventoryCount"))
+	))
+
 	return true, "Bought"
 end
 

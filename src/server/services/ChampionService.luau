@@ -93,6 +93,29 @@ local function setupCharacter(player: Player, character: Model)
 		character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
 	end
 	Utility.attachHealthBar(character)
+
+	local watchedAttributes = {
+		"Level",
+		"Gold",
+		"XP",
+		"MaxHealth",
+		"AttackDamage",
+		"AttackRange",
+		"AttackCooldown",
+		"MoveSpeed",
+		"InventoryCount",
+	}
+
+	for _, attributeName in watchedAttributes do
+		character:GetAttributeChangedSignal(attributeName):Connect(function()
+			print(string.format(
+				"[MOBA][STATS] %s %s = %s",
+				player.Name,
+				attributeName,
+				tostring(character:GetAttribute(attributeName))
+			))
+		end)
+	end
 end
 
 local function initializePlayer(player: Player)
