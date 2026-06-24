@@ -94,27 +94,27 @@
 		<Item class="Camera" referent="RBXf50fc75f83fe4f0eb124bbeddeca51c2">
 			<Properties>
 				<CoordinateFrame name="CFrame">
-					<X>337.250061</X>
-					<Y>27.9343262</Y>
-					<Z>-338.675171</Z>
-					<R00>-0.787875354</R00>
-					<R01>-0.156247497</R01>
-					<R02>0.595683753</R02>
-					<R10>-0</R10>
-					<R11>0.9672786</R11>
-					<R12>0.253716618</R12>
-					<R20>-0.615834713</R20>
-					<R21>0.199897066</R21>
-					<R22>-0.762094975</R22>
+					<X>25.5254974</X>
+					<Y>267.228577</Y>
+					<Z>405.812195</Z>
+					<R00>0.775351882</R00>
+					<R01>-0.286680758</R01>
+					<R02>0.562711</R02>
+					<R10>1.49011612e-08</R10>
+					<R11>0.891028881</R11>
+					<R12>0.453946739</R12>
+					<R20>-0.63152951</R20>
+					<R21>-0.351968467</R21>
+					<R22>0.690860868</R22>
 				</CoordinateFrame>
 				<Ref name="CameraSubject">null</Ref>
 				<token name="CameraType">0</token>
 				<float name="FieldOfView">70</float>
 				<token name="FieldOfViewMode">0</token>
 				<CoordinateFrame name="Focus">
-					<X>336.058685</X>
-					<Y>27.4268894</Y>
-					<Z>-337.15097</Z>
+					<X>24.400032</X>
+					<Y>266.320648</Y>
+					<Z>404.43042</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -305,9 +305,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 						<token name="BottomSurface">0</token>
 						<token name="BottomSurfaceInput">0</token>
 						<CoordinateFrame name="CFrame">
-							<X>-0.0900118202</X>
+							<X>-0.0899989977</X>
 							<Y>-2</Y>
-							<Z>-0.329978228</Z>
+							<Z>-0.329982996</Z>
 							<R00>1</R00>
 							<R01>0</R01>
 							<R02>0</R02>
@@ -1754,9 +1754,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 							<token name="BottomSurface">0</token>
 							<token name="BottomSurfaceInput">0</token>
 							<CoordinateFrame name="CFrame">
-								<X>278.190002</X>
-								<Y>1.77525198</Y>
-								<Z>277.799988</Z>
+								<X>280.590027</X>
+								<Y>1.77550602</Y>
+								<Z>287.190002</Z>
 								<R00>6.68882763e-08</R00>
 								<R01>-2.39516066e-05</R01>
 								<R02>-1</R02>
@@ -21499,24 +21499,36 @@ end
 
 function InputController.start()
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
-	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST)
-	local debugAddGoldRequest = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST)
+	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST) :: RemoteEvent
+	local debugAddGoldRequest = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST) :: RemoteEvent
+	local recallRequest = remotes:WaitForChild(SharedConstants.REMOTES.RECALL_REQUEST) :: RemoteEvent
+	local recallStateUpdate = remotes:WaitForChild(SharedConstants.REMOTES.RECALL_STATE_UPDATE) :: RemoteEvent
+
+	recallStateUpdate.OnClientEvent:Connect(function(state, duration, reason)
+		print("[MOBA][RECALL]", state, duration, reason)
+	end)
+
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if not gameProcessed and input.KeyCode == Enum.KeyCode.R then
+			recallRequest:FireServer()
+			return
+		end
+
 		if input.KeyCode == Enum.KeyCode.G then
-			(debugAddGoldRequest :: RemoteEvent):FireServer()
+			debugAddGoldRequest:FireServer()
 			return
 		end
 		if not gameProcessed then
 			setKey(input.KeyCode, true)
 		end
 		if input.KeyCode == Enum.KeyCode.B then
-			(shopBuyRequest :: RemoteEvent):FireServer("LongSword")
+			shopBuyRequest:FireServer("LongSword")
 			return
 		elseif input.KeyCode == Enum.KeyCode.N then
-			(shopBuyRequest :: RemoteEvent):FireServer("RubyCrystal")
+			shopBuyRequest:FireServer("RubyCrystal")
 			return
 		elseif input.KeyCode == Enum.KeyCode.M then
-			(shopBuyRequest :: RemoteEvent):FireServer("Boots")
+			shopBuyRequest:FireServer("Boots")
 			return
 		end
 	end)
@@ -22232,7 +22244,15 @@ SharedConstants.REMOTES = {
 	SHOP_SELL_REQUEST = "ShopSellRequest",
 	SHOP_CRAFT_REQUEST = "ShopCraftRequest",
 	DEBUG_ADD_GOLD_REQUEST = "DebugAddGoldRequest",
+	RECALL_REQUEST = "RecallRequest",
+	RECALL_STATE_UPDATE = "RecallStateUpdate",
 }
+
+SharedConstants.RECALL = {
+	DURATION = 6,
+	MAX_MOVE_DISTANCE = 4,
+}
+
 SharedConstants.DEBUG = {
 	GAME_SPEED = 3,
 
@@ -22465,6 +22485,7 @@ local MapValidatorService = require(script.services.MapValidatorService)
 local MatchStateService = require(script.services.MatchStateService)
 local MinionService = require(script.services.MinionService)
 local NexusService = require(script.services.NexusService)
+local RecallService = require(script.services.RecallService)
 local RemoteService = require(script.services.RemoteService)
 local TeamService = require(script.services.TeamService)
 local TowerService = require(script.services.TowerService)
@@ -22484,6 +22505,7 @@ end
 assert(units:IsA("Folder"), "[MOBA] Workspace.Units must be a Folder")
 
 RemoteService.start()
+RecallService.start()
 MapValidatorService.start()
 TeamService.start()
 ChampionService.start()
@@ -23581,6 +23603,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local ShopService = require(script.Parent.ShopService)
+local RecallService = require(script.Parent.RecallService)
 
 
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
@@ -23624,6 +23647,8 @@ function RemoteService.start()
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.COMBAT_FEEDBACK)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.VISION_UPDATE)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.MATCH_STATE_UPDATE)
+	local recallRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_REQUEST)
+	getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_STATE_UPDATE)
 
 	local shopBuyRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_BUY_REQUEST)
 	local shopSellRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_SELL_REQUEST)
@@ -23677,6 +23702,13 @@ function RemoteService.start()
 		end
 
 		CombatService.tryAutoAttack(champion, target, player)
+	end)
+
+	recallRequest.OnServerEvent:Connect(function(player)
+		local success, reason = RecallService.startRecall(player)
+		if not success then
+			warn("[MOBA] Recall failed:", player.Name, reason)
+		end
 	end)
 
 	shopBuyRequest.OnServerEvent:Connect(function(player, itemId)
@@ -26010,6 +26042,384 @@ return ShopService
 						<int64 name="SourceAssetId">-1</int64>
 						<BinaryString name="Tags"></BinaryString>
 						<UniqueId name="UniqueId">06564d612543f3d90a4dd67600009143</UniqueId>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBXdcea291790054f679d17165568d94691">
+					<Properties>
+						<Content name="LinkedSource"><null></null></Content>
+						<ProtectedString name="Source"><![CDATA[--!strict
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
+local ChampionService = require(script.Parent.ChampionService)
+local CombatService = require(script.Parent.CombatService)
+
+local RecallService = {}
+
+type ActiveRecall = {
+	Champion: Model,
+	StartPosition: Vector3,
+	StartedAt: number,
+	ShopZone: BasePart,
+}
+
+local activeRecalls: { [Player]: ActiveRecall } = {}
+local started = false
+
+local function fireRecallState(player: Player, state: string, duration: number, reason: string)
+	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+	if not remotes or not remotes:IsA("Folder") then
+		return
+	end
+
+	local remote = remotes:FindFirstChild(SharedConstants.REMOTES.RECALL_STATE_UPDATE)
+	if remote and remote:IsA("RemoteEvent") then
+		remote:FireClient(player, state, duration, reason)
+	end
+end
+
+function RecallService.cancelRecall(player: Player, reason: string)
+	if not activeRecalls[player] then
+		return
+	end
+
+	activeRecalls[player] = nil
+	fireRecallState(player, "Canceled", 0, reason)
+	print("[MOBA] " .. player.Name .. " recall canceled: " .. reason)
+end
+
+function RecallService.cancelRecallForChampion(champion: Model, reason: string)
+	for player, recall in activeRecalls do
+		if recall.Champion == champion then
+			RecallService.cancelRecall(player, reason)
+			return
+		end
+	end
+end
+
+function RecallService.startRecall(player: Player): (boolean, string)
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	if activeRecalls[player] then
+		return false, "Recall already active"
+	end
+
+	local root = champion:FindFirstChild("HumanoidRootPart")
+	if not root or not root:IsA("BasePart") then
+		return false, "HumanoidRootPart not found"
+	end
+
+	local map = Workspace:FindFirstChild("Map")
+	local shopZones = if map then map:FindFirstChild("ShopZones") else nil
+	local teamName = player:GetAttribute("Team")
+	if typeof(teamName) ~= "string" then
+		return false, "Team not found"
+	end
+
+	local shopZoneName = teamName .. "Shop"
+	local shopZone = if shopZones then shopZones:FindFirstChild(shopZoneName) else nil
+	if not shopZone or not shopZone:IsA("BasePart") then
+		return false, "Shop zone missing"
+	end
+
+	local recall: ActiveRecall = {
+		Champion = champion,
+		StartPosition = root.Position,
+		StartedAt = os.clock(),
+		ShopZone = shopZone,
+	}
+	activeRecalls[player] = recall
+
+	local duration = SharedConstants.RECALL.DURATION
+	local maxMoveDistance = SharedConstants.RECALL.MAX_MOVE_DISTANCE
+	fireRecallState(player, "Started", duration, "")
+	print("[MOBA] " .. player.Name .. " started recall")
+
+	task.spawn(function()
+		while os.clock() - recall.StartedAt < duration do
+			task.wait(0.1)
+
+			if activeRecalls[player] ~= recall then
+				return
+			end
+
+			if champion:GetAttribute("Dead") == true then
+				RecallService.cancelRecall(player, "Dead")
+				return
+			end
+
+			local currentRoot = champion:FindFirstChild("HumanoidRootPart")
+			if not currentRoot or not currentRoot:IsA("BasePart") then
+				RecallService.cancelRecall(player, "HumanoidRootPart missing")
+				return
+			end
+
+			local movedDistance = (currentRoot.Position - recall.StartPosition).Magnitude
+			if movedDistance > maxMoveDistance then
+				RecallService.cancelRecall(player, "Moved")
+				return
+			end
+		end
+
+		if activeRecalls[player] ~= recall then
+			return
+		end
+
+		local currentRoot = champion:FindFirstChild("HumanoidRootPart")
+		if not currentRoot or not currentRoot:IsA("BasePart") then
+			RecallService.cancelRecall(player, "HumanoidRootPart missing")
+			return
+		end
+
+		local finalShopZone = recall.ShopZone
+		if not finalShopZone.Parent then
+			RecallService.cancelRecall(player, "Shop zone missing")
+			return
+		end
+
+		activeRecalls[player] = nil
+		currentRoot.CFrame = finalShopZone.CFrame + Vector3.new(0, 5, 0)
+
+		fireRecallState(player, "Completed", 0, "")
+		print("[MOBA] " .. player.Name .. " completed recall")
+	end)
+
+	return true, "Started"
+end
+
+function RecallService.start()
+	if started then
+		return
+	end
+	started = true
+
+	CombatService.onDamage(function(_attacker: Instance, target: Instance, damage: number)
+		if damage <= 0 then
+			return
+		end
+
+		if target:IsA("Model") and target:GetAttribute("UnitType") == "Champion" then
+			RecallService.cancelRecallForChampion(target, "Damaged")
+		end
+	end)
+
+	Players.PlayerRemoving:Connect(function(player)
+		activeRecalls[player] = nil
+	end)
+
+	print("[MOBA] RecallService started")
+end
+
+return RecallService
+]]></ProtectedString>
+						<string name="ScriptGuid">{59fd107f-f158-46cb-9e11-45b83a163a2d}</string>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+						<string name="Name">RecallService</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<UniqueId name="UniqueId">06564d612543f3d90a4dd6760001ce18</UniqueId>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBX0b23f83986524dc2bc1fe0773a438329">
+					<Properties>
+						<Content name="LinkedSource"><null></null></Content>
+						<ProtectedString name="Source"><![CDATA[--!strict
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
+local ChampionService = require(script.Parent.ChampionService)
+local CombatService = require(script.Parent.CombatService)
+
+local RecallService = {}
+
+type ActiveRecall = {
+	Champion: Model,
+	StartPosition: Vector3,
+	StartedAt: number,
+	ShopZone: BasePart,
+}
+
+local activeRecalls: { [Player]: ActiveRecall } = {}
+local started = false
+
+local function fireRecallState(player: Player, state: string, duration: number, reason: string)
+	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+	if not remotes or not remotes:IsA("Folder") then
+		return
+	end
+
+	local remote = remotes:FindFirstChild(SharedConstants.REMOTES.RECALL_STATE_UPDATE)
+	if remote and remote:IsA("RemoteEvent") then
+		remote:FireClient(player, state, duration, reason)
+	end
+end
+
+function RecallService.cancelRecall(player: Player, reason: string)
+	if not activeRecalls[player] then
+		return
+	end
+
+	activeRecalls[player] = nil
+	fireRecallState(player, "Canceled", 0, reason)
+	print("[MOBA] " .. player.Name .. " recall canceled: " .. reason)
+end
+
+function RecallService.cancelRecallForChampion(champion: Model, reason: string)
+	for player, recall in activeRecalls do
+		if recall.Champion == champion then
+			RecallService.cancelRecall(player, reason)
+			return
+		end
+	end
+end
+
+function RecallService.startRecall(player: Player): (boolean, string)
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	if activeRecalls[player] then
+		return false, "Recall already active"
+	end
+
+	local root = champion:FindFirstChild("HumanoidRootPart")
+	if not root or not root:IsA("BasePart") then
+		return false, "HumanoidRootPart not found"
+	end
+
+	local map = Workspace:FindFirstChild("Map")
+	local shopZones = if map then map:FindFirstChild("ShopZones") else nil
+	local teamName = player:GetAttribute("Team")
+	if typeof(teamName) ~= "string" then
+		return false, "Team not found"
+	end
+
+	local shopZoneName = teamName .. "Shop"
+	local shopZone = if shopZones then shopZones:FindFirstChild(shopZoneName) else nil
+	if not shopZone or not shopZone:IsA("BasePart") then
+		return false, "Shop zone missing"
+	end
+
+	local recall: ActiveRecall = {
+		Champion = champion,
+		StartPosition = root.Position,
+		StartedAt = os.clock(),
+		ShopZone = shopZone,
+	}
+	activeRecalls[player] = recall
+
+	local duration = SharedConstants.RECALL.DURATION
+	local maxMoveDistance = SharedConstants.RECALL.MAX_MOVE_DISTANCE
+	fireRecallState(player, "Started", duration, "")
+	print("[MOBA] " .. player.Name .. " started recall")
+
+	task.spawn(function()
+		while os.clock() - recall.StartedAt < duration do
+			task.wait(0.1)
+
+			if activeRecalls[player] ~= recall then
+				return
+			end
+
+			if champion:GetAttribute("Dead") == true then
+				RecallService.cancelRecall(player, "Dead")
+				return
+			end
+
+			local currentRoot = champion:FindFirstChild("HumanoidRootPart")
+			if not currentRoot or not currentRoot:IsA("BasePart") then
+				RecallService.cancelRecall(player, "HumanoidRootPart missing")
+				return
+			end
+
+			local movedDistance = (currentRoot.Position - recall.StartPosition).Magnitude
+			if movedDistance > maxMoveDistance then
+				RecallService.cancelRecall(player, "Moved")
+				return
+			end
+		end
+
+		if activeRecalls[player] ~= recall then
+			return
+		end
+
+		local currentRoot = champion:FindFirstChild("HumanoidRootPart")
+		if not currentRoot or not currentRoot:IsA("BasePart") then
+			RecallService.cancelRecall(player, "HumanoidRootPart missing")
+			return
+		end
+
+		local finalShopZone = recall.ShopZone
+		if not finalShopZone.Parent then
+			RecallService.cancelRecall(player, "Shop zone missing")
+			return
+		end
+
+		activeRecalls[player] = nil
+		currentRoot.CFrame = finalShopZone.CFrame + Vector3.new(0, 5, 0)
+
+		fireRecallState(player, "Completed", 0, "")
+		print("[MOBA] " .. player.Name .. " completed recall")
+	end)
+
+	return true, "Started"
+end
+
+function RecallService.start()
+	if started then
+		return
+	end
+	started = true
+
+	CombatService.onDamage(function(_attacker: Instance, target: Instance, damage: number)
+		if damage <= 0 then
+			return
+		end
+
+		if target:IsA("Model") and target:GetAttribute("UnitType") == "Champion" then
+			RecallService.cancelRecallForChampion(target, "Damaged")
+		end
+	end)
+
+	Players.PlayerRemoving:Connect(function(player)
+		activeRecalls[player] = nil
+	end)
+
+	print("[MOBA] RecallService started")
+end
+
+return RecallService
+]]></ProtectedString>
+						<string name="ScriptGuid">{c2c1ec36-9526-4f52-b211-28e43481aca7}</string>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+						<string name="Name">RecallService</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<UniqueId name="UniqueId">06564d612543f3d90a4dd6760001ce1a</UniqueId>
 					</Properties>
 				</Item>
 			</Item>

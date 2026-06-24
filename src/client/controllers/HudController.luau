@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local ItemData = require(ReplicatedStorage.Modules.ItemData)
@@ -35,7 +36,7 @@ function HudController.start()
 	panel.Name = "StatusPanel"
 	panel.AnchorPoint = Vector2.new(0.5, 1)
 	panel.Position = UDim2.fromScale(0.5, 0.975)
-	panel.Size = UDim2.fromOffset(520, 270)
+	panel.Size = UDim2.fromOffset(520, 84)
 	panel.BackgroundColor3 = Color3.fromRGB(17, 24, 34)
 	panel.BackgroundTransparency = 0.12
 	panel.BorderSizePixel = 0
@@ -43,67 +44,85 @@ function HudController.start()
 
 	local currentCharacter: Model? = nil
 	local selectedInventorySlot: number? = nil
+	local shopSellRequest: RemoteEvent? = nil
 
-	local itemDetailsPanel = Instance.new("Frame")
-	itemDetailsPanel.Name = "ItemDetailsPanel"
-	itemDetailsPanel.Size = UDim2.fromOffset(260, 220)
-	itemDetailsPanel.Position = UDim2.fromOffset(20, 210)
-	itemDetailsPanel.BackgroundColor3 = Color3.fromRGB(16, 20, 30)
-	itemDetailsPanel.BackgroundTransparency = 0.05
-	itemDetailsPanel.BorderSizePixel = 0
-	itemDetailsPanel.Visible = false
-	itemDetailsPanel.Parent = gui
+	local shopPanel = Instance.new("Frame")
+	shopPanel.Name = "ShopPanel"
+	shopPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+	shopPanel.Position = UDim2.fromScale(0.5, 0.5)
+	shopPanel.Size = UDim2.fromOffset(760, 460)
+	shopPanel.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
+	shopPanel.BackgroundTransparency = 0.05
+	shopPanel.BorderSizePixel = 0
+	shopPanel.Visible = false
+	shopPanel.Parent = gui
 
-	local itemDetailsCorner = Instance.new("UICorner")
-	itemDetailsCorner.CornerRadius = UDim.new(0, 10)
-	itemDetailsCorner.Parent = itemDetailsPanel
+	local shopPanelCorner = Instance.new("UICorner")
+	shopPanelCorner.CornerRadius = UDim.new(0, 12)
+	shopPanelCorner.Parent = shopPanel
 
-	local itemDetailsText = Instance.new("TextLabel")
-	itemDetailsText.Name = "ItemDetailsText"
-	itemDetailsText.Position = UDim2.fromOffset(14, 12)
-	itemDetailsText.Size = UDim2.new(1, -28, 1, -58)
-	itemDetailsText.BackgroundTransparency = 1
-	itemDetailsText.Font = Enum.Font.GothamMedium
-	itemDetailsText.TextColor3 = Color3.fromRGB(240, 243, 250)
-	itemDetailsText.TextSize = 16
-	itemDetailsText.TextWrapped = true
-	itemDetailsText.TextXAlignment = Enum.TextXAlignment.Left
-	itemDetailsText.TextYAlignment = Enum.TextYAlignment.Top
-	itemDetailsText.Text = ""
-	itemDetailsText.Parent = itemDetailsPanel
+	local shopTitle = createLabel(shopPanel, "ShopTitle", UDim2.fromOffset(20, 14), UDim2.fromOffset(180, 30), "SHOP")
+	shopTitle.TextXAlignment = Enum.TextXAlignment.Left
+	local shopCloseHint = createLabel(
+		shopPanel,
+		"ShopCloseHint",
+		UDim2.fromOffset(540, 18),
+		UDim2.fromOffset(200, 22),
+		"Press P to close"
+	)
+	shopCloseHint.TextXAlignment = Enum.TextXAlignment.Right
 
-	local closeItemDetailsButton = Instance.new("TextButton")
-	closeItemDetailsButton.Name = "CloseItemDetailsButton"
-	closeItemDetailsButton.Position = UDim2.new(1, -88, 1, -38)
-	closeItemDetailsButton.Size = UDim2.fromOffset(74, 26)
-	closeItemDetailsButton.BackgroundColor3 = Color3.fromRGB(50, 66, 88)
-	closeItemDetailsButton.BorderSizePixel = 0
-	closeItemDetailsButton.Font = Enum.Font.GothamBold
-	closeItemDetailsButton.Text = "Close"
-	closeItemDetailsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	closeItemDetailsButton.TextScaled = true
-	closeItemDetailsButton.Parent = itemDetailsPanel
+	local buySectionLabel = createLabel(
+		shopPanel,
+		"BuySectionLabel",
+		UDim2.fromOffset(20, 50),
+		UDim2.fromOffset(120, 20),
+		"BUY"
+	)
+	buySectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+	local craftSectionLabel = createLabel(
+		shopPanel,
+		"CraftSectionLabel",
+		UDim2.fromOffset(20, 178),
+		UDim2.fromOffset(120, 20),
+		"CRAFT"
+	)
+	craftSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+	local inventorySectionLabel = createLabel(
+		shopPanel,
+		"InventorySectionLabel",
+		UDim2.fromOffset(20, 264),
+		UDim2.fromOffset(160, 20),
+		"INVENTORY"
+	)
+	inventorySectionLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-	local closeItemDetailsCorner = Instance.new("UICorner")
-	closeItemDetailsCorner.CornerRadius = UDim.new(0, 6)
-	closeItemDetailsCorner.Parent = closeItemDetailsButton
+	local shopItemDetails = Instance.new("Frame")
+	shopItemDetails.Name = "ShopItemDetails"
+	shopItemDetails.Position = UDim2.fromOffset(500, 60)
+	shopItemDetails.Size = UDim2.fromOffset(240, 380)
+	shopItemDetails.BackgroundColor3 = Color3.fromRGB(22, 28, 40)
+	shopItemDetails.BackgroundTransparency = 0.05
+	shopItemDetails.BorderSizePixel = 0
+	shopItemDetails.Parent = shopPanel
 
-	local sellItemButton = Instance.new("TextButton")
-	sellItemButton.Name = "SellItemButton"
-	sellItemButton.Position = UDim2.new(0, 14, 1, -38)
-	sellItemButton.Size = UDim2.fromOffset(74, 26)
-	sellItemButton.BackgroundColor3 = Color3.fromRGB(105, 38, 45)
-	sellItemButton.BorderSizePixel = 0
-	sellItemButton.Font = Enum.Font.GothamBold
-	sellItemButton.Text = "SELL"
-	sellItemButton.TextColor3 = Color3.fromRGB(255, 220, 220)
-	sellItemButton.TextScaled = true
-	sellItemButton.Visible = false
-	sellItemButton.Parent = itemDetailsPanel
+	local shopItemDetailsCorner = Instance.new("UICorner")
+	shopItemDetailsCorner.CornerRadius = UDim.new(0, 10)
+	shopItemDetailsCorner.Parent = shopItemDetails
 
-	local sellItemCorner = Instance.new("UICorner")
-	sellItemCorner.CornerRadius = UDim.new(0, 6)
-	sellItemCorner.Parent = sellItemButton
+	local shopItemDetailsText = Instance.new("TextLabel")
+	shopItemDetailsText.Name = "ShopItemDetailsText"
+	shopItemDetailsText.Position = UDim2.fromOffset(14, 12)
+	shopItemDetailsText.Size = UDim2.new(1, -28, 1, -24)
+	shopItemDetailsText.BackgroundTransparency = 1
+	shopItemDetailsText.Font = Enum.Font.GothamMedium
+	shopItemDetailsText.TextColor3 = Color3.fromRGB(240, 243, 250)
+	shopItemDetailsText.TextSize = 16
+	shopItemDetailsText.TextWrapped = true
+	shopItemDetailsText.TextXAlignment = Enum.TextXAlignment.Left
+	shopItemDetailsText.TextYAlignment = Enum.TextYAlignment.Top
+	shopItemDetailsText.Text = "Empty Slot\n\nLeft click: details\nRight click: sell"
+	shopItemDetailsText.Parent = shopItemDetails
 
 	local function getStatLine(statName: string, value: any): string
 		local displayName = statName
@@ -128,26 +147,24 @@ function HudController.start()
 
 	local function showItemDetails(itemId: any)
 		if typeof(itemId) ~= "string" or itemId == "" then
-			itemDetailsText.Text = "Empty Slot\nNo item equipped."
-			sellItemButton.Visible = false
-			itemDetailsPanel.Visible = true
+			shopItemDetailsText.Text = "Empty Slot\n\nLeft click: details\nRight click: sell"
 			return
 		end
 
 		local item = ItemData.Items[itemId]
 		if typeof(item) ~= "table" then
-			itemDetailsText.Text = "Unknown Item\n" .. itemId
-			sellItemButton.Visible = false
-			itemDetailsPanel.Visible = true
+			shopItemDetailsText.Text = "Unknown Item\n" .. itemId
 			return
 		end
 
 		local displayName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
 		local cost = if typeof(item.Cost) == "number" then item.Cost else 0
+		local sellRefund = math.floor(cost * 0.7)
 		local lines: { string } = {}
 
 		table.insert(lines, displayName)
 		table.insert(lines, "Cost: " .. tostring(cost) .. "g")
+		table.insert(lines, "Sell: " .. tostring(sellRefund) .. "g")
 		table.insert(lines, "")
 		table.insert(lines, "Stats:")
 
@@ -184,14 +201,20 @@ function HudController.start()
 			end
 		end
 
-		itemDetailsText.Text = table.concat(lines, "\n")
-		sellItemButton.Visible = true
-		itemDetailsPanel.Visible = true
+		table.insert(lines, "")
+		table.insert(lines, "Left click: details")
+		table.insert(lines, "Right click slot to sell")
+		shopItemDetailsText.Text = table.concat(lines, "\n")
 	end
 
-	closeItemDetailsButton.MouseButton1Click:Connect(function()
-		itemDetailsPanel.Visible = false
-		selectedInventorySlot = nil
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed or UserInputService:GetFocusedTextBox() ~= nil then
+			return
+		end
+
+		if input.KeyCode == Enum.KeyCode.P then
+			shopPanel.Visible = not shopPanel.Visible
+		end
 	end)
 
 	local endMatchOverlay = Instance.new("Frame")
@@ -274,6 +297,9 @@ function HudController.start()
 	statsToggleCorner.CornerRadius = UDim.new(0, 6)
 	statsToggleCorner.Parent = statsToggleButton
 
+	local shopHintLabel = createLabel(panel, "ShopHint", UDim2.fromOffset(448, 8), UDim2.fromOffset(54, 24), "P: SHOP")
+	shopHintLabel.TextXAlignment = Enum.TextXAlignment.Right
+
 	local statsPanel = Instance.new("Frame")
 	statsPanel.Name = "StatsPanel"
 	statsPanel.AnchorPoint = Vector2.new(1, 1)
@@ -321,7 +347,7 @@ function HudController.start()
 		button.TextColor3 = Color3.fromRGB(255, 255, 255)
 		button.TextStrokeTransparency = 0.65
 		button.Text = text
-		button.Parent = panel
+		button.Parent = shopPanel
 
 		local buttonCorner = Instance.new("UICorner")
 		buttonCorner.CornerRadius = UDim.new(0, 8)
@@ -331,12 +357,12 @@ function HudController.start()
 		return button
 	end
 
-	createShopButton("LongSword", "Sword\n350g", UDim2.fromOffset(18, 88))
-	createShopButton("RubyCrystal", "Ruby\n400g", UDim2.fromOffset(166, 88))
-	createShopButton("Boots", "Boots\n300g", UDim2.fromOffset(314, 88))
-	createShopButton("BFSword", "B.F. Sword\n1300g", UDim2.fromOffset(18, 132))
-	createShopButton("GiantBelt", "Giant Belt\n1100g", UDim2.fromOffset(166, 132))
-	createShopButton("SwiftBoots", "Swift Boots\n900g", UDim2.fromOffset(314, 132))
+	createShopButton("LongSword", "Sword\n350g", UDim2.fromOffset(20, 76))
+	createShopButton("RubyCrystal", "Ruby\n400g", UDim2.fromOffset(168, 76))
+	createShopButton("Boots", "Boots\n300g", UDim2.fromOffset(316, 76))
+	createShopButton("BFSword", "B.F. Sword\n1300g", UDim2.fromOffset(20, 122))
+	createShopButton("GiantBelt", "Giant Belt\n1100g", UDim2.fromOffset(168, 122))
+	createShopButton("SwiftBoots", "Swift Boots\n900g", UDim2.fromOffset(316, 122))
 
 	local craftButtons: { [string]: TextButton } = {}
 
@@ -356,7 +382,7 @@ function HudController.start()
 		button.AutoButtonColor = false
 		button.Active = false
 		button.Text = text
-		button.Parent = panel
+		button.Parent = shopPanel
 
 		local buttonCorner = Instance.new("UICorner")
 		buttonCorner.CornerRadius = UDim.new(0, 8)
@@ -366,9 +392,9 @@ function HudController.start()
 		return button
 	end
 
-	createCraftButton("BFSword", "Craft BF\n300g", UDim2.fromOffset(18, 176))
-	createCraftButton("GiantBelt", "Craft Belt\n300g", UDim2.fromOffset(166, 176))
-	createCraftButton("SwiftBoots", "Craft Swift\n500g", UDim2.fromOffset(314, 176))
+	createCraftButton("BFSword", "Craft BF\n300g", UDim2.fromOffset(20, 204))
+	createCraftButton("GiantBelt", "Craft Belt\n300g", UDim2.fromOffset(168, 204))
+	createCraftButton("SwiftBoots", "Craft Swift\n500g", UDim2.fromOffset(316, 204))
 
 	local function countInventoryItem(character: Model, itemId: string): number
 		local count = 0
@@ -492,7 +518,7 @@ function HudController.start()
 		label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		label.TextStrokeTransparency = 0.7
 		label.Text = tostring(slotIndex) .. ": Empty"
-		label.Parent = panel
+		label.Parent = shopPanel
 
 		local slotCorner = Instance.new("UICorner")
 		slotCorner.CornerRadius = UDim.new(0, 6)
@@ -510,15 +536,29 @@ function HudController.start()
 			local itemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
 			showItemDetails(itemId)
 		end)
+		label.MouseButton2Click:Connect(function()
+			local character = currentCharacter
+			local remote = shopSellRequest
+			if not character or not remote then
+				return
+			end
+
+			local itemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+			if typeof(itemId) ~= "string" or itemId == "" then
+				return
+			end
+
+			remote:FireServer(slotIndex)
+		end)
 		return label
 	end
 
-	createInventorySlot(1, UDim2.fromOffset(18, 222))
-	createInventorySlot(2, UDim2.fromOffset(92, 222))
-	createInventorySlot(3, UDim2.fromOffset(166, 222))
-	createInventorySlot(4, UDim2.fromOffset(240, 222))
-	createInventorySlot(5, UDim2.fromOffset(314, 222))
-	createInventorySlot(6, UDim2.fromOffset(388, 222))
+	createInventorySlot(1, UDim2.fromOffset(20, 292))
+	createInventorySlot(2, UDim2.fromOffset(94, 292))
+	createInventorySlot(3, UDim2.fromOffset(168, 292))
+	createInventorySlot(4, UDim2.fromOffset(242, 292))
+	createInventorySlot(5, UDim2.fromOffset(316, 292))
+	createInventorySlot(6, UDim2.fromOffset(390, 292))
 
 	local function updateTeam()
 		local teamName = player:GetAttribute("Team")
@@ -606,6 +646,12 @@ function HudController.start()
 					end
 				end
 			end
+
+			local selectedSlot = selectedInventorySlot
+			if selectedSlot then
+				local selectedItemId = character:GetAttribute("InventorySlot" .. tostring(selectedSlot))
+				showItemDetails(selectedItemId)
+			end
 		end
 
 		local function updateInventoryAndCraft()
@@ -689,22 +735,12 @@ function HudController.start()
 		end)
 	end
 
-	local shopSellRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_SELL_REQUEST, 10)
-	if not shopSellRequest or not shopSellRequest:IsA("RemoteEvent") then
+	local shopSellRemote = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_SELL_REQUEST, 10)
+	if not shopSellRemote or not shopSellRemote:IsA("RemoteEvent") then
 		warn("[MOBA] RemoteEvent ShopSellRequest indisponible.")
 		return
 	end
-
-	sellItemButton.MouseButton1Click:Connect(function()
-		local slotIndex = selectedInventorySlot
-		if not slotIndex then
-			return
-		end
-
-		shopSellRequest:FireServer(slotIndex)
-		selectedInventorySlot = nil
-		itemDetailsPanel.Visible = false
-	end)
+	shopSellRequest = shopSellRemote
 
 	local shopCraftRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_CRAFT_REQUEST, 10)
 	if not shopCraftRequest or not shopCraftRequest:IsA("RemoteEvent") then
