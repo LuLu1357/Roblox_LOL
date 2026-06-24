@@ -54,7 +54,15 @@ SharedConstants.REMOTES = {
 	SHOP_SELL_REQUEST = "ShopSellRequest",
 	SHOP_CRAFT_REQUEST = "ShopCraftRequest",
 	DEBUG_ADD_GOLD_REQUEST = "DebugAddGoldRequest",
+	RECALL_REQUEST = "RecallRequest",
+	RECALL_STATE_UPDATE = "RecallStateUpdate",
 }
+
+SharedConstants.RECALL = {
+	DURATION = 6,
+	MAX_MOVE_DISTANCE = 4,
+}
+
 SharedConstants.DEBUG = {
 	GAME_SPEED = 3,
 

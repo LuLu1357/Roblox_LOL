@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local ShopService = require(script.Parent.ShopService)
+local RecallService = require(script.Parent.RecallService)
 
 
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
@@ -47,6 +48,8 @@ function RemoteService.start()
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.COMBAT_FEEDBACK)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.VISION_UPDATE)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.MATCH_STATE_UPDATE)
+	local recallRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_REQUEST)
+	getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_STATE_UPDATE)
 
 	local shopBuyRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_BUY_REQUEST)
 	local shopSellRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_SELL_REQUEST)
@@ -100,6 +103,13 @@ function RemoteService.start()
 		end
 
 		CombatService.tryAutoAttack(champion, target, player)
+	end)
+
+	recallRequest.OnServerEvent:Connect(function(player)
+		local success, reason = RecallService.startRecall(player)
+		if not success then
+			warn("[MOBA] Recall failed:", player.Name, reason)
+		end
 	end)
 
 	shopBuyRequest.OnServerEvent:Connect(function(player, itemId)

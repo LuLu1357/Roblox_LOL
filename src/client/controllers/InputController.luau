@@ -61,24 +61,36 @@ end
 
 function InputController.start()
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
-	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST)
-	local debugAddGoldRequest = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST)
+	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST) :: RemoteEvent
+	local debugAddGoldRequest = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST) :: RemoteEvent
+	local recallRequest = remotes:WaitForChild(SharedConstants.REMOTES.RECALL_REQUEST) :: RemoteEvent
+	local recallStateUpdate = remotes:WaitForChild(SharedConstants.REMOTES.RECALL_STATE_UPDATE) :: RemoteEvent
+
+	recallStateUpdate.OnClientEvent:Connect(function(state, duration, reason)
+		print("[MOBA][RECALL]", state, duration, reason)
+	end)
+
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if not gameProcessed and input.KeyCode == Enum.KeyCode.R then
+			recallRequest:FireServer()
+			return
+		end
+
 		if input.KeyCode == Enum.KeyCode.G then
-			(debugAddGoldRequest :: RemoteEvent):FireServer()
+			debugAddGoldRequest:FireServer()
 			return
 		end
 		if not gameProcessed then
 			setKey(input.KeyCode, true)
 		end
 		if input.KeyCode == Enum.KeyCode.B then
-			(shopBuyRequest :: RemoteEvent):FireServer("LongSword")
+			shopBuyRequest:FireServer("LongSword")
 			return
 		elseif input.KeyCode == Enum.KeyCode.N then
-			(shopBuyRequest :: RemoteEvent):FireServer("RubyCrystal")
+			shopBuyRequest:FireServer("RubyCrystal")
 			return
 		elseif input.KeyCode == Enum.KeyCode.M then
-			(shopBuyRequest :: RemoteEvent):FireServer("Boots")
+			shopBuyRequest:FireServer("Boots")
 			return
 		end
 	end)
