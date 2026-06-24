@@ -95,6 +95,15 @@ function HudController.start()
 	stateLabel.TextXAlignment = Enum.TextXAlignment.Right
 	local healthLabel = createLabel(healthBack, "Health", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), "650 / 650")
 
+	local levelLabel = createLabel(panel, "Level", UDim2.fromOffset(18, 60), UDim2.fromOffset(90, 18), "LVL 1")
+	levelLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	local goldLabel = createLabel(panel, "Gold", UDim2.fromOffset(118, 60), UDim2.fromOffset(100, 18), "Gold: 0")
+	goldLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	local xpLabel = createLabel(panel, "XP", UDim2.fromOffset(228, 60), UDim2.fromOffset(134, 18), "XP: 0")
+	xpLabel.TextXAlignment = Enum.TextXAlignment.Right
+
 	local function updateTeam()
 		local teamName = player:GetAttribute("Team")
 		teamLabel.Text = "ÉQUIPE " .. tostring(teamName or "?")
@@ -112,9 +121,22 @@ function HudController.start()
 				healthLabel.Text = string.format("%d / %d", math.floor(health), math.floor(maxHealth))
 			end
 		end
+		local function updateProgression()
+			local level = character:GetAttribute("Level")
+			local gold = character:GetAttribute("Gold")
+			local xp = character:GetAttribute("XP")
+
+			levelLabel.Text = "LVL " .. tostring(level or 1)
+			goldLabel.Text = "Gold: " .. tostring(gold or 0)
+			xpLabel.Text = "XP: " .. tostring(xp or 0)
+		end
 		character:GetAttributeChangedSignal("Health"):Connect(updateHealth)
 		character:GetAttributeChangedSignal("MaxHealth"):Connect(updateHealth)
+		character:GetAttributeChangedSignal("Level"):Connect(updateProgression)
+		character:GetAttributeChangedSignal("Gold"):Connect(updateProgression)
+		character:GetAttributeChangedSignal("XP"):Connect(updateProgression)
 		updateHealth()
+		updateProgression()
 	end
 
 	player:GetAttributeChangedSignal("Team"):Connect(updateTeam)

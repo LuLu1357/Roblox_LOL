@@ -1,5 +1,5 @@
 --!strict
-
+local EconomyProgressionService = require(script.Parent.EconomyProgressionService)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -145,7 +145,9 @@ function CombatService.applyDamage(attacker: Instance, target: Instance, amount:
 	end
 end
 
-function CombatService.handleDeath(_killer: Instance, victim: Instance)
+function CombatService.handleDeath(killer: Instance, victim: Instance)
+	EconomyProgressionService.awardKillRewards(killer, victim)
+
 	victim:SetAttribute("Dead", true)
 	local root = Utility.getRoot(victim)
 	if root then

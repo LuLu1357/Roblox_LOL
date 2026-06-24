@@ -52,9 +52,9 @@ SharedConstants.REMOTES = {
 	MATCH_STATE_UPDATE = "MatchStateUpdate",
 }
 SharedConstants.DEBUG = {
-	GAME_SPEED = 5,
+	GAME_SPEED = 3,
 
 	SPAWN_BLUE_MINIONS = true,
-	SPAWN_RED_MINIONS = false,
+	SPAWN_RED_MINIONS = true,
 }
 return SharedConstants

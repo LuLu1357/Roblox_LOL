@@ -12,6 +12,7 @@ local RemoteService = require(script.services.RemoteService)
 local TeamService = require(script.services.TeamService)
 local TowerService = require(script.services.TowerService)
 local VisionService = require(script.services.VisionService)
+local EconomyProgressionService = require(script.services.EconomyProgressionService)
 
 local map = Workspace:WaitForChild("Map", 10)
 assert(map and map:IsA("Folder"), "[MOBA] Workspace.Map is missing. Open GameTest-editable.rbxlx in Studio.")
@@ -33,6 +34,8 @@ JungleService.start()
 NexusService.start()
 VisionService.start()
 MatchStateService.start()
+EconomyProgressionService.start()
 MinionService.start()
+
 
 print("[MOBA] Server started — 3 lanes, jungle, ZQSD client ready")
