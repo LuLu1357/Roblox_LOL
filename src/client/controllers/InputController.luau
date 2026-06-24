@@ -1,5 +1,8 @@
 --!strict
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -56,9 +59,21 @@ local function getMoveVector(): Vector3
 end
 
 function InputController.start()
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST)
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if not gameProcessed then
 			setKey(input.KeyCode, true)
+		end
+		if input.KeyCode == Enum.KeyCode.B then
+			(shopBuyRequest :: RemoteEvent):FireServer("LongSword")
+			return
+		elseif input.KeyCode == Enum.KeyCode.N then
+			(shopBuyRequest :: RemoteEvent):FireServer("RubyCrystal")
+			return
+		elseif input.KeyCode == Enum.KeyCode.M then
+			(shopBuyRequest :: RemoteEvent):FireServer("Boots")
+			return
 		end
 	end)
 

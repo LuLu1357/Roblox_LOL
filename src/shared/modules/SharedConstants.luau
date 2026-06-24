@@ -50,6 +50,7 @@ SharedConstants.REMOTES = {
 	COMBAT_FEEDBACK = "CombatFeedback",
 	VISION_UPDATE = "VisionUpdate",
 	MATCH_STATE_UPDATE = "MatchStateUpdate",
+	SHOP_BUY_REQUEST = "ShopBuyRequest",
 }
 SharedConstants.DEBUG = {
 	GAME_SPEED = 3,

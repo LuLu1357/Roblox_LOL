@@ -3,6 +3,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local ShopService = require(script.Parent.ShopService)
+
+
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local ChampionService = require(script.Parent.ChampionService)
 local CombatService = require(script.Parent.CombatService)
@@ -44,19 +47,35 @@ function RemoteService.start()
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.VISION_UPDATE)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.MATCH_STATE_UPDATE)
 
+	local shopBuyRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_BUY_REQUEST)
+
 	attackRequest.OnServerEvent:Connect(function(player, target)
 		if typeof(target) ~= "Instance" then
 			return
 		end
+
 		local units = Workspace:FindFirstChild("Units")
 		if not units or not units:IsA("Folder") or not target:IsDescendantOf(units) then
 			return
 		end
+
 		local champion = ChampionService.getChampionFromPlayer(player)
 		if not champion then
 			return
 		end
+
 		CombatService.tryAutoAttack(champion, target, player)
+	end)
+
+	shopBuyRequest.OnServerEvent:Connect(function(player, itemId)
+		if typeof(itemId) ~= "string" then
+			return
+		end
+
+		local success, reason = ShopService.buyItem(player, itemId)
+		if not success then
+			warn("[MOBA] Shop buy failed:", player.Name, itemId, reason)
+		end
 	end)
 end
 

@@ -13,6 +13,7 @@ local TeamService = require(script.services.TeamService)
 local TowerService = require(script.services.TowerService)
 local VisionService = require(script.services.VisionService)
 local EconomyProgressionService = require(script.services.EconomyProgressionService)
+local ShopService = require(script.services.ShopService)
 
 local map = Workspace:WaitForChild("Map", 10)
 assert(map and map:IsA("Folder"), "[MOBA] Workspace.Map is missing. Open GameTest-editable.rbxlx in Studio.")
@@ -35,6 +36,7 @@ NexusService.start()
 VisionService.start()
 MatchStateService.start()
 EconomyProgressionService.start()
+ShopService.start()
 MinionService.start()
 
 
