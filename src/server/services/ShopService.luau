@@ -38,6 +38,45 @@ local function hasItem(champion: Model, searchedItemId: string): boolean
 	return false
 end
 
+local function hasUniqueGroupItem(champion: Model, uniqueGroup: string): boolean
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local slotItemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if typeof(slotItemId) == "string" and slotItemId ~= "" then
+			local slotItem = ItemData.Items[slotItemId]
+			if typeof(slotItem) == "table" and slotItem.UniqueGroup == uniqueGroup then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+local function hasUniqueGroupItemExceptSlots(
+	champion: Model,
+	uniqueGroup: string,
+	ignoredSlots: { number }
+): boolean
+	local ignored: { [number]: boolean } = {}
+	for _, slotIndex in ignoredSlots do
+		ignored[slotIndex] = true
+	end
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		if not ignored[slotIndex] then
+			local slotItemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+			if typeof(slotItemId) == "string" and slotItemId ~= "" then
+				local slotItem = ItemData.Items[slotItemId]
+				if typeof(slotItem) == "table" and slotItem.UniqueGroup == uniqueGroup then
+					return true
+				end
+			end
+		end
+	end
+
+	return false
+end
+
 local function findFirstEmptySlot(champion: Model): number?
 	for slotIndex = 1, MAX_INVENTORY_SLOTS do
 		local attributeName = "InventorySlot" .. tostring(slotIndex)
@@ -199,6 +238,11 @@ function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
 
 	if champion:GetAttribute("Dead") == true then
 		return false, "Champion is dead"
+	end
+
+	local uniqueGroup = item.UniqueGroup
+	if typeof(uniqueGroup) == "string" and hasUniqueGroupItem(champion, uniqueGroup) then
+		return false, "Unique group item already owned"
 	end
 
 	if item.Unique == true and hasItem(champion, itemId) then
@@ -368,6 +412,14 @@ function ShopService.craftItem(player: Player, targetItemId: string): (boolean, 
 	local componentSlots = findItemSlots(champion, requiredComponents)
 	if not componentSlots then
 		return false, "Missing components"
+	end
+
+	local uniqueGroup = targetItem.UniqueGroup
+	if
+		typeof(uniqueGroup) == "string"
+		and hasUniqueGroupItemExceptSlots(champion, uniqueGroup, componentSlots)
+	then
+		return false, "Unique group item already owned"
 	end
 
 	local firstConsumedSlot = componentSlots[1]

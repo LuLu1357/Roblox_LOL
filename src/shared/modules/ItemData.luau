@@ -26,6 +26,7 @@ ItemData.Items = {
 		DisplayName = "Boots",
 		Cost = 300,
 		Unique = true,
+		UniqueGroup = "Boots",
 		Stats = {
 			MoveSpeed = 8,
 		},
@@ -62,6 +63,7 @@ ItemData.Items = {
 		DisplayName = "Swift Boots",
 		Cost = 900,
 		Unique = true,
+		UniqueGroup = "Boots",
 		Stats = {
 			MoveSpeed = 18,
 		},

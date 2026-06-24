@@ -94,27 +94,27 @@
 		<Item class="Camera" referent="RBXf50fc75f83fe4f0eb124bbeddeca51c2">
 			<Properties>
 				<CoordinateFrame name="CFrame">
-					<X>444.404938</X>
-					<Y>114.294243</Y>
-					<Z>-129.549133</Z>
-					<R00>-0.346619606</R00>
-					<R01>-0.494285613</R01>
-					<R02>0.797205508</R02>
-					<R10>1.49011612e-08</R10>
-					<R11>0.849894047</R11>
-					<R12>0.526953697</R12>
-					<R20>-0.938005805</R20>
-					<R21>0.182652503</R21>
-					<R22>-0.294589907</R22>
+					<X>330.163513</X>
+					<Y>30.2900028</Y>
+					<Z>-356.968384</Z>
+					<R00>0.0765033662</R00>
+					<R01>0.866096735</R01>
+					<R02>-0.493987799</R02>
+					<R10>-0</R10>
+					<R11>0.495439798</R11>
+					<R12>0.86864239</R12>
+					<R20>0.997069359</R20>
+					<R21>-0.0664540678</R21>
+					<R22>0.0379028134</R22>
 				</CoordinateFrame>
 				<Ref name="CameraSubject">null</Ref>
 				<token name="CameraType">0</token>
 				<float name="FieldOfView">70</float>
 				<token name="FieldOfViewMode">0</token>
 				<CoordinateFrame name="Focus">
-					<X>442.810547</X>
-					<Y>113.240349</Y>
-					<Z>-128.959961</Z>
+					<X>331.151489</X>
+					<Y>28.5527172</Y>
+					<Z>-357.044189</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -1552,9 +1552,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 							<token name="BottomSurface">0</token>
 							<token name="BottomSurfaceInput">0</token>
 							<CoordinateFrame name="CFrame">
-								<X>69.2277527</X>
-								<Y>0.824999988</Y>
-								<Z>350</Z>
+								<X>76.8939362</X>
+								<Y>0.275000036</Y>
+								<Z>357.670013</Z>
 								<R00>0</R00>
 								<R01>0</R01>
 								<R02>-1</R02>
@@ -1890,9 +1890,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>293.40802</X>
-									<Y>4.55003548</Y>
-									<Z>-321.849274</Z>
+									<X>302</X>
+									<Y>3.55000019</Y>
+									<Z>-300</Z>
 									<R00>-1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -1991,9 +1991,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>194.186676</X>
-									<Y>5.10003471</Y>
-									<Z>-342.019989</Z>
+									<X>214.429993</X>
+									<Y>1.94999933</Y>
+									<Z>-349.019989</Z>
 									<R00>-1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -3619,9 +3619,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>250</X>
-									<Y>0.5</Y>
-									<Z>-250</Z>
+									<X>299</X>
+									<Y>1.54999995</Y>
+									<Z>-300</Z>
 									<R00>1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -3732,9 +3732,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>341.994751</X>
-									<Y>2.55003667</Y>
-									<Z>-257.901184</Z>
+									<X>301</X>
+									<Y>1.54999995</Y>
+									<Z>-300</Z>
 									<R00>1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -3833,9 +3833,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>349.903748</X>
-									<Y>2.55003476</Y>
-									<Z>-127.615189</Z>
+									<X>348.903748</X>
+									<Y>1.54999995</Y>
+									<Z>-203.256042</Z>
 									<R00>1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -4540,9 +4540,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>-289.298645</X>
-									<Y>2.55003524</Y>
-									<Z>328.829285</Z>
+									<X>-305.059418</X>
+									<Y>1.54999971</Y>
+									<Z>307.194153</Z>
 									<R00>1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -4665,9 +4665,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>-345.794373</X>
-									<Y>2.55003476</Y>
-									<Z>134.595215</Z>
+									<X>-353.833374</X>
+									<Y>2.0999999</Y>
+									<Z>224.587219</Z>
 									<R00>-1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -5473,9 +5473,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>-337.885376</X>
-									<Y>2.55003667</Y>
-									<Z>264.881195</Z>
+									<X>-302.892639</X>
+									<Y>1.54999995</Y>
+									<Z>303.599243</Z>
 									<R00>-1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -6394,9 +6394,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>-250</X>
-									<Y>0.5</Y>
-									<Z>250</Z>
+									<X>-302.491791</X>
+									<Y>1.54999995</Y>
+									<Z>306.684235</Z>
 									<R00>1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -7113,9 +7113,9 @@ AABWZXJzaW9uBgAAAAAAAABA]]></BinaryString>
 								<token name="BottomSurface">0</token>
 								<token name="BottomSurfaceInput">0</token>
 								<CoordinateFrame name="CFrame">
-									<X>-190.077301</X>
-									<Y>1.10000002</Y>
-									<Z>349</Z>
+									<X>-217.369995</X>
+									<Y>5.38535452</Y>
+									<Z>342.109985</Z>
 									<R00>1</R00>
 									<R01>0</R01>
 									<R02>0</R02>
@@ -19725,6 +19725,220 @@ Yml0b3I=]]></BinaryString>
 					</Item>
 				</Item>
 			</Item>
+			<Item class="Folder" referent="RBX614bc1505f9d4d5aa08cf9d1e0c9bb01">
+				<Properties>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+					<bool name="DefinesCapabilities">false</bool>
+					<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+					<string name="Name">ShopZones</string>
+					<int64 name="SourceAssetId">-1</int64>
+					<BinaryString name="Tags"></BinaryString>
+					<UniqueId name="UniqueId">06564d612543f3d90a4dd676000186d3</UniqueId>
+				</Properties>
+				<Item class="Part" referent="RBX309dfd2066d341a2bdac8102e74cf312">
+					<Properties>
+						<token name="shape">1</token>
+						<token name="formFactorRaw">1</token>
+						<bool name="Anchored">true</bool>
+						<bool name="AudioCanCollide">true</bool>
+						<float name="BackParamA">-0.5</float>
+						<float name="BackParamB">0.5</float>
+						<token name="BackSurface">0</token>
+						<token name="BackSurfaceInput">0</token>
+						<float name="BottomParamA">-0.5</float>
+						<float name="BottomParamB">0.5</float>
+						<token name="BottomSurface">0</token>
+						<token name="BottomSurfaceInput">0</token>
+						<CoordinateFrame name="CFrame">
+							<X>-355.595001</X>
+							<Y>0.5</Y>
+							<Z>361.349976</Z>
+							<R00>1</R00>
+							<R01>0</R01>
+							<R02>0</R02>
+							<R10>0</R10>
+							<R11>1</R11>
+							<R12>0</R12>
+							<R20>0</R20>
+							<R21>0</R21>
+							<R22>1</R22>
+						</CoordinateFrame>
+						<bool name="CanCollide">false</bool>
+						<bool name="CanQuery">true</bool>
+						<bool name="CanTouch">true</bool>
+						<bool name="CastShadow">true</bool>
+						<string name="CollisionGroup">Default</string>
+						<int name="CollisionGroupId">0</int>
+						<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
+						<PhysicalProperties name="CustomPhysicalProperties">
+							<CustomPhysics>false</CustomPhysics>
+						</PhysicalProperties>
+						<bool name="EnableFluidForces">true</bool>
+						<float name="FrontParamA">-0.5</float>
+						<float name="FrontParamB">0.5</float>
+						<token name="FrontSurface">0</token>
+						<token name="FrontSurfaceInput">0</token>
+						<float name="LeftParamA">-0.5</float>
+						<float name="LeftParamB">0.5</float>
+						<token name="LeftSurface">0</token>
+						<token name="LeftSurfaceInput">0</token>
+						<bool name="Locked">false</bool>
+						<bool name="Massless">false</bool>
+						<token name="Material">256</token>
+						<string name="MaterialVariantSerialized"></string>
+						<CoordinateFrame name="PivotOffset">
+							<X>0</X>
+							<Y>0</Y>
+							<Z>0</Z>
+							<R00>1</R00>
+							<R01>0</R01>
+							<R02>0</R02>
+							<R10>0</R10>
+							<R11>1</R11>
+							<R12>0</R12>
+							<R20>0</R20>
+							<R21>0</R21>
+							<R22>1</R22>
+						</CoordinateFrame>
+						<float name="Reflectance">0</float>
+						<float name="RightParamA">-0.5</float>
+						<float name="RightParamB">0.5</float>
+						<token name="RightSurface">0</token>
+						<token name="RightSurfaceInput">0</token>
+						<int name="RootPriority">0</int>
+						<Vector3 name="RotVelocity">
+							<X>0</X>
+							<Y>0</Y>
+							<Z>0</Z>
+						</Vector3>
+						<float name="TopParamA">-0.5</float>
+						<float name="TopParamB">0.5</float>
+						<token name="TopSurface">0</token>
+						<token name="TopSurfaceInput">0</token>
+						<float name="Transparency">0.699999988</float>
+						<Vector3 name="Velocity">
+							<X>0</X>
+							<Y>0</Y>
+							<Z>0</Z>
+						</Vector3>
+						<Vector3 name="size">
+							<X>31.0100002</X>
+							<Y>1</Y>
+							<Z>21.6199989</Z>
+						</Vector3>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+						<string name="Name">BlueShop</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<UniqueId name="UniqueId">06564d612543f3d90a4dd676000186d4</UniqueId>
+					</Properties>
+				</Item>
+				<Item class="Part" referent="RBX96e1ef3bf0474c438997917acea3a32b">
+					<Properties>
+						<token name="shape">1</token>
+						<token name="formFactorRaw">1</token>
+						<bool name="Anchored">true</bool>
+						<bool name="AudioCanCollide">true</bool>
+						<float name="BackParamA">-0.5</float>
+						<float name="BackParamB">0.5</float>
+						<token name="BackSurface">0</token>
+						<token name="BackSurfaceInput">0</token>
+						<float name="BottomParamA">-0.5</float>
+						<float name="BottomParamB">0.5</float>
+						<token name="BottomSurface">0</token>
+						<token name="BottomSurfaceInput">0</token>
+						<CoordinateFrame name="CFrame">
+							<X>358.804993</X>
+							<Y>0</Y>
+							<Z>-358.670013</Z>
+							<R00>1</R00>
+							<R01>0</R01>
+							<R02>0</R02>
+							<R10>0</R10>
+							<R11>1</R11>
+							<R12>0</R12>
+							<R20>0</R20>
+							<R21>0</R21>
+							<R22>1</R22>
+						</CoordinateFrame>
+						<bool name="CanCollide">false</bool>
+						<bool name="CanQuery">true</bool>
+						<bool name="CanTouch">true</bool>
+						<bool name="CastShadow">true</bool>
+						<string name="CollisionGroup">Default</string>
+						<int name="CollisionGroupId">0</int>
+						<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
+						<PhysicalProperties name="CustomPhysicalProperties">
+							<CustomPhysics>false</CustomPhysics>
+						</PhysicalProperties>
+						<bool name="EnableFluidForces">true</bool>
+						<float name="FrontParamA">-0.5</float>
+						<float name="FrontParamB">0.5</float>
+						<token name="FrontSurface">0</token>
+						<token name="FrontSurfaceInput">0</token>
+						<float name="LeftParamA">-0.5</float>
+						<float name="LeftParamB">0.5</float>
+						<token name="LeftSurface">0</token>
+						<token name="LeftSurfaceInput">0</token>
+						<bool name="Locked">false</bool>
+						<bool name="Massless">false</bool>
+						<token name="Material">256</token>
+						<string name="MaterialVariantSerialized"></string>
+						<CoordinateFrame name="PivotOffset">
+							<X>0</X>
+							<Y>0</Y>
+							<Z>0</Z>
+							<R00>1</R00>
+							<R01>0</R01>
+							<R02>0</R02>
+							<R10>0</R10>
+							<R11>1</R11>
+							<R12>0</R12>
+							<R20>0</R20>
+							<R21>0</R21>
+							<R22>1</R22>
+						</CoordinateFrame>
+						<float name="Reflectance">0</float>
+						<float name="RightParamA">-0.5</float>
+						<float name="RightParamB">0.5</float>
+						<token name="RightSurface">0</token>
+						<token name="RightSurfaceInput">0</token>
+						<int name="RootPriority">0</int>
+						<Vector3 name="RotVelocity">
+							<X>0</X>
+							<Y>0</Y>
+							<Z>0</Z>
+						</Vector3>
+						<float name="TopParamA">-0.5</float>
+						<float name="TopParamB">0.5</float>
+						<token name="TopSurface">0</token>
+						<token name="TopSurfaceInput">0</token>
+						<float name="Transparency">0.699999988</float>
+						<Vector3 name="Velocity">
+							<X>0</X>
+							<Y>0</Y>
+							<Z>0</Z>
+						</Vector3>
+						<Vector3 name="size">
+							<X>23.7099991</X>
+							<Y>1</Y>
+							<Z>26.1599998</Z>
+						</Vector3>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+						<string name="Name">RedShop</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<UniqueId name="UniqueId">06564d612543f3d90a4dd67600018834</UniqueId>
+					</Properties>
+				</Item>
+			</Item>
 		</Item>
 	</Item>
 	<Item class="TimerService" referent="RBXdfb0b5a8964647769a209edef57fd6d7">
@@ -20460,6 +20674,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
+local ItemData = require(ReplicatedStorage.Modules.ItemData)
 
 local HudController = {}
 local player = Players.LocalPlayer
@@ -20490,11 +20705,194 @@ function HudController.start()
 	panel.Name = "StatusPanel"
 	panel.AnchorPoint = Vector2.new(0.5, 1)
 	panel.Position = UDim2.fromScale(0.5, 0.975)
-	panel.Size = UDim2.fromOffset(380, 76)
+	panel.Size = UDim2.fromOffset(520, 270)
 	panel.BackgroundColor3 = Color3.fromRGB(17, 24, 34)
 	panel.BackgroundTransparency = 0.12
 	panel.BorderSizePixel = 0
 	panel.Parent = gui
+
+	local currentCharacter: Model? = nil
+	local selectedInventorySlot: number? = nil
+
+	local itemDetailsPanel = Instance.new("Frame")
+	itemDetailsPanel.Name = "ItemDetailsPanel"
+	itemDetailsPanel.Size = UDim2.fromOffset(260, 220)
+	itemDetailsPanel.Position = UDim2.fromOffset(20, 210)
+	itemDetailsPanel.BackgroundColor3 = Color3.fromRGB(16, 20, 30)
+	itemDetailsPanel.BackgroundTransparency = 0.05
+	itemDetailsPanel.BorderSizePixel = 0
+	itemDetailsPanel.Visible = false
+	itemDetailsPanel.Parent = gui
+
+	local itemDetailsCorner = Instance.new("UICorner")
+	itemDetailsCorner.CornerRadius = UDim.new(0, 10)
+	itemDetailsCorner.Parent = itemDetailsPanel
+
+	local itemDetailsText = Instance.new("TextLabel")
+	itemDetailsText.Name = "ItemDetailsText"
+	itemDetailsText.Position = UDim2.fromOffset(14, 12)
+	itemDetailsText.Size = UDim2.new(1, -28, 1, -58)
+	itemDetailsText.BackgroundTransparency = 1
+	itemDetailsText.Font = Enum.Font.GothamMedium
+	itemDetailsText.TextColor3 = Color3.fromRGB(240, 243, 250)
+	itemDetailsText.TextSize = 16
+	itemDetailsText.TextWrapped = true
+	itemDetailsText.TextXAlignment = Enum.TextXAlignment.Left
+	itemDetailsText.TextYAlignment = Enum.TextYAlignment.Top
+	itemDetailsText.Text = ""
+	itemDetailsText.Parent = itemDetailsPanel
+
+	local closeItemDetailsButton = Instance.new("TextButton")
+	closeItemDetailsButton.Name = "CloseItemDetailsButton"
+	closeItemDetailsButton.Position = UDim2.new(1, -88, 1, -38)
+	closeItemDetailsButton.Size = UDim2.fromOffset(74, 26)
+	closeItemDetailsButton.BackgroundColor3 = Color3.fromRGB(50, 66, 88)
+	closeItemDetailsButton.BorderSizePixel = 0
+	closeItemDetailsButton.Font = Enum.Font.GothamBold
+	closeItemDetailsButton.Text = "Close"
+	closeItemDetailsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	closeItemDetailsButton.TextScaled = true
+	closeItemDetailsButton.Parent = itemDetailsPanel
+
+	local closeItemDetailsCorner = Instance.new("UICorner")
+	closeItemDetailsCorner.CornerRadius = UDim.new(0, 6)
+	closeItemDetailsCorner.Parent = closeItemDetailsButton
+
+	local sellItemButton = Instance.new("TextButton")
+	sellItemButton.Name = "SellItemButton"
+	sellItemButton.Position = UDim2.new(0, 14, 1, -38)
+	sellItemButton.Size = UDim2.fromOffset(74, 26)
+	sellItemButton.BackgroundColor3 = Color3.fromRGB(105, 38, 45)
+	sellItemButton.BorderSizePixel = 0
+	sellItemButton.Font = Enum.Font.GothamBold
+	sellItemButton.Text = "SELL"
+	sellItemButton.TextColor3 = Color3.fromRGB(255, 220, 220)
+	sellItemButton.TextScaled = true
+	sellItemButton.Visible = false
+	sellItemButton.Parent = itemDetailsPanel
+
+	local sellItemCorner = Instance.new("UICorner")
+	sellItemCorner.CornerRadius = UDim.new(0, 6)
+	sellItemCorner.Parent = sellItemButton
+
+	local function getStatLine(statName: string, value: any): string
+		local displayName = statName
+		if statName == "AttackDamage" then
+			displayName = "Attack Damage"
+		elseif statName == "MaxHealth" then
+			displayName = "Max Health"
+		elseif statName == "MoveSpeed" then
+			displayName = "Move Speed"
+		elseif statName == "AttackRange" then
+			displayName = "Attack Range"
+		elseif statName == "AttackCooldown" then
+			displayName = "Attack Cooldown"
+		end
+
+		if typeof(value) == "number" and value > 0 then
+			return "+" .. tostring(value) .. " " .. displayName
+		end
+
+		return tostring(value) .. " " .. displayName
+	end
+
+	local function showItemDetails(itemId: any)
+		if typeof(itemId) ~= "string" or itemId == "" then
+			itemDetailsText.Text = "Empty Slot\nNo item equipped."
+			sellItemButton.Visible = false
+			itemDetailsPanel.Visible = true
+			return
+		end
+
+		local item = ItemData.Items[itemId]
+		if typeof(item) ~= "table" then
+			itemDetailsText.Text = "Unknown Item\n" .. itemId
+			sellItemButton.Visible = false
+			itemDetailsPanel.Visible = true
+			return
+		end
+
+		local displayName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
+		local cost = if typeof(item.Cost) == "number" then item.Cost else 0
+		local lines: { string } = {}
+
+		table.insert(lines, displayName)
+		table.insert(lines, "Cost: " .. tostring(cost) .. "g")
+		table.insert(lines, "")
+		table.insert(lines, "Stats:")
+
+		local stats = item.Stats
+		if typeof(stats) == "table" then
+			for statName, value in stats do
+				table.insert(lines, getStatLine(statName, value))
+			end
+		else
+			table.insert(lines, "No stats")
+		end
+
+		local recipe = item.Recipe
+		if typeof(recipe) == "table" then
+			local recipeParts: { string } = {}
+			local components = recipe.Components
+			if typeof(components) == "table" then
+				for _, componentItemId in components do
+					if typeof(componentItemId) == "string" then
+						table.insert(recipeParts, componentItemId)
+					end
+				end
+			end
+
+			local combineCost = recipe.CombineCost
+			if typeof(combineCost) == "number" then
+				table.insert(recipeParts, tostring(combineCost) .. "g")
+			end
+
+			if #recipeParts > 0 then
+				table.insert(lines, "")
+				table.insert(lines, "Recipe:")
+				table.insert(lines, table.concat(recipeParts, " + "))
+			end
+		end
+
+		itemDetailsText.Text = table.concat(lines, "\n")
+		sellItemButton.Visible = true
+		itemDetailsPanel.Visible = true
+	end
+
+	closeItemDetailsButton.MouseButton1Click:Connect(function()
+		itemDetailsPanel.Visible = false
+		selectedInventorySlot = nil
+	end)
+
+	local endMatchOverlay = Instance.new("Frame")
+	endMatchOverlay.Name = "EndMatchOverlay"
+	endMatchOverlay.AnchorPoint = Vector2.new(0.5, 0.5)
+	endMatchOverlay.Position = UDim2.fromScale(0.5, 0.5)
+	endMatchOverlay.Size = UDim2.fromScale(1, 1)
+	endMatchOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	endMatchOverlay.BackgroundTransparency = 0.35
+	endMatchOverlay.BorderSizePixel = 0
+	endMatchOverlay.Visible = false
+	endMatchOverlay.Parent = gui
+
+	local endMatchTitle = createLabel(
+		endMatchOverlay,
+		"EndMatchTitle",
+		UDim2.fromScale(0.2, 0.36),
+		UDim2.fromScale(0.6, 0.12),
+		"VICTORY"
+	)
+	endMatchTitle.TextStrokeTransparency = 0.2
+	endMatchTitle.TextColor3 = Color3.fromRGB(120, 190, 255)
+
+	local endMatchSubtitle = createLabel(
+		endMatchOverlay,
+		"EndMatchSubtitle",
+		UDim2.fromScale(0.25, 0.49),
+		UDim2.fromScale(0.5, 0.055),
+		"Blue wins"
+	)
+	endMatchSubtitle.TextStrokeTransparency = 0.35
 
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, 12)
@@ -20503,7 +20901,7 @@ function HudController.start()
 	local healthBack = Instance.new("Frame")
 	healthBack.Name = "HealthBack"
 	healthBack.Position = UDim2.fromOffset(18, 38)
-	healthBack.Size = UDim2.fromOffset(344, 22)
+	healthBack.Size = UDim2.fromOffset(484, 22)
 	healthBack.BackgroundColor3 = Color3.fromRGB(55, 25, 30)
 	healthBack.BorderSizePixel = 0
 	healthBack.Parent = panel
@@ -20521,6 +20919,277 @@ function HudController.start()
 	stateLabel.TextXAlignment = Enum.TextXAlignment.Right
 	local healthLabel = createLabel(healthBack, "Health", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), "650 / 650")
 
+	local levelLabel = createLabel(panel, "Level", UDim2.fromOffset(18, 60), UDim2.fromOffset(90, 18), "LVL 1")
+	levelLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	local goldLabel = createLabel(panel, "Gold", UDim2.fromOffset(118, 60), UDim2.fromOffset(100, 18), "Gold: 0")
+	goldLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+	local xpLabel = createLabel(panel, "XP", UDim2.fromOffset(228, 60), UDim2.fromOffset(134, 18), "XP: 0")
+	xpLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+	local statsToggleButton = Instance.new("TextButton")
+	statsToggleButton.Name = "StatsToggleButton"
+	statsToggleButton.Position = UDim2.fromOffset(378, 8)
+	statsToggleButton.Size = UDim2.fromOffset(64, 24)
+	statsToggleButton.BackgroundColor3 = Color3.fromRGB(50, 66, 88)
+	statsToggleButton.BorderSizePixel = 0
+	statsToggleButton.Font = Enum.Font.GothamBold
+	statsToggleButton.Text = "STATS"
+	statsToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	statsToggleButton.TextScaled = true
+	statsToggleButton.Parent = panel
+
+	local statsToggleCorner = Instance.new("UICorner")
+	statsToggleCorner.CornerRadius = UDim.new(0, 6)
+	statsToggleCorner.Parent = statsToggleButton
+
+	local statsPanel = Instance.new("Frame")
+	statsPanel.Name = "StatsPanel"
+	statsPanel.AnchorPoint = Vector2.new(1, 1)
+	statsPanel.Position = UDim2.new(1, 0, 0, -10)
+	statsPanel.Size = UDim2.fromOffset(220, 238)
+	statsPanel.BackgroundColor3 = Color3.fromRGB(17, 24, 34)
+	statsPanel.BackgroundTransparency = 0.08
+	statsPanel.BorderSizePixel = 0
+	statsPanel.Visible = false
+	statsPanel.Parent = panel
+
+	local statsPanelCorner = Instance.new("UICorner")
+	statsPanelCorner.CornerRadius = UDim.new(0, 10)
+	statsPanelCorner.Parent = statsPanel
+
+	local statsText = Instance.new("TextLabel")
+	statsText.Name = "StatsText"
+	statsText.Position = UDim2.fromOffset(14, 12)
+	statsText.Size = UDim2.new(1, -28, 1, -24)
+	statsText.BackgroundTransparency = 1
+	statsText.Font = Enum.Font.GothamMedium
+	statsText.TextColor3 = Color3.fromRGB(235, 240, 248)
+	statsText.TextSize = 18
+	statsText.TextXAlignment = Enum.TextXAlignment.Left
+	statsText.TextYAlignment = Enum.TextYAlignment.Top
+	statsText.Text = ""
+	statsText.Parent = statsPanel
+
+	statsToggleButton.MouseButton1Click:Connect(function()
+		statsPanel.Visible = not statsPanel.Visible
+	end)
+
+	local shopButtons: { [string]: TextButton } = {}
+
+	local function createShopButton(itemId: string, text: string, position: UDim2): TextButton
+		local button = Instance.new("TextButton")
+		button.Name = itemId
+		button.Position = position
+		button.Size = UDim2.fromOffset(128, 38)
+		button.BackgroundColor3 = Color3.fromRGB(38, 48, 64)
+		button.BackgroundTransparency = 0.05
+		button.BorderSizePixel = 0
+		button.Font = Enum.Font.GothamBold
+		button.TextScaled = true
+		button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		button.TextStrokeTransparency = 0.65
+		button.Text = text
+		button.Parent = panel
+
+		local buttonCorner = Instance.new("UICorner")
+		buttonCorner.CornerRadius = UDim.new(0, 8)
+		buttonCorner.Parent = button
+
+		shopButtons[itemId] = button
+		return button
+	end
+
+	createShopButton("LongSword", "Sword\n350g", UDim2.fromOffset(18, 88))
+	createShopButton("RubyCrystal", "Ruby\n400g", UDim2.fromOffset(166, 88))
+	createShopButton("Boots", "Boots\n300g", UDim2.fromOffset(314, 88))
+	createShopButton("BFSword", "B.F. Sword\n1300g", UDim2.fromOffset(18, 132))
+	createShopButton("GiantBelt", "Giant Belt\n1100g", UDim2.fromOffset(166, 132))
+	createShopButton("SwiftBoots", "Swift Boots\n900g", UDim2.fromOffset(314, 132))
+
+	local craftButtons: { [string]: TextButton } = {}
+
+	local function createCraftButton(targetItemId: string, text: string, position: UDim2): TextButton
+		local button = Instance.new("TextButton")
+		button.Name = "Craft" .. targetItemId
+		button.Position = position
+		button.Size = UDim2.fromOffset(128, 38)
+		button.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
+		button.BackgroundTransparency = 0.05
+		button.BorderSizePixel = 0
+		button.Font = Enum.Font.GothamBold
+		button.TextScaled = true
+		button.TextColor3 = Color3.fromRGB(145, 145, 145)
+		button.TextTransparency = 0.25
+		button.TextStrokeTransparency = 0.65
+		button.AutoButtonColor = false
+		button.Active = false
+		button.Text = text
+		button.Parent = panel
+
+		local buttonCorner = Instance.new("UICorner")
+		buttonCorner.CornerRadius = UDim.new(0, 8)
+		buttonCorner.Parent = button
+
+		craftButtons[targetItemId] = button
+		return button
+	end
+
+	createCraftButton("BFSword", "Craft BF\n300g", UDim2.fromOffset(18, 176))
+	createCraftButton("GiantBelt", "Craft Belt\n300g", UDim2.fromOffset(166, 176))
+	createCraftButton("SwiftBoots", "Craft Swift\n500g", UDim2.fromOffset(314, 176))
+
+	local function countInventoryItem(character: Model, itemId: string): number
+		local count = 0
+
+		for slotIndex = 1, 6 do
+			local slotItemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+			if slotItemId == itemId then
+				count += 1
+			end
+		end
+
+		return count
+	end
+
+	local function canCraftItem(character: Model, targetItemId: string): boolean
+		local item = ItemData.Items[targetItemId]
+		if typeof(item) ~= "table" then
+			return false
+		end
+
+		local recipe = item.Recipe
+		if typeof(recipe) ~= "table" then
+			return false
+		end
+
+		local combineCost = recipe.CombineCost
+		if typeof(combineCost) ~= "number" then
+			return false
+		end
+
+		local gold = character:GetAttribute("Gold")
+		if typeof(gold) ~= "number" or gold < combineCost then
+			return false
+		end
+
+		if item.Unique == true then
+			for slotIndex = 1, 6 do
+				local slotItemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+				if slotItemId == targetItemId then
+					return false
+				end
+			end
+		end
+
+		local components = recipe.Components
+		if typeof(components) ~= "table" then
+			return false
+		end
+
+		local requiredCounts: { [string]: number } = {}
+		for _, componentItemId in components do
+			if typeof(componentItemId) ~= "string" then
+				return false
+			end
+
+			requiredCounts[componentItemId] = (requiredCounts[componentItemId] or 0) + 1
+		end
+
+		for componentItemId, requiredCount in requiredCounts do
+			if countInventoryItem(character, componentItemId) < requiredCount then
+				return false
+			end
+		end
+
+		return true
+	end
+
+	local function updateCraftButtons(character: Model)
+		for targetItemId, button in craftButtons do
+			local canCraft = canCraftItem(character, targetItemId)
+
+			button.AutoButtonColor = canCraft
+			button.Active = canCraft
+
+			if canCraft then
+				button.BackgroundColor3 = Color3.fromRGB(48, 68, 52)
+				button.TextColor3 = Color3.fromRGB(220, 255, 225)
+				button.TextTransparency = 0
+			else
+				button.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
+				button.TextColor3 = Color3.fromRGB(145, 145, 145)
+				button.TextTransparency = 0.25
+			end
+		end
+	end
+
+	local inventorySlots: { [number]: TextButton } = {}
+
+	local function getShortItemName(itemId: any): string
+		if typeof(itemId) ~= "string" or itemId == "" then
+			return "Empty"
+		end
+
+		if itemId == "LongSword" then
+			return "Sword"
+		elseif itemId == "RubyCrystal" then
+			return "Ruby"
+		elseif itemId == "Boots" then
+			return "Boots"
+		elseif itemId == "BFSword" then
+			return "B.F."
+		elseif itemId == "GiantBelt" then
+			return "Belt"
+		elseif itemId == "SwiftBoots" then
+			return "Swift"
+		end
+
+		return itemId
+	end
+
+	local function createInventorySlot(slotIndex: number, position: UDim2): TextButton
+		local label = Instance.new("TextButton")
+		label.Name = "InventorySlot" .. tostring(slotIndex)
+		label.Size = UDim2.fromOffset(66, 30)
+		label.Position = position
+		label.BackgroundColor3 = Color3.fromRGB(24, 30, 42)
+		label.BackgroundTransparency = 0.05
+		label.BorderSizePixel = 0
+		label.Font = Enum.Font.GothamBold
+		label.TextScaled = true
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.TextStrokeTransparency = 0.7
+		label.Text = tostring(slotIndex) .. ": Empty"
+		label.Parent = panel
+
+		local slotCorner = Instance.new("UICorner")
+		slotCorner.CornerRadius = UDim.new(0, 6)
+		slotCorner.Parent = label
+
+		inventorySlots[slotIndex] = label
+		label.MouseButton1Click:Connect(function()
+			selectedInventorySlot = slotIndex
+			local character = currentCharacter
+			if not character then
+				showItemDetails(nil)
+				return
+			end
+
+			local itemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+			showItemDetails(itemId)
+		end)
+		return label
+	end
+
+	createInventorySlot(1, UDim2.fromOffset(18, 222))
+	createInventorySlot(2, UDim2.fromOffset(92, 222))
+	createInventorySlot(3, UDim2.fromOffset(166, 222))
+	createInventorySlot(4, UDim2.fromOffset(240, 222))
+	createInventorySlot(5, UDim2.fromOffset(314, 222))
+	createInventorySlot(6, UDim2.fromOffset(388, 222))
+
 	local function updateTeam()
 		local teamName = player:GetAttribute("Team")
 		teamLabel.Text = "ÉQUIPE " .. tostring(teamName or "?")
@@ -20530,6 +21199,8 @@ function HudController.start()
 	end
 
 	local function bindCharacter(character: Model)
+		currentCharacter = character
+
 		local function updateHealth()
 			local health = character:GetAttribute("Health")
 			local maxHealth = character:GetAttribute("MaxHealth")
@@ -20538,9 +21209,129 @@ function HudController.start()
 				healthLabel.Text = string.format("%d / %d", math.floor(health), math.floor(maxHealth))
 			end
 		end
+		local function updateStatsPanel()
+			local level = character:GetAttribute("Level")
+			local gold = character:GetAttribute("Gold")
+			local xp = character:GetAttribute("XP")
+			local health = character:GetAttribute("Health")
+			local maxHealth = character:GetAttribute("MaxHealth")
+			local attackDamage = character:GetAttribute("AttackDamage")
+			local attackRange = character:GetAttribute("AttackRange")
+			local attackCooldown = character:GetAttribute("AttackCooldown")
+			local moveSpeed = character:GetAttribute("MoveSpeed")
+			local inventoryCount = character:GetAttribute("InventoryCount")
+
+			statsText.Text = string.format(
+				"LVL: %s\nGold: %s\nXP: %s\nHP: %s / %s\nAD: %s\nRange: %s\nCooldown: %s\nSpeed: %s\nItems: %s",
+				tostring(level or 1),
+				tostring(gold or 0),
+				tostring(xp or 0),
+				tostring(health or 0),
+				tostring(maxHealth or 0),
+				tostring(attackDamage or 0),
+				tostring(attackRange or 0),
+				tostring(attackCooldown or 0),
+				tostring(moveSpeed or 0),
+				tostring(inventoryCount or 0)
+			)
+		end
+
+		local statsAttributeNames = {
+			"Level",
+			"Gold",
+			"XP",
+			"Health",
+			"MaxHealth",
+			"AttackDamage",
+			"AttackRange",
+			"AttackCooldown",
+			"MoveSpeed",
+			"InventoryCount",
+		}
+
+		local function updateInventory()
+			for slotIndex = 1, 6 do
+				local itemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+				local label = inventorySlots[slotIndex]
+
+				if label then
+					local itemName = getShortItemName(itemId)
+					label.Text = tostring(slotIndex) .. ": " .. itemName
+
+					if itemName == "Empty" then
+						label.BackgroundColor3 = Color3.fromRGB(24, 30, 42)
+						label.TextColor3 = Color3.fromRGB(145, 145, 145)
+					elseif itemName == "Sword" then
+						label.BackgroundColor3 = Color3.fromRGB(80, 58, 42)
+						label.TextColor3 = Color3.fromRGB(255, 220, 170)
+					elseif itemName == "Ruby" then
+						label.BackgroundColor3 = Color3.fromRGB(82, 35, 45)
+						label.TextColor3 = Color3.fromRGB(255, 150, 160)
+					elseif itemName == "Boots" then
+						label.BackgroundColor3 = Color3.fromRGB(45, 62, 82)
+						label.TextColor3 = Color3.fromRGB(170, 215, 255)
+					else
+						label.BackgroundColor3 = Color3.fromRGB(38, 48, 64)
+						label.TextColor3 = Color3.fromRGB(255, 255, 255)
+					end
+				end
+			end
+		end
+
+		local function updateInventoryAndCraft()
+			updateInventory()
+			updateCraftButtons(character)
+		end
+
+		local function updateProgression()
+			local level = character:GetAttribute("Level")
+			local gold = character:GetAttribute("Gold")
+			local xp = character:GetAttribute("XP")
+
+			levelLabel.Text = "LVL " .. tostring(level or 1)
+			goldLabel.Text = "Gold: " .. tostring(gold or 0)
+			xpLabel.Text = "XP: " .. tostring(xp or 0)
+
+			local currentGold = if typeof(gold) == "number" then gold else 0
+
+			for itemId, button in shopButtons do
+				local item = ItemData.Items[itemId]
+				local cost = if typeof(item) == "table" and typeof(item.Cost) == "number" then item.Cost else 0
+				local canBuy = currentGold >= cost
+
+				button.AutoButtonColor = canBuy
+				button.Active = canBuy
+
+				if canBuy then
+					button.BackgroundColor3 = Color3.fromRGB(38, 48, 64)
+					button.TextColor3 = Color3.fromRGB(255, 255, 255)
+					button.TextTransparency = 0
+				else
+					button.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
+					button.TextColor3 = Color3.fromRGB(145, 145, 145)
+					button.TextTransparency = 0.25
+				end
+			end
+		end
 		character:GetAttributeChangedSignal("Health"):Connect(updateHealth)
 		character:GetAttributeChangedSignal("MaxHealth"):Connect(updateHealth)
+		character:GetAttributeChangedSignal("Level"):Connect(updateProgression)
+		character:GetAttributeChangedSignal("Gold"):Connect(function()
+			updateProgression()
+			updateCraftButtons(character)
+		end)
+		character:GetAttributeChangedSignal("XP"):Connect(updateProgression)
+		for _, attributeName in statsAttributeNames do
+			character:GetAttributeChangedSignal(attributeName):Connect(updateStatsPanel)
+		end
+		for slotIndex = 1, 6 do
+			character:GetAttributeChangedSignal("InventorySlot" .. tostring(slotIndex)):Connect(updateInventoryAndCraft)
+		end
+		character:GetAttributeChangedSignal("InventoryCount"):Connect(updateInventoryAndCraft)
 		updateHealth()
+		updateProgression()
+		updateStatsPanel()
+		updateInventoryAndCraft()
 	end
 
 	player:GetAttributeChangedSignal("Team"):Connect(updateTeam)
@@ -20556,13 +21347,76 @@ function HudController.start()
 		return
 	end
 
+	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST, 10)
+	if not shopBuyRequest or not shopBuyRequest:IsA("RemoteEvent") then
+		warn("[MOBA] RemoteEvent ShopBuyRequest indisponible.")
+		return
+	end
+
+	for itemId, button in shopButtons do
+		button.MouseButton1Click:Connect(function()
+			shopBuyRequest:FireServer(itemId)
+		end)
+	end
+
+	local shopSellRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_SELL_REQUEST, 10)
+	if not shopSellRequest or not shopSellRequest:IsA("RemoteEvent") then
+		warn("[MOBA] RemoteEvent ShopSellRequest indisponible.")
+		return
+	end
+
+	sellItemButton.MouseButton1Click:Connect(function()
+		local slotIndex = selectedInventorySlot
+		if not slotIndex then
+			return
+		end
+
+		shopSellRequest:FireServer(slotIndex)
+		selectedInventorySlot = nil
+		itemDetailsPanel.Visible = false
+	end)
+
+	local shopCraftRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_CRAFT_REQUEST, 10)
+	if not shopCraftRequest or not shopCraftRequest:IsA("RemoteEvent") then
+		warn("[MOBA] RemoteEvent ShopCraftRequest indisponible.")
+		return
+	end
+
+	for targetItemId, button in craftButtons do
+		button.MouseButton1Click:Connect(function()
+			local character = currentCharacter
+			if not character or not canCraftItem(character, targetItemId) then
+				return
+			end
+
+			shopCraftRequest:FireServer(targetItemId)
+		end)
+	end
+
 	local matchRemote = remotes:WaitForChild(SharedConstants.REMOTES.MATCH_STATE_UPDATE, 10)
 	if not matchRemote or not matchRemote:IsA("RemoteEvent") then
 		warn("[MOBA] RemoteEvent MatchStateUpdate indisponible.")
 		return
 	end
 	matchRemote.OnClientEvent:Connect(function(state, winner)
-		stateLabel.Text = if state == "Ended" then "VICTOIRE : " .. tostring(winner) else string.upper(tostring(state))
+		if state == "Ended" then
+			local winningTeam = tostring(winner)
+			local playerTeam = tostring(player:GetAttribute("Team") or "?")
+			local playerWon = winningTeam == playerTeam
+
+			stateLabel.Text = "FIN : " .. winningTeam .. " WINS"
+
+			endMatchOverlay.Visible = true
+			endMatchTitle.Text = if playerWon then "VICTORY" else "DEFEAT"
+			endMatchSubtitle.Text = winningTeam .. " wins"
+
+			endMatchTitle.TextColor3 = if playerWon
+				then Color3.fromRGB(120, 190, 255)
+				else Color3.fromRGB(255, 100, 105)
+		else
+			stateLabel.Text = string.upper(tostring(state))
+			endMatchOverlay.Visible = false
+		end
 	end)
 end
 
@@ -20584,12 +21438,16 @@ return HudController
 							<Content name="LinkedSource"><null></null></Content>
 							<ProtectedString name="Source"><![CDATA[--!strict
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local InputController = {}
 local player = Players.LocalPlayer
+
 
 local moveState = {
 	Forward = false,
@@ -20640,9 +21498,26 @@ local function getMoveVector(): Vector3
 end
 
 function InputController.start()
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST)
+	local debugAddGoldRequest = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST)
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if input.KeyCode == Enum.KeyCode.G then
+			(debugAddGoldRequest :: RemoteEvent):FireServer()
+			return
+		end
 		if not gameProcessed then
 			setKey(input.KeyCode, true)
+		end
+		if input.KeyCode == Enum.KeyCode.B then
+			(shopBuyRequest :: RemoteEvent):FireServer("LongSword")
+			return
+		elseif input.KeyCode == Enum.KeyCode.N then
+			(shopBuyRequest :: RemoteEvent):FireServer("RubyCrystal")
+			return
+		elseif input.KeyCode == Enum.KeyCode.M then
+			(shopBuyRequest :: RemoteEvent):FireServer("Boots")
+			return
 		end
 	end)
 
@@ -21161,12 +22036,12 @@ local ChampionData = {}
 ChampionData.Default = {
 	Id = "Default",
 	DisplayName = "Prototype Hero",
-	MaxHealth = 100000,
+	MaxHealth = 100,
 	HealthRegen = 3,
 	AttackDamage = 200,
 	AttackRange = 18,
-	AttackCooldown = 1.1,
-	MoveSpeed = 300,
+	AttackCooldown = 0.2,
+	MoveSpeed = 100,
 	Armor = 20,
 	MagicResist = 20,
 	ModelName = "DefaultChampion",
@@ -21353,8 +22228,20 @@ SharedConstants.REMOTES = {
 	COMBAT_FEEDBACK = "CombatFeedback",
 	VISION_UPDATE = "VisionUpdate",
 	MATCH_STATE_UPDATE = "MatchStateUpdate",
+	SHOP_BUY_REQUEST = "ShopBuyRequest",
+	SHOP_SELL_REQUEST = "ShopSellRequest",
+	SHOP_CRAFT_REQUEST = "ShopCraftRequest",
+	DEBUG_ADD_GOLD_REQUEST = "DebugAddGoldRequest",
 }
+SharedConstants.DEBUG = {
+	GAME_SPEED = 3,
 
+	SPAWN_BLUE_MINIONS = true,
+	SPAWN_RED_MINIONS = true,
+
+	ALLOW_DEBUG_GOLD = true,
+	DEBUG_GOLD_AMOUNT = 10000,
+}
 return SharedConstants
 ]]></ProtectedString>
 					<string name="ScriptGuid">{02c40639-cbd2-4ab4-b93a-ceb34f2948fd}</string>
@@ -21366,6 +22253,190 @@ return SharedConstants
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 					<UniqueId name="UniqueId">458c3168aa8c2cf20a4d7f0f000003b3</UniqueId>
+				</Properties>
+			</Item>
+			<Item class="ModuleScript" referent="RBX32b52c4c1d2b40058a69c350ec86ef05">
+				<Properties>
+					<Content name="LinkedSource"><null></null></Content>
+					<ProtectedString name="Source"><![CDATA[--!strict
+
+local ItemData = {}
+
+ItemData.Items = {
+	LongSword = {
+		Id = "LongSword",
+		DisplayName = "Long Sword",
+		Cost = 350,
+		Stats = {
+			AttackDamage = 10,
+		},
+	},
+
+	RubyCrystal = {
+		Id = "RubyCrystal",
+		DisplayName = "Ruby Crystal",
+		Cost = 400,
+		Stats = {
+			MaxHealth = 150,
+		},
+	},
+
+	Boots = {
+		Id = "Boots",
+		DisplayName = "Boots",
+		Cost = 300,
+		Unique = true,
+		UniqueGroup = "Boots",
+		Stats = {
+			MoveSpeed = 8,
+		},
+	},
+
+	BFSword = {
+		Id = "BFSword",
+		DisplayName = "B.F. Sword",
+		Cost = 1300,
+		Stats = {
+			AttackDamage = 30,
+		},
+		Recipe = {
+			Components = { "LongSword", "LongSword" },
+			CombineCost = 300,
+		},
+	},
+
+	GiantBelt = {
+		Id = "GiantBelt",
+		DisplayName = "Giant Belt",
+		Cost = 1100,
+		Stats = {
+			MaxHealth = 400,
+		},
+		Recipe = {
+			Components = { "RubyCrystal", "RubyCrystal" },
+			CombineCost = 300,
+		},
+	},
+
+	SwiftBoots = {
+		Id = "SwiftBoots",
+		DisplayName = "Swift Boots",
+		Cost = 900,
+		Unique = true,
+		UniqueGroup = "Boots",
+		Stats = {
+			MoveSpeed = 18,
+		},
+		Recipe = {
+			Components = { "Boots" },
+			CombineCost = 500,
+		},
+	},
+}
+
+return ItemData
+]]></ProtectedString>
+					<string name="ScriptGuid">{ebd0b96f-3a94-44cf-b8c4-8d17ad861049}</string>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+					<bool name="DefinesCapabilities">false</bool>
+					<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+					<string name="Name">ItemData</string>
+					<int64 name="SourceAssetId">-1</int64>
+					<BinaryString name="Tags"></BinaryString>
+					<UniqueId name="UniqueId">06564d612543f3d90a4dd6760000913d</UniqueId>
+				</Properties>
+			</Item>
+			<Item class="ModuleScript" referent="RBXc38138b9c2c745f399d146202d1572cc">
+				<Properties>
+					<Content name="LinkedSource"><null></null></Content>
+					<ProtectedString name="Source"><![CDATA[--!strict
+
+local ItemData = {}
+
+ItemData.Items = {
+	LongSword = {
+		Id = "LongSword",
+		DisplayName = "Long Sword",
+		Cost = 350,
+		Stats = {
+			AttackDamage = 10,
+		},
+	},
+
+	RubyCrystal = {
+		Id = "RubyCrystal",
+		DisplayName = "Ruby Crystal",
+		Cost = 400,
+		Stats = {
+			MaxHealth = 150,
+		},
+	},
+
+	Boots = {
+		Id = "Boots",
+		DisplayName = "Boots",
+		Cost = 300,
+		Unique = true,
+		UniqueGroup = "Boots",
+		Stats = {
+			MoveSpeed = 8,
+		},
+	},
+
+	BFSword = {
+		Id = "BFSword",
+		DisplayName = "B.F. Sword",
+		Cost = 1300,
+		Stats = {
+			AttackDamage = 30,
+		},
+		Recipe = {
+			Components = { "LongSword", "LongSword" },
+			CombineCost = 300,
+		},
+	},
+
+	GiantBelt = {
+		Id = "GiantBelt",
+		DisplayName = "Giant Belt",
+		Cost = 1100,
+		Stats = {
+			MaxHealth = 400,
+		},
+		Recipe = {
+			Components = { "RubyCrystal", "RubyCrystal" },
+			CombineCost = 300,
+		},
+	},
+
+	SwiftBoots = {
+		Id = "SwiftBoots",
+		DisplayName = "Swift Boots",
+		Cost = 900,
+		Unique = true,
+		UniqueGroup = "Boots",
+		Stats = {
+			MoveSpeed = 18,
+		},
+		Recipe = {
+			Components = { "Boots" },
+			CombineCost = 500,
+		},
+	},
+}
+
+return ItemData
+]]></ProtectedString>
+					<string name="ScriptGuid">{5f18c03f-234c-4ae2-8741-e490e7677683}</string>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+					<bool name="DefinesCapabilities">false</bool>
+					<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+					<string name="Name">ItemData</string>
+					<int64 name="SourceAssetId">-1</int64>
+					<BinaryString name="Tags"></BinaryString>
+					<UniqueId name="UniqueId">06564d612543f3d90a4dd6760000913f</UniqueId>
 				</Properties>
 			</Item>
 		</Item>
@@ -21398,6 +22469,8 @@ local RemoteService = require(script.services.RemoteService)
 local TeamService = require(script.services.TeamService)
 local TowerService = require(script.services.TowerService)
 local VisionService = require(script.services.VisionService)
+local EconomyProgressionService = require(script.services.EconomyProgressionService)
+local ShopService = require(script.services.ShopService)
 
 local map = Workspace:WaitForChild("Map", 10)
 assert(map and map:IsA("Folder"), "[MOBA] Workspace.Map is missing. Open GameTest-editable.rbxlx in Studio.")
@@ -21419,7 +22492,10 @@ JungleService.start()
 NexusService.start()
 VisionService.start()
 MatchStateService.start()
+EconomyProgressionService.start()
+ShopService.start()
 MinionService.start()
+
 
 print("[MOBA] Server started — 3 lanes, jungle, ZQSD client ready")
 ]]></ProtectedString>
@@ -21459,7 +22535,7 @@ local Workspace = game:GetService("Workspace")
 local ChampionData = require(ReplicatedStorage.Modules.ChampionData)
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local Utility = require(script.Parent.Utility)
-
+local EconomyProgressionService = require(script.Parent.EconomyProgressionService)
 local ChampionService = {}
 
 local function getSpawnForTeam(teamName: string): BasePart?
@@ -21513,9 +22589,26 @@ local function setupCharacter(player: Player, character: Model)
 	character:SetAttribute("MoveSpeed", data.MoveSpeed)
 	character:SetAttribute("Dead", false)
 
-	humanoid.WalkSpeed = data.MoveSpeed
-	humanoid.MaxHealth = data.MaxHealth
-	humanoid.Health = data.MaxHealth
+	EconomyProgressionService.applyPlayerProgressionToChampion(player, character)
+
+	local restoredMaxHealth = character:GetAttribute("MaxHealth")
+	if typeof(restoredMaxHealth) == "number" then
+		character:SetAttribute("Health", restoredMaxHealth)
+	end
+
+	local finalMaxHealth = character:GetAttribute("MaxHealth")
+	if typeof(finalMaxHealth) ~= "number" then
+		finalMaxHealth = data.MaxHealth
+	end
+	local finalMoveSpeed = character:GetAttribute("MoveSpeed")
+	if typeof(finalMoveSpeed) ~= "number" then
+		finalMoveSpeed = data.MoveSpeed
+	end
+
+	humanoid.WalkSpeed = finalMoveSpeed
+
+	humanoid.MaxHealth = finalMaxHealth
+	humanoid.Health = finalMaxHealth
 
 	local units = Workspace:FindFirstChild("Units")
 	if not units or not units:IsA("Folder") then
@@ -21528,6 +22621,35 @@ local function setupCharacter(player: Player, character: Model)
 		character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
 	end
 	Utility.attachHealthBar(character)
+
+	local watchedAttributes = {
+		"Level",
+		"Gold",
+		"XP",
+		"MaxHealth",
+		"AttackDamage",
+		"AttackRange",
+		"AttackCooldown",
+		"MoveSpeed",
+		"InventoryCount",
+		"InventorySlot1",
+		"InventorySlot2",
+		"InventorySlot3",
+		"InventorySlot4",
+		"InventorySlot5",
+		"InventorySlot6",
+	}
+
+	for _, attributeName in watchedAttributes do
+		character:GetAttributeChangedSignal(attributeName):Connect(function()
+			print(string.format(
+				"[MOBA][STATS] %s %s = %s",
+				player.Name,
+				attributeName,
+				tostring(character:GetAttribute(attributeName))
+			))
+		end)
+	end
 end
 
 local function initializePlayer(player: Player)
@@ -21579,7 +22701,7 @@ return ChampionService
 					<Properties>
 						<Content name="LinkedSource"><null></null></Content>
 						<ProtectedString name="Source"><![CDATA[--!strict
-
+local EconomyProgressionService = require(script.Parent.EconomyProgressionService)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -21647,6 +22769,20 @@ local function getUnitType(unit: Instance): string?
 	return if typeof(unitType) == "string" then unitType else nil
 end
 
+local function getGameSpeed(): number
+	local debugConfig = SharedConstants.DEBUG
+	if typeof(debugConfig) ~= "table" then
+		return 1
+	end
+
+	local speed = debugConfig.GAME_SPEED
+	if typeof(speed) ~= "number" or speed <= 0 then
+		return 1
+	end
+
+	return speed
+end
+
 local function canAttack(attacker: Instance, target: Instance, player: Player?): (boolean, string)
 	local attackerType = getUnitType(attacker)
 	local targetType = getUnitType(target)
@@ -21683,7 +22819,7 @@ local function canAttack(attacker: Instance, target: Instance, player: Player?):
 	local now = os.clock()
 	local lastAttack = lastAttackByUnit[attacker] or 0
 	local cooldown = getNumberAttribute(attacker, "AttackCooldown", SharedConstants.COMBAT.AUTO_ATTACK_COOLDOWN)
-	if now - lastAttack < cooldown then
+	if now - lastAttack < cooldown / getGameSpeed() then
 		return false, "Attack cooldown"
 	end
 
@@ -21711,7 +22847,13 @@ function CombatService.applyDamage(attacker: Instance, target: Instance, amount:
 	end
 end
 
-function CombatService.handleDeath(_killer: Instance, victim: Instance)
+function CombatService.handleDeath(killer: Instance, victim: Instance)
+	EconomyProgressionService.awardKillRewards(killer, victim)
+
+	if victim:GetAttribute("UnitType") == "Champion" then
+		EconomyProgressionService.saveChampionProgressionToPlayer(victim)
+	end
+
 	victim:SetAttribute("Dead", true)
 	local root = Utility.getRoot(victim)
 	if root then
@@ -21964,7 +23106,10 @@ function MatchStateService.endMatch(winningTeam: string)
 	end
 	MatchStateService.State = "Ended"
 	broadcastState(winningTeam)
-	print("[MOBA] Winner:", winningTeam)
+	print(string.format("[MOBA] Match ended — %s wins", winningTeam))
+end
+function MatchStateService.isMatchEnded(): boolean
+	return MatchStateService.State == "Ended"
 end
 
 function MatchStateService.start()
@@ -22005,6 +23150,7 @@ local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local CombatService = require(script.Parent.CombatService)
 local UnitFactory = require(script.Parent.UnitFactory)
 local Utility = require(script.Parent.Utility)
+local MatchStateService = require(script.Parent.MatchStateService)
 
 local MinionService = {}
 
@@ -22014,6 +23160,20 @@ local FORMATION_SLOTS = { -4, 0, 4 }
 
 local TARGET_SEARCH_RANGE = 50
 local TARGET_DROP_RANGE = 50
+
+local function getGameSpeed(): number
+	local debugConfig = SharedConstants.DEBUG
+	if typeof(debugConfig) ~= "table" then
+		return 1
+	end
+
+	local speed = debugConfig.GAME_SPEED
+	if typeof(speed) ~= "number" or speed <= 0 then
+		return 1
+	end
+
+	return speed
+end
 
 local function getMapFolder(childName: string): Instance?
 	local map = Workspace:FindFirstChild("Map")
@@ -22194,7 +23354,8 @@ local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset
 					local targetRoot = Utility.getRoot(currentTarget)
 
 					if targetRoot then
-						moveToward(minion, targetRoot.Position, moveSpeed, 0.1)
+						local gameSpeed = getGameSpeed()
+						moveToward(minion, targetRoot.Position, moveSpeed * gameSpeed, 0.1)
 					else
 						currentTarget = nil
 						minion:SetAttribute("AggroTarget", nil)
@@ -22205,8 +23366,9 @@ local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset
 
 				if waypoint then
 					local targetPosition = getOffsetWaypoint(waypoints, waypointIndex, lateralOffset)
+					local gameSpeed = getGameSpeed()
 
-					if moveToward(minion, targetPosition, moveSpeed, 0.1) then
+					if moveToward(minion, targetPosition, moveSpeed * gameSpeed, 0.1) then
 						waypointIndex += 1
 					end
 				end
@@ -22254,6 +23416,17 @@ local function spawnSingle(
 end
 
 function MinionService.spawnWaveForTeamAndLane(teamName: string, laneName: string)
+	local debugConfig = SharedConstants.DEBUG
+
+	if typeof(debugConfig) == "table" then
+		if teamName == "Blue" and debugConfig.SPAWN_BLUE_MINIONS == false then
+			return
+		end
+
+		if teamName == "Red" and debugConfig.SPAWN_RED_MINIONS == false then
+			return
+		end
+	end
 	local spawns = getMapFolder("MinionSpawns")
 	local teamSpawns = spawns and spawns:FindFirstChild(teamName)
 	local spawnPoint = teamSpawns and teamSpawns:FindFirstChild(laneName)
@@ -22308,10 +23481,12 @@ function MinionService.start()
 	task.spawn(function()
 		task.wait(3)
 
-		while true do
+		while not MatchStateService.isMatchEnded() do
 			MinionService.spawnWave()
-			task.wait(SharedConstants.MATCH.MINION_WAVE_INTERVAL)
+			task.wait(SharedConstants.MATCH.MINION_WAVE_INTERVAL / getGameSpeed())
 		end
+
+		print("[MOBA] Minion spawning stopped — match ended")
 	end)
 end
 
@@ -22405,6 +23580,9 @@ return NexusService
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local ShopService = require(script.Parent.ShopService)
+
+
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local ChampionService = require(script.Parent.ChampionService)
 local CombatService = require(script.Parent.CombatService)
@@ -22434,6 +23612,7 @@ function RemoteService.start()
 	started = true
 
 	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+	
 	if not remotes then
 		remotes = Instance.new("Folder")
 		remotes.Name = "Remotes"
@@ -22446,19 +23625,91 @@ function RemoteService.start()
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.VISION_UPDATE)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.MATCH_STATE_UPDATE)
 
-	attackRequest.OnServerEvent:Connect(function(player, target)
-		if typeof(target) ~= "Instance" then
+	local shopBuyRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_BUY_REQUEST)
+	local shopSellRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_SELL_REQUEST)
+	local shopCraftRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_CRAFT_REQUEST)
+	local debugAddGoldRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST)
+	debugAddGoldRequest.OnServerEvent:Connect(function(player)
+		local debugConfig = SharedConstants.DEBUG
+		if typeof(debugConfig) ~= "table" or debugConfig.ALLOW_DEBUG_GOLD ~= true then
+			warn("[MOBA] Debug gold refused:", player.Name)
 			return
 		end
-		local units = Workspace:FindFirstChild("Units")
-		if not units or not units:IsA("Folder") or not target:IsDescendantOf(units) then
-			return
-		end
+
 		local champion = ChampionService.getChampionFromPlayer(player)
 		if not champion then
 			return
 		end
+
+		local amount = debugConfig.DEBUG_GOLD_AMOUNT
+		if typeof(amount) ~= "number" then
+			amount = 1000
+		end
+
+		local gold = champion:GetAttribute("Gold")
+		if typeof(gold) ~= "number" then
+			gold = 0
+		end
+
+		champion:SetAttribute("Gold", gold + amount)
+
+		print(string.format(
+			"[MOBA][DEBUG] Added %d gold to %s. New gold = %d",
+			amount,
+			player.Name,
+			gold + amount
+		))
+	end)
+
+	attackRequest.OnServerEvent:Connect(function(player, target)
+		if typeof(target) ~= "Instance" then
+			return
+		end
+
+		local units = Workspace:FindFirstChild("Units")
+		if not units or not units:IsA("Folder") or not target:IsDescendantOf(units) then
+			return
+		end
+
+		local champion = ChampionService.getChampionFromPlayer(player)
+		if not champion then
+			return
+		end
+
 		CombatService.tryAutoAttack(champion, target, player)
+	end)
+
+	shopBuyRequest.OnServerEvent:Connect(function(player, itemId)
+		if typeof(itemId) ~= "string" then
+			return
+		end
+
+		local success, reason = ShopService.buyItem(player, itemId)
+		if not success then
+			warn("[MOBA] Shop buy failed:", player.Name, itemId, reason)
+		end
+	end)
+
+	shopSellRequest.OnServerEvent:Connect(function(player, slotIndex)
+		if typeof(slotIndex) ~= "number" then
+			return
+		end
+
+		local success, reason = ShopService.sellItem(player, slotIndex)
+		if not success then
+			warn("[MOBA] Shop sell failed:", player.Name, slotIndex, reason)
+		end
+	end)
+
+	shopCraftRequest.OnServerEvent:Connect(function(player, targetItemId)
+		if typeof(targetItemId) ~= "string" then
+			return
+		end
+
+		local success, reason = ShopService.craftItem(player, targetItemId)
+		if not success then
+			warn("[MOBA] Shop craft failed:", player.Name, targetItemId, reason)
+		end
 	end)
 end
 
@@ -22546,7 +23797,7 @@ type AggroState = {
 	expiresAt: number,
 }
 
-local TOWER_ATTACK_RANGE = 20
+local TOWER_ATTACK_RANGE = 50
 
 local function getRange(_tower: Model): number
 	return TOWER_ATTACK_RANGE
@@ -23271,6 +24522,1388 @@ return MapValidatorService
 						<int64 name="SourceAssetId">-1</int64>
 						<BinaryString name="Tags"></BinaryString>
 						<UniqueId name="UniqueId">0a38ccd128dd17400a4da77600002a4f</UniqueId>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBX45c3e29c19b9420faa0f5828bfc2070f">
+					<Properties>
+						<Content name="LinkedSource"><null></null></Content>
+						<ProtectedString name="Source"><![CDATA[--!strict
+
+local EconomyProgressionService = {}
+local Players = game:GetService("Players")
+
+local MAX_LEVEL = 18
+
+local DEFAULT_REWARDS = {
+	Minion = {
+		Gold = 20,
+		XP = 30,
+	},
+
+	JungleMonster = {
+		Gold = 35,
+		XP = 45,
+	},
+
+	Champion = {
+		Gold = 300,
+		XP = 150,
+	},
+
+	Tower = {
+		Gold = 150,
+		XP = 0,
+	},
+
+	Inhibitor = {
+		Gold = 0,
+		XP = 0,
+	},
+
+	Nexus = {
+		Gold = 0,
+		XP = 0,
+	},
+}
+
+local function getUnitType(unit: Instance): string?
+	local unitType = unit:GetAttribute("UnitType")
+	return if typeof(unitType) == "string" then unitType else nil
+end
+
+local function getNumberAttribute(unit: Instance, name: string, fallback: number): number
+	local value = unit:GetAttribute(name)
+	return if typeof(value) == "number" then value else fallback
+end
+
+local function isChampion(unit: Instance): boolean
+	return getUnitType(unit) == "Champion"
+end
+
+local function getXPNeededForNextLevel(level: number): number
+	return level * 100
+end
+
+function EconomyProgressionService.ensureChampionProgression(champion: Instance)
+	if not isChampion(champion) then
+		return
+	end
+
+	if typeof(champion:GetAttribute("Gold")) ~= "number" then
+		champion:SetAttribute("Gold", 0)
+	end
+
+	if typeof(champion:GetAttribute("XP")) ~= "number" then
+		champion:SetAttribute("XP", 0)
+	end
+
+	if typeof(champion:GetAttribute("Level")) ~= "number" then
+		champion:SetAttribute("Level", 1)
+	end
+end
+
+function EconomyProgressionService.tryLevelUp(champion: Instance)
+	if not isChampion(champion) then
+		return
+	end
+
+	EconomyProgressionService.ensureChampionProgression(champion)
+
+	local level = getNumberAttribute(champion, "Level", 1)
+	local xp = getNumberAttribute(champion, "XP", 0)
+
+	while level < MAX_LEVEL do
+		local needed = getXPNeededForNextLevel(level)
+
+		if xp < needed then
+			break
+		end
+
+		xp -= needed
+		level += 1
+
+		local maxHealth = getNumberAttribute(champion, "MaxHealth", 650)
+		local health = getNumberAttribute(champion, "Health", maxHealth)
+		local attackDamage = getNumberAttribute(champion, "AttackDamage", 35)
+
+		champion:SetAttribute("MaxHealth", maxHealth + 60)
+		champion:SetAttribute("Health", health + 60)
+		champion:SetAttribute("AttackDamage", attackDamage + 4)
+
+		print(string.format("[MOBA] %s reached level %d", champion.Name, level))
+	end
+
+	champion:SetAttribute("Level", level)
+	champion:SetAttribute("XP", xp)
+end
+
+function EconomyProgressionService.awardKillRewards(killer: Instance, killed: Instance)
+	if not isChampion(killer) then
+		return
+	end
+
+	EconomyProgressionService.ensureChampionProgression(killer)
+
+	local killedType = getUnitType(killed)
+	if not killedType then
+		return
+	end
+
+	local defaultReward = DEFAULT_REWARDS[killedType]
+	if not defaultReward then
+		return
+	end
+
+	local goldReward = getNumberAttribute(killed, "GoldReward", defaultReward.Gold)
+	local xpReward = getNumberAttribute(killed, "XPReward", defaultReward.XP)
+
+	local currentGold = getNumberAttribute(killer, "Gold", 0)
+	local currentXP = getNumberAttribute(killer, "XP", 0)
+
+	killer:SetAttribute("Gold", currentGold + goldReward)
+	killer:SetAttribute("XP", currentXP + xpReward)
+
+	if goldReward > 0 or xpReward > 0 then
+		print(string.format(
+			"[MOBA] %s gained %d gold and %d XP from %s",
+			killer.Name,
+			goldReward,
+			xpReward,
+			killed.Name
+		))
+	end
+
+	EconomyProgressionService.tryLevelUp(killer)
+end
+function EconomyProgressionService.saveChampionProgressionToPlayer(champion: Instance)
+	local ownerUserId = champion:GetAttribute("OwnerUserId")
+	if typeof(ownerUserId) ~= "number" then
+		return
+	end
+
+	for _, player in Players:GetPlayers() do
+		if player.UserId == ownerUserId then
+			player:SetAttribute("Gold", champion:GetAttribute("Gold") or 0)
+			player:SetAttribute("XP", champion:GetAttribute("XP") or 0)
+			player:SetAttribute("Level", champion:GetAttribute("Level") or 1)
+			player:SetAttribute("ProgressionMaxHealth", champion:GetAttribute("MaxHealth") or 650)
+			player:SetAttribute("ProgressionAttackDamage", champion:GetAttribute("AttackDamage") or 35)
+			return
+		end
+	end
+end
+
+function EconomyProgressionService.applyPlayerProgressionToChampion(player: Player, champion: Instance)
+	local gold = player:GetAttribute("Gold")
+	local xp = player:GetAttribute("XP")
+	local level = player:GetAttribute("Level")
+	local maxHealth = player:GetAttribute("ProgressionMaxHealth")
+	local attackDamage = player:GetAttribute("ProgressionAttackDamage")
+
+	champion:SetAttribute("Gold", if typeof(gold) == "number" then gold else 0)
+	champion:SetAttribute("XP", if typeof(xp) == "number" then xp else 0)
+	champion:SetAttribute("Level", if typeof(level) == "number" then level else 1)
+
+	if typeof(maxHealth) == "number" then
+		champion:SetAttribute("MaxHealth", maxHealth)
+	end
+
+	if typeof(attackDamage) == "number" then
+		champion:SetAttribute("AttackDamage", attackDamage)
+	end
+end
+function EconomyProgressionService.start()
+	print("[MOBA] EconomyProgressionService started")
+end
+
+return EconomyProgressionService]]></ProtectedString>
+						<string name="ScriptGuid">{cdbb306f-a51d-46de-be26-c627f652ccf8}</string>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+						<string name="Name">EconomyProgressionService</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<UniqueId name="UniqueId">06564d612543f3d90a4dd6760000502d</UniqueId>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBX16f5833b3aee447cb37a627e8d86ed4f">
+					<Properties>
+						<Content name="LinkedSource"><null></null></Content>
+						<ProtectedString name="Source"><![CDATA[--!strict
+
+local EconomyProgressionService = {}
+local Players = game:GetService("Players")
+
+local MAX_LEVEL = 18
+
+local DEFAULT_REWARDS = {
+	Minion = {
+		Gold = 20,
+		XP = 30,
+	},
+
+	JungleMonster = {
+		Gold = 35,
+		XP = 45,
+	},
+
+	Champion = {
+		Gold = 300,
+		XP = 150,
+	},
+
+	Tower = {
+		Gold = 150,
+		XP = 0,
+	},
+
+	Inhibitor = {
+		Gold = 0,
+		XP = 0,
+	},
+
+	Nexus = {
+		Gold = 0,
+		XP = 0,
+	},
+}
+
+local function getUnitType(unit: Instance): string?
+	local unitType = unit:GetAttribute("UnitType")
+	return if typeof(unitType) == "string" then unitType else nil
+end
+
+local function getNumberAttribute(unit: Instance, name: string, fallback: number): number
+	local value = unit:GetAttribute(name)
+	return if typeof(value) == "number" then value else fallback
+end
+
+local function isChampion(unit: Instance): boolean
+	return getUnitType(unit) == "Champion"
+end
+
+local function getXPNeededForNextLevel(level: number): number
+	return level * 100
+end
+
+function EconomyProgressionService.ensureChampionProgression(champion: Instance)
+	if not isChampion(champion) then
+		return
+	end
+
+	if typeof(champion:GetAttribute("Gold")) ~= "number" then
+		champion:SetAttribute("Gold", 0)
+	end
+
+	if typeof(champion:GetAttribute("XP")) ~= "number" then
+		champion:SetAttribute("XP", 0)
+	end
+
+	if typeof(champion:GetAttribute("Level")) ~= "number" then
+		champion:SetAttribute("Level", 1)
+	end
+end
+
+function EconomyProgressionService.tryLevelUp(champion: Instance)
+	if not isChampion(champion) then
+		return
+	end
+
+	EconomyProgressionService.ensureChampionProgression(champion)
+
+	local level = getNumberAttribute(champion, "Level", 1)
+	local xp = getNumberAttribute(champion, "XP", 0)
+
+	while level < MAX_LEVEL do
+		local needed = getXPNeededForNextLevel(level)
+
+		if xp < needed then
+			break
+		end
+
+		xp -= needed
+		level += 1
+
+		local maxHealth = getNumberAttribute(champion, "MaxHealth", 650)
+		local health = getNumberAttribute(champion, "Health", maxHealth)
+		local attackDamage = getNumberAttribute(champion, "AttackDamage", 35)
+
+		champion:SetAttribute("MaxHealth", maxHealth + 60)
+		champion:SetAttribute("Health", health + 60)
+		champion:SetAttribute("AttackDamage", attackDamage + 4)
+
+		print(string.format("[MOBA] %s reached level %d", champion.Name, level))
+	end
+
+	champion:SetAttribute("Level", level)
+	champion:SetAttribute("XP", xp)
+end
+
+function EconomyProgressionService.awardKillRewards(killer: Instance, killed: Instance)
+	if not isChampion(killer) then
+		return
+	end
+
+	EconomyProgressionService.ensureChampionProgression(killer)
+
+	local killedType = getUnitType(killed)
+	if not killedType then
+		return
+	end
+
+	local defaultReward = DEFAULT_REWARDS[killedType]
+	if not defaultReward then
+		return
+	end
+
+	local goldReward = getNumberAttribute(killed, "GoldReward", defaultReward.Gold)
+	local xpReward = getNumberAttribute(killed, "XPReward", defaultReward.XP)
+
+	local currentGold = getNumberAttribute(killer, "Gold", 0)
+	local currentXP = getNumberAttribute(killer, "XP", 0)
+
+	killer:SetAttribute("Gold", currentGold + goldReward)
+	killer:SetAttribute("XP", currentXP + xpReward)
+
+	if goldReward > 0 or xpReward > 0 then
+		print(string.format(
+			"[MOBA] %s gained %d gold and %d XP from %s",
+			killer.Name,
+			goldReward,
+			xpReward,
+			killed.Name
+		))
+	end
+
+	EconomyProgressionService.tryLevelUp(killer)
+end
+function EconomyProgressionService.saveChampionProgressionToPlayer(champion: Instance)
+	local ownerUserId = champion:GetAttribute("OwnerUserId")
+	if typeof(ownerUserId) ~= "number" then
+		return
+	end
+
+	for _, player in Players:GetPlayers() do
+		if player.UserId == ownerUserId then
+			player:SetAttribute("Gold", champion:GetAttribute("Gold") or 0)
+			player:SetAttribute("XP", champion:GetAttribute("XP") or 0)
+			player:SetAttribute("Level", champion:GetAttribute("Level") or 1)
+			player:SetAttribute("ProgressionMaxHealth", champion:GetAttribute("MaxHealth") or 650)
+			player:SetAttribute("ProgressionAttackDamage", champion:GetAttribute("AttackDamage") or 35)
+			return
+		end
+	end
+end
+
+function EconomyProgressionService.applyPlayerProgressionToChampion(player: Player, champion: Instance)
+	local gold = player:GetAttribute("Gold")
+	local xp = player:GetAttribute("XP")
+	local level = player:GetAttribute("Level")
+	local maxHealth = player:GetAttribute("ProgressionMaxHealth")
+	local attackDamage = player:GetAttribute("ProgressionAttackDamage")
+
+	champion:SetAttribute("Gold", if typeof(gold) == "number" then gold else 0)
+	champion:SetAttribute("XP", if typeof(xp) == "number" then xp else 0)
+	champion:SetAttribute("Level", if typeof(level) == "number" then level else 1)
+
+	if typeof(maxHealth) == "number" then
+		champion:SetAttribute("MaxHealth", maxHealth)
+	end
+
+	if typeof(attackDamage) == "number" then
+		champion:SetAttribute("AttackDamage", attackDamage)
+	end
+end
+function EconomyProgressionService.start()
+	print("[MOBA] EconomyProgressionService started")
+end
+
+return EconomyProgressionService]]></ProtectedString>
+						<string name="ScriptGuid">{7d4c3f11-10a6-4082-83f4-96ccdd4d204c}</string>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+						<string name="Name">EconomyProgressionService</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<UniqueId name="UniqueId">06564d612543f3d90a4dd67600005030</UniqueId>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBX0c64dd67bf844b8fad3e1dbfc0386f16">
+					<Properties>
+						<Content name="LinkedSource"><null></null></Content>
+						<ProtectedString name="Source"><![CDATA[--!strict
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local ItemData = require(ReplicatedStorage.Modules.ItemData)
+local ChampionService = require(script.Parent.ChampionService)
+
+local ShopService = {}
+
+local MAX_INVENTORY_SLOTS = 6
+
+local function getNumberAttribute(instance: Instance, name: string, fallback: number): number
+	local value = instance:GetAttribute(name)
+	return if typeof(value) == "number" then value else fallback
+end
+
+local function getInventoryCount(champion: Model): number
+	local count = 0
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if typeof(itemId) == "string" and itemId ~= "" then
+			count += 1
+		end
+	end
+
+	return count
+end
+
+local function hasItem(champion: Model, searchedItemId: string): boolean
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if itemId == searchedItemId then
+			return true
+		end
+	end
+
+	return false
+end
+
+local function hasUniqueGroupItem(champion: Model, uniqueGroup: string): boolean
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local slotItemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if typeof(slotItemId) == "string" and slotItemId ~= "" then
+			local slotItem = ItemData.Items[slotItemId]
+			if typeof(slotItem) == "table" and slotItem.UniqueGroup == uniqueGroup then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+local function hasUniqueGroupItemExceptSlots(
+	champion: Model,
+	uniqueGroup: string,
+	ignoredSlots: { number }
+): boolean
+	local ignored: { [number]: boolean } = {}
+	for _, slotIndex in ignoredSlots do
+		ignored[slotIndex] = true
+	end
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		if not ignored[slotIndex] then
+			local slotItemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+			if typeof(slotItemId) == "string" and slotItemId ~= "" then
+				local slotItem = ItemData.Items[slotItemId]
+				if typeof(slotItem) == "table" and slotItem.UniqueGroup == uniqueGroup then
+					return true
+				end
+			end
+		end
+	end
+
+	return false
+end
+
+local function findFirstEmptySlot(champion: Model): number?
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local attributeName = "InventorySlot" .. tostring(slotIndex)
+		local itemId = champion:GetAttribute(attributeName)
+
+		if typeof(itemId) ~= "string" or itemId == "" then
+			return slotIndex
+		end
+	end
+
+	return nil
+end
+
+local function setInventorySlot(champion: Model, slotIndex: number, itemId: string)
+	champion:SetAttribute("InventorySlot" .. tostring(slotIndex), itemId)
+	champion:SetAttribute("InventoryCount", getInventoryCount(champion))
+end
+
+local function clearInventorySlot(champion: Model, slotIndex: number)
+	champion:SetAttribute("InventorySlot" .. tostring(slotIndex), "")
+end
+
+local function findItemSlots(champion: Model, requiredComponents: { string }): { number }?
+	local matchedSlots: { number } = {}
+	local usedSlots: { [number]: boolean } = {}
+
+	for _, requiredItemId in requiredComponents do
+		local matchedSlot: number? = nil
+
+		for slotIndex = 1, MAX_INVENTORY_SLOTS do
+			if not usedSlots[slotIndex] then
+				local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+				if itemId == requiredItemId then
+					matchedSlot = slotIndex
+					break
+				end
+			end
+		end
+
+		if not matchedSlot then
+			return nil
+		end
+
+		usedSlots[matchedSlot] = true
+		table.insert(matchedSlots, matchedSlot)
+	end
+
+	return matchedSlots
+end
+
+local function applyItemStats(champion: Model, item)
+	local stats = item.Stats
+	if typeof(stats) ~= "table" then
+		return
+	end
+
+	local attackDamage = stats.AttackDamage
+	if typeof(attackDamage) == "number" then
+		local current = getNumberAttribute(champion, "AttackDamage", 0)
+		champion:SetAttribute("AttackDamage", current + attackDamage)
+	end
+
+	local maxHealth = stats.MaxHealth
+	if typeof(maxHealth) == "number" then
+		local currentMax = getNumberAttribute(champion, "MaxHealth", 0)
+		local currentHealth = getNumberAttribute(champion, "Health", currentMax)
+		local newMax = currentMax + maxHealth
+		local newHealth = currentHealth + maxHealth
+
+		champion:SetAttribute("MaxHealth", newMax)
+		champion:SetAttribute("Health", newHealth)
+
+		local humanoid = champion:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.MaxHealth = newMax
+			humanoid.Health = newHealth
+		end
+	end
+
+	local moveSpeed = stats.MoveSpeed
+	if typeof(moveSpeed) == "number" then
+		local current = getNumberAttribute(champion, "MoveSpeed", 16)
+		local newSpeed = current + moveSpeed
+
+		champion:SetAttribute("MoveSpeed", newSpeed)
+
+		local humanoid = champion:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = newSpeed
+		end
+	end
+end
+
+local function removeItemStats(champion: Model, item)
+	local stats = item.Stats
+	if typeof(stats) ~= "table" then
+		return
+	end
+
+	local attackDamage = stats.AttackDamage
+	if typeof(attackDamage) == "number" then
+		local current = getNumberAttribute(champion, "AttackDamage", 0)
+		champion:SetAttribute("AttackDamage", current - attackDamage)
+	end
+
+	local maxHealth = stats.MaxHealth
+	if typeof(maxHealth) == "number" then
+		local currentMax = getNumberAttribute(champion, "MaxHealth", 1)
+		local currentHealth = getNumberAttribute(champion, "Health", currentMax)
+		local newMax = math.max(1, currentMax - maxHealth)
+		local newHealth = math.clamp(currentHealth, 1, newMax)
+
+		champion:SetAttribute("MaxHealth", newMax)
+		champion:SetAttribute("Health", newHealth)
+
+		local humanoid = champion:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.MaxHealth = newMax
+			humanoid.Health = newHealth
+		end
+	end
+
+	local moveSpeed = stats.MoveSpeed
+	if typeof(moveSpeed) == "number" then
+		local current = getNumberAttribute(champion, "MoveSpeed", 1)
+		local newSpeed = math.max(1, current - moveSpeed)
+
+		champion:SetAttribute("MoveSpeed", newSpeed)
+
+		local humanoid = champion:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = newSpeed
+		end
+	end
+end
+
+local function getInventoryDebugText(champion: Model): string
+	local parts = {}
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		local itemText = if typeof(itemId) == "string" and itemId ~= "" then itemId else "-"
+		table.insert(parts, string.format("%d=%s", slotIndex, itemText))
+	end
+
+	return table.concat(parts, " | ")
+end
+
+function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
+	local item = ItemData.Items[itemId]
+	if typeof(item) ~= "table" then
+		return false, "Unknown item"
+	end
+
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	local uniqueGroup = item.UniqueGroup
+	if typeof(uniqueGroup) == "string" and hasUniqueGroupItem(champion, uniqueGroup) then
+		return false, "Unique group item already owned"
+	end
+
+	if item.Unique == true and hasItem(champion, itemId) then
+		return false, "Unique item already owned"
+	end
+
+	local emptySlot = findFirstEmptySlot(champion)
+	if not emptySlot then
+		return false, "Inventory full"
+	end
+
+	local gold = getNumberAttribute(champion, "Gold", 0)
+	local cost = item.Cost
+
+	if typeof(cost) ~= "number" then
+		return false, "Invalid item cost"
+	end
+
+	if gold < cost then
+		return false, "Not enough gold"
+	end
+
+	champion:SetAttribute("Gold", gold - cost)
+	setInventorySlot(champion, emptySlot, itemId)
+	applyItemStats(champion, item)
+
+	local itemName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
+
+	print(string.format(
+		"[MOBA] %s bought %s for %d gold in slot %d",
+		player.Name,
+		itemName,
+		cost,
+		emptySlot
+	))
+
+	print(string.format(
+		"[MOBA][SHOP] %s stats after %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s Inventory=[%s]",
+		player.Name,
+		itemName,
+		tostring(champion:GetAttribute("Gold")),
+		tostring(champion:GetAttribute("MaxHealth")),
+		tostring(champion:GetAttribute("AttackDamage")),
+		tostring(champion:GetAttribute("MoveSpeed")),
+		tostring(champion:GetAttribute("InventoryCount")),
+		getInventoryDebugText(champion)
+	))
+
+	return true, "Bought"
+end
+
+function ShopService.sellItem(player: Player, slotIndex: number): (boolean, string)
+	if slotIndex < 1 or slotIndex > MAX_INVENTORY_SLOTS or slotIndex % 1 ~= 0 then
+		return false, "Invalid slot"
+	end
+
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	local attributeName = "InventorySlot" .. tostring(slotIndex)
+	local itemId = champion:GetAttribute(attributeName)
+	if typeof(itemId) ~= "string" or itemId == "" then
+		return false, "Empty slot"
+	end
+
+	local item = ItemData.Items[itemId]
+	if typeof(item) ~= "table" then
+		return false, "Unknown item"
+	end
+
+	local cost = item.Cost
+	if typeof(cost) ~= "number" then
+		return false, "Invalid item cost"
+	end
+
+	local refund = math.floor(cost * 0.7)
+	local gold = getNumberAttribute(champion, "Gold", 0)
+	local itemName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
+
+	champion:SetAttribute("Gold", gold + refund)
+	removeItemStats(champion, item)
+	setInventorySlot(champion, slotIndex, "")
+
+	print(string.format(
+		"[MOBA] %s sold %s from slot %d for %d gold",
+		player.Name,
+		itemName,
+		slotIndex,
+		refund
+	))
+
+	print(string.format(
+		"[MOBA][SHOP] %s stats after selling %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s Inventory=[%s]",
+		player.Name,
+		itemName,
+		tostring(champion:GetAttribute("Gold")),
+		tostring(champion:GetAttribute("MaxHealth")),
+		tostring(champion:GetAttribute("AttackDamage")),
+		tostring(champion:GetAttribute("MoveSpeed")),
+		tostring(champion:GetAttribute("InventoryCount")),
+		getInventoryDebugText(champion)
+	))
+
+	return true, "Sold"
+end
+
+function ShopService.craftItem(player: Player, targetItemId: string): (boolean, string)
+	local targetItem = ItemData.Items[targetItemId]
+	if typeof(targetItem) ~= "table" then
+		return false, "Unknown item"
+	end
+
+	local recipe = targetItem.Recipe
+	if typeof(recipe) ~= "table" then
+		return false, "Item has no recipe"
+	end
+
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	local components = recipe.Components
+	if typeof(components) ~= "table" then
+		return false, "Invalid recipe components"
+	end
+
+	local requiredComponents: { string } = {}
+	local componentItems: { any } = {}
+	for _, componentItemId in components do
+		if typeof(componentItemId) ~= "string" then
+			return false, "Invalid recipe component"
+		end
+
+		local componentItem = ItemData.Items[componentItemId]
+		if typeof(componentItem) ~= "table" then
+			return false, "Unknown recipe component"
+		end
+
+		table.insert(requiredComponents, componentItemId)
+		table.insert(componentItems, componentItem)
+	end
+
+	if #requiredComponents == 0 then
+		return false, "Recipe has no components"
+	end
+
+	local combineCost = recipe.CombineCost
+	if typeof(combineCost) ~= "number" or combineCost < 0 then
+		return false, "Invalid combine cost"
+	end
+
+	if targetItem.Unique == true and hasItem(champion, targetItemId) then
+		return false, "Unique item already owned"
+	end
+
+	local componentSlots = findItemSlots(champion, requiredComponents)
+	if not componentSlots then
+		return false, "Missing components"
+	end
+
+	local uniqueGroup = targetItem.UniqueGroup
+	if
+		typeof(uniqueGroup) == "string"
+		and hasUniqueGroupItemExceptSlots(champion, uniqueGroup, componentSlots)
+	then
+		return false, "Unique group item already owned"
+	end
+
+	local firstConsumedSlot = componentSlots[1]
+	if not firstConsumedSlot then
+		return false, "Recipe has no components"
+	end
+
+	local gold = getNumberAttribute(champion, "Gold", 0)
+	if gold < combineCost then
+		return false, "Not enough gold"
+	end
+
+	for componentIndex, slotIndex in componentSlots do
+		removeItemStats(champion, componentItems[componentIndex])
+		clearInventorySlot(champion, slotIndex)
+	end
+
+	champion:SetAttribute("Gold", gold - combineCost)
+	setInventorySlot(champion, firstConsumedSlot, targetItemId)
+	applyItemStats(champion, targetItem)
+
+	local itemName = if typeof(targetItem.DisplayName) == "string" then targetItem.DisplayName else targetItemId
+	print(string.format(
+		"[MOBA] %s crafted %s using %s and %d gold",
+		player.Name,
+		itemName,
+		table.concat(requiredComponents, ", "),
+		combineCost
+	))
+
+	print(string.format(
+		"[MOBA][SHOP] %s stats after crafting %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s Inventory=[%s]",
+		player.Name,
+		itemName,
+		tostring(champion:GetAttribute("Gold")),
+		tostring(champion:GetAttribute("MaxHealth")),
+		tostring(champion:GetAttribute("AttackDamage")),
+		tostring(champion:GetAttribute("MoveSpeed")),
+		tostring(champion:GetAttribute("InventoryCount")),
+		getInventoryDebugText(champion)
+	))
+
+	return true, "Crafted"
+end
+
+function ShopService.start()
+	print("[MOBA] ShopService started")
+end
+
+return ShopService
+]]></ProtectedString>
+						<string name="ScriptGuid">{a91ea8f9-fbe0-4700-8be6-ce0e59decb4c}</string>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+						<string name="Name">ShopService</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<UniqueId name="UniqueId">06564d612543f3d90a4dd67600009141</UniqueId>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBX4e9da7364c9c490bb6e33c5e08bed304">
+					<Properties>
+						<Content name="LinkedSource"><null></null></Content>
+						<ProtectedString name="Source"><![CDATA[--!strict
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local ItemData = require(ReplicatedStorage.Modules.ItemData)
+local ChampionService = require(script.Parent.ChampionService)
+
+local ShopService = {}
+
+local MAX_INVENTORY_SLOTS = 6
+
+local function getNumberAttribute(instance: Instance, name: string, fallback: number): number
+	local value = instance:GetAttribute(name)
+	return if typeof(value) == "number" then value else fallback
+end
+
+local function getInventoryCount(champion: Model): number
+	local count = 0
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if typeof(itemId) == "string" and itemId ~= "" then
+			count += 1
+		end
+	end
+
+	return count
+end
+
+local function hasItem(champion: Model, searchedItemId: string): boolean
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if itemId == searchedItemId then
+			return true
+		end
+	end
+
+	return false
+end
+
+local function hasUniqueGroupItem(champion: Model, uniqueGroup: string): boolean
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local slotItemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if typeof(slotItemId) == "string" and slotItemId ~= "" then
+			local slotItem = ItemData.Items[slotItemId]
+			if typeof(slotItem) == "table" and slotItem.UniqueGroup == uniqueGroup then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+local function hasUniqueGroupItemExceptSlots(
+	champion: Model,
+	uniqueGroup: string,
+	ignoredSlots: { number }
+): boolean
+	local ignored: { [number]: boolean } = {}
+	for _, slotIndex in ignoredSlots do
+		ignored[slotIndex] = true
+	end
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		if not ignored[slotIndex] then
+			local slotItemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+			if typeof(slotItemId) == "string" and slotItemId ~= "" then
+				local slotItem = ItemData.Items[slotItemId]
+				if typeof(slotItem) == "table" and slotItem.UniqueGroup == uniqueGroup then
+					return true
+				end
+			end
+		end
+	end
+
+	return false
+end
+
+local function findFirstEmptySlot(champion: Model): number?
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local attributeName = "InventorySlot" .. tostring(slotIndex)
+		local itemId = champion:GetAttribute(attributeName)
+
+		if typeof(itemId) ~= "string" or itemId == "" then
+			return slotIndex
+		end
+	end
+
+	return nil
+end
+
+local function setInventorySlot(champion: Model, slotIndex: number, itemId: string)
+	champion:SetAttribute("InventorySlot" .. tostring(slotIndex), itemId)
+	champion:SetAttribute("InventoryCount", getInventoryCount(champion))
+end
+
+local function clearInventorySlot(champion: Model, slotIndex: number)
+	champion:SetAttribute("InventorySlot" .. tostring(slotIndex), "")
+end
+
+local function findItemSlots(champion: Model, requiredComponents: { string }): { number }?
+	local matchedSlots: { number } = {}
+	local usedSlots: { [number]: boolean } = {}
+
+	for _, requiredItemId in requiredComponents do
+		local matchedSlot: number? = nil
+
+		for slotIndex = 1, MAX_INVENTORY_SLOTS do
+			if not usedSlots[slotIndex] then
+				local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+				if itemId == requiredItemId then
+					matchedSlot = slotIndex
+					break
+				end
+			end
+		end
+
+		if not matchedSlot then
+			return nil
+		end
+
+		usedSlots[matchedSlot] = true
+		table.insert(matchedSlots, matchedSlot)
+	end
+
+	return matchedSlots
+end
+
+local function applyItemStats(champion: Model, item)
+	local stats = item.Stats
+	if typeof(stats) ~= "table" then
+		return
+	end
+
+	local attackDamage = stats.AttackDamage
+	if typeof(attackDamage) == "number" then
+		local current = getNumberAttribute(champion, "AttackDamage", 0)
+		champion:SetAttribute("AttackDamage", current + attackDamage)
+	end
+
+	local maxHealth = stats.MaxHealth
+	if typeof(maxHealth) == "number" then
+		local currentMax = getNumberAttribute(champion, "MaxHealth", 0)
+		local currentHealth = getNumberAttribute(champion, "Health", currentMax)
+		local newMax = currentMax + maxHealth
+		local newHealth = currentHealth + maxHealth
+
+		champion:SetAttribute("MaxHealth", newMax)
+		champion:SetAttribute("Health", newHealth)
+
+		local humanoid = champion:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.MaxHealth = newMax
+			humanoid.Health = newHealth
+		end
+	end
+
+	local moveSpeed = stats.MoveSpeed
+	if typeof(moveSpeed) == "number" then
+		local current = getNumberAttribute(champion, "MoveSpeed", 16)
+		local newSpeed = current + moveSpeed
+
+		champion:SetAttribute("MoveSpeed", newSpeed)
+
+		local humanoid = champion:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = newSpeed
+		end
+	end
+end
+
+local function removeItemStats(champion: Model, item)
+	local stats = item.Stats
+	if typeof(stats) ~= "table" then
+		return
+	end
+
+	local attackDamage = stats.AttackDamage
+	if typeof(attackDamage) == "number" then
+		local current = getNumberAttribute(champion, "AttackDamage", 0)
+		champion:SetAttribute("AttackDamage", current - attackDamage)
+	end
+
+	local maxHealth = stats.MaxHealth
+	if typeof(maxHealth) == "number" then
+		local currentMax = getNumberAttribute(champion, "MaxHealth", 1)
+		local currentHealth = getNumberAttribute(champion, "Health", currentMax)
+		local newMax = math.max(1, currentMax - maxHealth)
+		local newHealth = math.clamp(currentHealth, 1, newMax)
+
+		champion:SetAttribute("MaxHealth", newMax)
+		champion:SetAttribute("Health", newHealth)
+
+		local humanoid = champion:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.MaxHealth = newMax
+			humanoid.Health = newHealth
+		end
+	end
+
+	local moveSpeed = stats.MoveSpeed
+	if typeof(moveSpeed) == "number" then
+		local current = getNumberAttribute(champion, "MoveSpeed", 1)
+		local newSpeed = math.max(1, current - moveSpeed)
+
+		champion:SetAttribute("MoveSpeed", newSpeed)
+
+		local humanoid = champion:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = newSpeed
+		end
+	end
+end
+
+local function getInventoryDebugText(champion: Model): string
+	local parts = {}
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		local itemText = if typeof(itemId) == "string" and itemId ~= "" then itemId else "-"
+		table.insert(parts, string.format("%d=%s", slotIndex, itemText))
+	end
+
+	return table.concat(parts, " | ")
+end
+
+function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
+	local item = ItemData.Items[itemId]
+	if typeof(item) ~= "table" then
+		return false, "Unknown item"
+	end
+
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	local uniqueGroup = item.UniqueGroup
+	if typeof(uniqueGroup) == "string" and hasUniqueGroupItem(champion, uniqueGroup) then
+		return false, "Unique group item already owned"
+	end
+
+	if item.Unique == true and hasItem(champion, itemId) then
+		return false, "Unique item already owned"
+	end
+
+	local emptySlot = findFirstEmptySlot(champion)
+	if not emptySlot then
+		return false, "Inventory full"
+	end
+
+	local gold = getNumberAttribute(champion, "Gold", 0)
+	local cost = item.Cost
+
+	if typeof(cost) ~= "number" then
+		return false, "Invalid item cost"
+	end
+
+	if gold < cost then
+		return false, "Not enough gold"
+	end
+
+	champion:SetAttribute("Gold", gold - cost)
+	setInventorySlot(champion, emptySlot, itemId)
+	applyItemStats(champion, item)
+
+	local itemName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
+
+	print(string.format(
+		"[MOBA] %s bought %s for %d gold in slot %d",
+		player.Name,
+		itemName,
+		cost,
+		emptySlot
+	))
+
+	print(string.format(
+		"[MOBA][SHOP] %s stats after %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s Inventory=[%s]",
+		player.Name,
+		itemName,
+		tostring(champion:GetAttribute("Gold")),
+		tostring(champion:GetAttribute("MaxHealth")),
+		tostring(champion:GetAttribute("AttackDamage")),
+		tostring(champion:GetAttribute("MoveSpeed")),
+		tostring(champion:GetAttribute("InventoryCount")),
+		getInventoryDebugText(champion)
+	))
+
+	return true, "Bought"
+end
+
+function ShopService.sellItem(player: Player, slotIndex: number): (boolean, string)
+	if slotIndex < 1 or slotIndex > MAX_INVENTORY_SLOTS or slotIndex % 1 ~= 0 then
+		return false, "Invalid slot"
+	end
+
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	local attributeName = "InventorySlot" .. tostring(slotIndex)
+	local itemId = champion:GetAttribute(attributeName)
+	if typeof(itemId) ~= "string" or itemId == "" then
+		return false, "Empty slot"
+	end
+
+	local item = ItemData.Items[itemId]
+	if typeof(item) ~= "table" then
+		return false, "Unknown item"
+	end
+
+	local cost = item.Cost
+	if typeof(cost) ~= "number" then
+		return false, "Invalid item cost"
+	end
+
+	local refund = math.floor(cost * 0.7)
+	local gold = getNumberAttribute(champion, "Gold", 0)
+	local itemName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
+
+	champion:SetAttribute("Gold", gold + refund)
+	removeItemStats(champion, item)
+	setInventorySlot(champion, slotIndex, "")
+
+	print(string.format(
+		"[MOBA] %s sold %s from slot %d for %d gold",
+		player.Name,
+		itemName,
+		slotIndex,
+		refund
+	))
+
+	print(string.format(
+		"[MOBA][SHOP] %s stats after selling %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s Inventory=[%s]",
+		player.Name,
+		itemName,
+		tostring(champion:GetAttribute("Gold")),
+		tostring(champion:GetAttribute("MaxHealth")),
+		tostring(champion:GetAttribute("AttackDamage")),
+		tostring(champion:GetAttribute("MoveSpeed")),
+		tostring(champion:GetAttribute("InventoryCount")),
+		getInventoryDebugText(champion)
+	))
+
+	return true, "Sold"
+end
+
+function ShopService.craftItem(player: Player, targetItemId: string): (boolean, string)
+	local targetItem = ItemData.Items[targetItemId]
+	if typeof(targetItem) ~= "table" then
+		return false, "Unknown item"
+	end
+
+	local recipe = targetItem.Recipe
+	if typeof(recipe) ~= "table" then
+		return false, "Item has no recipe"
+	end
+
+	local champion = ChampionService.getChampionFromPlayer(player)
+	if not champion then
+		return false, "Champion not found"
+	end
+
+	if champion:GetAttribute("Dead") == true then
+		return false, "Champion is dead"
+	end
+
+	local components = recipe.Components
+	if typeof(components) ~= "table" then
+		return false, "Invalid recipe components"
+	end
+
+	local requiredComponents: { string } = {}
+	local componentItems: { any } = {}
+	for _, componentItemId in components do
+		if typeof(componentItemId) ~= "string" then
+			return false, "Invalid recipe component"
+		end
+
+		local componentItem = ItemData.Items[componentItemId]
+		if typeof(componentItem) ~= "table" then
+			return false, "Unknown recipe component"
+		end
+
+		table.insert(requiredComponents, componentItemId)
+		table.insert(componentItems, componentItem)
+	end
+
+	if #requiredComponents == 0 then
+		return false, "Recipe has no components"
+	end
+
+	local combineCost = recipe.CombineCost
+	if typeof(combineCost) ~= "number" or combineCost < 0 then
+		return false, "Invalid combine cost"
+	end
+
+	if targetItem.Unique == true and hasItem(champion, targetItemId) then
+		return false, "Unique item already owned"
+	end
+
+	local componentSlots = findItemSlots(champion, requiredComponents)
+	if not componentSlots then
+		return false, "Missing components"
+	end
+
+	local uniqueGroup = targetItem.UniqueGroup
+	if
+		typeof(uniqueGroup) == "string"
+		and hasUniqueGroupItemExceptSlots(champion, uniqueGroup, componentSlots)
+	then
+		return false, "Unique group item already owned"
+	end
+
+	local firstConsumedSlot = componentSlots[1]
+	if not firstConsumedSlot then
+		return false, "Recipe has no components"
+	end
+
+	local gold = getNumberAttribute(champion, "Gold", 0)
+	if gold < combineCost then
+		return false, "Not enough gold"
+	end
+
+	for componentIndex, slotIndex in componentSlots do
+		removeItemStats(champion, componentItems[componentIndex])
+		clearInventorySlot(champion, slotIndex)
+	end
+
+	champion:SetAttribute("Gold", gold - combineCost)
+	setInventorySlot(champion, firstConsumedSlot, targetItemId)
+	applyItemStats(champion, targetItem)
+
+	local itemName = if typeof(targetItem.DisplayName) == "string" then targetItem.DisplayName else targetItemId
+	print(string.format(
+		"[MOBA] %s crafted %s using %s and %d gold",
+		player.Name,
+		itemName,
+		table.concat(requiredComponents, ", "),
+		combineCost
+	))
+
+	print(string.format(
+		"[MOBA][SHOP] %s stats after crafting %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s Inventory=[%s]",
+		player.Name,
+		itemName,
+		tostring(champion:GetAttribute("Gold")),
+		tostring(champion:GetAttribute("MaxHealth")),
+		tostring(champion:GetAttribute("AttackDamage")),
+		tostring(champion:GetAttribute("MoveSpeed")),
+		tostring(champion:GetAttribute("InventoryCount")),
+		getInventoryDebugText(champion)
+	))
+
+	return true, "Crafted"
+end
+
+function ShopService.start()
+	print("[MOBA] ShopService started")
+end
+
+return ShopService
+]]></ProtectedString>
+						<string name="ScriptGuid">{d90eb205-d34b-45ee-8336-cf7ad0187932}</string>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<UniqueId name="HistoryId">00000000000000000000000000000000</UniqueId>
+						<string name="Name">ShopService</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+						<UniqueId name="UniqueId">06564d612543f3d90a4dd67600009143</UniqueId>
 					</Properties>
 				</Item>
 			</Item>
