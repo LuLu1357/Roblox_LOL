@@ -1,0 +1,12 @@
+# Project place file
+/GameTest.rbxlx
+
+# Local system and safety copies
+.DS_Store
+/backups/
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+sourcemap.json
