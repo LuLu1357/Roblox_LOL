@@ -345,13 +345,16 @@ function HudController.start()
 		button.Name = "Craft" .. targetItemId
 		button.Position = position
 		button.Size = UDim2.fromOffset(128, 38)
-		button.BackgroundColor3 = Color3.fromRGB(48, 68, 52)
+		button.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
 		button.BackgroundTransparency = 0.05
 		button.BorderSizePixel = 0
 		button.Font = Enum.Font.GothamBold
 		button.TextScaled = true
-		button.TextColor3 = Color3.fromRGB(220, 255, 225)
+		button.TextColor3 = Color3.fromRGB(145, 145, 145)
+		button.TextTransparency = 0.25
 		button.TextStrokeTransparency = 0.65
+		button.AutoButtonColor = false
+		button.Active = false
 		button.Text = text
 		button.Parent = panel
 
@@ -367,6 +370,91 @@ function HudController.start()
 	createCraftButton("GiantBelt", "Craft Belt\n300g", UDim2.fromOffset(166, 176))
 	createCraftButton("SwiftBoots", "Craft Swift\n500g", UDim2.fromOffset(314, 176))
 
+	local function countInventoryItem(character: Model, itemId: string): number
+		local count = 0
+
+		for slotIndex = 1, 6 do
+			local slotItemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+			if slotItemId == itemId then
+				count += 1
+			end
+		end
+
+		return count
+	end
+
+	local function canCraftItem(character: Model, targetItemId: string): boolean
+		local item = ItemData.Items[targetItemId]
+		if typeof(item) ~= "table" then
+			return false
+		end
+
+		local recipe = item.Recipe
+		if typeof(recipe) ~= "table" then
+			return false
+		end
+
+		local combineCost = recipe.CombineCost
+		if typeof(combineCost) ~= "number" then
+			return false
+		end
+
+		local gold = character:GetAttribute("Gold")
+		if typeof(gold) ~= "number" or gold < combineCost then
+			return false
+		end
+
+		if item.Unique == true then
+			for slotIndex = 1, 6 do
+				local slotItemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+				if slotItemId == targetItemId then
+					return false
+				end
+			end
+		end
+
+		local components = recipe.Components
+		if typeof(components) ~= "table" then
+			return false
+		end
+
+		local requiredCounts: { [string]: number } = {}
+		for _, componentItemId in components do
+			if typeof(componentItemId) ~= "string" then
+				return false
+			end
+
+			requiredCounts[componentItemId] = (requiredCounts[componentItemId] or 0) + 1
+		end
+
+		for componentItemId, requiredCount in requiredCounts do
+			if countInventoryItem(character, componentItemId) < requiredCount then
+				return false
+			end
+		end
+
+		return true
+	end
+
+	local function updateCraftButtons(character: Model)
+		for targetItemId, button in craftButtons do
+			local canCraft = canCraftItem(character, targetItemId)
+
+			button.AutoButtonColor = canCraft
+			button.Active = canCraft
+
+			if canCraft then
+				button.BackgroundColor3 = Color3.fromRGB(48, 68, 52)
+				button.TextColor3 = Color3.fromRGB(220, 255, 225)
+				button.TextTransparency = 0
+			else
+				button.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
+				button.TextColor3 = Color3.fromRGB(145, 145, 145)
+				button.TextTransparency = 0.25
+			end
+		end
+	end
+
 	local inventorySlots: { [number]: TextButton } = {}
 
 	local function getShortItemName(itemId: any): string
@@ -380,6 +468,12 @@ function HudController.start()
 			return "Ruby"
 		elseif itemId == "Boots" then
 			return "Boots"
+		elseif itemId == "BFSword" then
+			return "B.F."
+		elseif itemId == "GiantBelt" then
+			return "Belt"
+		elseif itemId == "SwiftBoots" then
+			return "Swift"
 		end
 
 		return itemId
@@ -514,6 +608,11 @@ function HudController.start()
 			end
 		end
 
+		local function updateInventoryAndCraft()
+			updateInventory()
+			updateCraftButtons(character)
+		end
+
 		local function updateProgression()
 			local level = character:GetAttribute("Level")
 			local gold = character:GetAttribute("Gold")
@@ -547,19 +646,22 @@ function HudController.start()
 		character:GetAttributeChangedSignal("Health"):Connect(updateHealth)
 		character:GetAttributeChangedSignal("MaxHealth"):Connect(updateHealth)
 		character:GetAttributeChangedSignal("Level"):Connect(updateProgression)
-		character:GetAttributeChangedSignal("Gold"):Connect(updateProgression)
+		character:GetAttributeChangedSignal("Gold"):Connect(function()
+			updateProgression()
+			updateCraftButtons(character)
+		end)
 		character:GetAttributeChangedSignal("XP"):Connect(updateProgression)
 		for _, attributeName in statsAttributeNames do
 			character:GetAttributeChangedSignal(attributeName):Connect(updateStatsPanel)
 		end
 		for slotIndex = 1, 6 do
-			character:GetAttributeChangedSignal("InventorySlot" .. tostring(slotIndex)):Connect(updateInventory)
+			character:GetAttributeChangedSignal("InventorySlot" .. tostring(slotIndex)):Connect(updateInventoryAndCraft)
 		end
-		character:GetAttributeChangedSignal("InventoryCount"):Connect(updateInventory)
+		character:GetAttributeChangedSignal("InventoryCount"):Connect(updateInventoryAndCraft)
 		updateHealth()
 		updateProgression()
 		updateStatsPanel()
-		updateInventory()
+		updateInventoryAndCraft()
 	end
 
 	player:GetAttributeChangedSignal("Team"):Connect(updateTeam)
@@ -612,6 +714,11 @@ function HudController.start()
 
 	for targetItemId, button in craftButtons do
 		button.MouseButton1Click:Connect(function()
+			local character = currentCharacter
+			if not character or not canCraftItem(character, targetItemId) then
+				return
+			end
+
 			shopCraftRequest:FireServer(targetItemId)
 		end)
 	end
