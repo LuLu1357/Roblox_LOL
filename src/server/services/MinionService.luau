@@ -8,6 +8,7 @@ local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local CombatService = require(script.Parent.CombatService)
 local UnitFactory = require(script.Parent.UnitFactory)
 local Utility = require(script.Parent.Utility)
+local MatchStateService = require(script.Parent.MatchStateService)
 
 local MinionService = {}
 
@@ -338,10 +339,12 @@ function MinionService.start()
 	task.spawn(function()
 		task.wait(3)
 
-		while true do
+		while not MatchStateService.isMatchEnded() do
 			MinionService.spawnWave()
 			task.wait(SharedConstants.MATCH.MINION_WAVE_INTERVAL / getGameSpeed())
 		end
+
+		print("[MOBA] Minion spawning stopped — match ended")
 	end)
 end
 

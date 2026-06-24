@@ -35,7 +35,10 @@ function MatchStateService.endMatch(winningTeam: string)
 	end
 	MatchStateService.State = "Ended"
 	broadcastState(winningTeam)
-	print("[MOBA] Winner:", winningTeam)
+	print(string.format("[MOBA] Match ended — %s wins", winningTeam))
+end
+function MatchStateService.isMatchEnded(): boolean
+	return MatchStateService.State == "Ended"
 end
 
 function MatchStateService.start()
