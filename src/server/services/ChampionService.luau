@@ -72,6 +72,12 @@ local function setupCharacter(player: Player, character: Model)
 	if typeof(finalMaxHealth) ~= "number" then
 		finalMaxHealth = data.MaxHealth
 	end
+	local finalMoveSpeed = character:GetAttribute("MoveSpeed")
+	if typeof(finalMoveSpeed) ~= "number" then
+		finalMoveSpeed = data.MoveSpeed
+	end
+
+	humanoid.WalkSpeed = finalMoveSpeed
 
 	humanoid.MaxHealth = finalMaxHealth
 	humanoid.Health = finalMaxHealth
