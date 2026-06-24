@@ -104,6 +104,12 @@ local function setupCharacter(player: Player, character: Model)
 		"AttackCooldown",
 		"MoveSpeed",
 		"InventoryCount",
+		"InventorySlot1",
+		"InventorySlot2",
+		"InventorySlot3",
+		"InventorySlot4",
+		"InventorySlot5",
+		"InventorySlot6",
 	}
 
 	for _, attributeName in watchedAttributes do

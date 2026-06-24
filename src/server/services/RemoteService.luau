@@ -35,6 +35,7 @@ function RemoteService.start()
 	started = true
 
 	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+	
 	if not remotes then
 		remotes = Instance.new("Folder")
 		remotes.Name = "Remotes"
@@ -48,6 +49,38 @@ function RemoteService.start()
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.MATCH_STATE_UPDATE)
 
 	local shopBuyRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_BUY_REQUEST)
+	local debugAddGoldRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST)
+	debugAddGoldRequest.OnServerEvent:Connect(function(player)
+		local debugConfig = SharedConstants.DEBUG
+		if typeof(debugConfig) ~= "table" or debugConfig.ALLOW_DEBUG_GOLD ~= true then
+			warn("[MOBA] Debug gold refused:", player.Name)
+			return
+		end
+
+		local champion = ChampionService.getChampionFromPlayer(player)
+		if not champion then
+			return
+		end
+
+		local amount = debugConfig.DEBUG_GOLD_AMOUNT
+		if typeof(amount) ~= "number" then
+			amount = 1000
+		end
+
+		local gold = champion:GetAttribute("Gold")
+		if typeof(gold) ~= "number" then
+			gold = 0
+		end
+
+		champion:SetAttribute("Gold", gold + amount)
+
+		print(string.format(
+			"[MOBA][DEBUG] Added %d gold to %s. New gold = %d",
+			amount,
+			player.Name,
+			gold + amount
+		))
+	end)
 
 	attackRequest.OnServerEvent:Connect(function(player, target)
 		if typeof(target) ~= "Instance" then

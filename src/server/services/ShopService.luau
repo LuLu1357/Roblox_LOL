@@ -7,9 +7,56 @@ local ChampionService = require(script.Parent.ChampionService)
 
 local ShopService = {}
 
+local MAX_INVENTORY_SLOTS = 6
+local UNIQUE_ITEMS = {
+	Boots = true,
+}
+
 local function getNumberAttribute(instance: Instance, name: string, fallback: number): number
 	local value = instance:GetAttribute(name)
 	return if typeof(value) == "number" then value else fallback
+end
+
+local function getInventoryCount(champion: Model): number
+	local count = 0
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if typeof(itemId) == "string" and itemId ~= "" then
+			count += 1
+		end
+	end
+
+	return count
+end
+
+local function hasItem(champion: Model, searchedItemId: string): boolean
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		if itemId == searchedItemId then
+			return true
+		end
+	end
+
+	return false
+end
+
+local function findFirstEmptySlot(champion: Model): number?
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local attributeName = "InventorySlot" .. tostring(slotIndex)
+		local itemId = champion:GetAttribute(attributeName)
+
+		if typeof(itemId) ~= "string" or itemId == "" then
+			return slotIndex
+		end
+	end
+
+	return nil
+end
+
+local function setInventorySlot(champion: Model, slotIndex: number, itemId: string)
+	champion:SetAttribute("InventorySlot" .. tostring(slotIndex), itemId)
+	champion:SetAttribute("InventoryCount", getInventoryCount(champion))
 end
 
 local function applyItemStats(champion: Model, item)
@@ -28,14 +75,16 @@ local function applyItemStats(champion: Model, item)
 	if typeof(maxHealth) == "number" then
 		local currentMax = getNumberAttribute(champion, "MaxHealth", 0)
 		local currentHealth = getNumberAttribute(champion, "Health", currentMax)
+		local newMax = currentMax + maxHealth
+		local newHealth = currentHealth + maxHealth
 
-		champion:SetAttribute("MaxHealth", currentMax + maxHealth)
-		champion:SetAttribute("Health", currentHealth + maxHealth)
+		champion:SetAttribute("MaxHealth", newMax)
+		champion:SetAttribute("Health", newHealth)
 
 		local humanoid = champion:FindFirstChildOfClass("Humanoid")
 		if humanoid then
-			humanoid.MaxHealth = currentMax + maxHealth
-			humanoid.Health = currentHealth + maxHealth
+			humanoid.MaxHealth = newMax
+			humanoid.Health = newHealth
 		end
 	end
 
@@ -53,6 +102,17 @@ local function applyItemStats(champion: Model, item)
 	end
 end
 
+local function getInventoryDebugText(champion: Model): string
+	local parts = {}
+
+	for slotIndex = 1, MAX_INVENTORY_SLOTS do
+		local itemId = champion:GetAttribute("InventorySlot" .. tostring(slotIndex))
+		table.insert(parts, string.format("%d=%s", slotIndex, tostring(itemId or "-")))
+	end
+
+	return table.concat(parts, " | ")
+end
+
 function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
 	local item = ItemData.Items[itemId]
 	if typeof(item) ~= "table" then
@@ -68,6 +128,15 @@ function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
 		return false, "Champion is dead"
 	end
 
+	if UNIQUE_ITEMS[itemId] and hasItem(champion, itemId) then
+		return false, "Unique item already owned"
+	end
+
+	local emptySlot = findFirstEmptySlot(champion)
+	if not emptySlot then
+		return false, "Inventory full"
+	end
+
 	local gold = getNumberAttribute(champion, "Gold", 0)
 	local cost = item.Cost
 
@@ -80,23 +149,29 @@ function ShopService.buyItem(player: Player, itemId: string): (boolean, string)
 	end
 
 	champion:SetAttribute("Gold", gold - cost)
+	setInventorySlot(champion, emptySlot, itemId)
 	applyItemStats(champion, item)
 
-	local inventoryCount = getNumberAttribute(champion, "InventoryCount", 0)
-	champion:SetAttribute("InventoryCount", inventoryCount + 1)
-
-	print(string.format("[MOBA] %s bought %s for %d gold", player.Name, item.DisplayName or itemId, cost))
-
 	local itemName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
+
 	print(string.format(
-		"[MOBA][SHOP] %s stats after %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s",
+		"[MOBA] %s bought %s for %d gold in slot %d",
+		player.Name,
+		itemName,
+		cost,
+		emptySlot
+	))
+
+	print(string.format(
+		"[MOBA][SHOP] %s stats after %s: Gold=%s MaxHealth=%s AD=%s Speed=%s Items=%s Inventory=[%s]",
 		player.Name,
 		itemName,
 		tostring(champion:GetAttribute("Gold")),
 		tostring(champion:GetAttribute("MaxHealth")),
 		tostring(champion:GetAttribute("AttackDamage")),
 		tostring(champion:GetAttribute("MoveSpeed")),
-		tostring(champion:GetAttribute("InventoryCount"))
+		tostring(champion:GetAttribute("InventoryCount")),
+		getInventoryDebugText(champion)
 	))
 
 	return true, "Bought"

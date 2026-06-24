@@ -10,6 +10,7 @@ local UserInputService = game:GetService("UserInputService")
 local InputController = {}
 local player = Players.LocalPlayer
 
+
 local moveState = {
 	Forward = false,
 	Left = false,
@@ -61,7 +62,12 @@ end
 function InputController.start()
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST)
+	local debugAddGoldRequest = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST)
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if input.KeyCode == Enum.KeyCode.G then
+			(debugAddGoldRequest :: RemoteEvent):FireServer()
+			return
+		end
 		if not gameProcessed then
 			setKey(input.KeyCode, true)
 		end

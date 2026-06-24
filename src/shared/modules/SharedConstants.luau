@@ -51,11 +51,15 @@ SharedConstants.REMOTES = {
 	VISION_UPDATE = "VisionUpdate",
 	MATCH_STATE_UPDATE = "MatchStateUpdate",
 	SHOP_BUY_REQUEST = "ShopBuyRequest",
+	DEBUG_ADD_GOLD_REQUEST = "DebugAddGoldRequest",
 }
 SharedConstants.DEBUG = {
 	GAME_SPEED = 3,
 
 	SPAWN_BLUE_MINIONS = true,
 	SPAWN_RED_MINIONS = true,
+
+	ALLOW_DEBUG_GOLD = true,
+	DEBUG_GOLD_AMOUNT = 10000,
 }
 return SharedConstants
