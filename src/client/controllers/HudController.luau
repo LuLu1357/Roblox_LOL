@@ -40,6 +40,36 @@ function HudController.start()
 	panel.BorderSizePixel = 0
 	panel.Parent = gui
 
+	local endMatchOverlay = Instance.new("Frame")
+	endMatchOverlay.Name = "EndMatchOverlay"
+	endMatchOverlay.AnchorPoint = Vector2.new(0.5, 0.5)
+	endMatchOverlay.Position = UDim2.fromScale(0.5, 0.5)
+	endMatchOverlay.Size = UDim2.fromScale(1, 1)
+	endMatchOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	endMatchOverlay.BackgroundTransparency = 0.35
+	endMatchOverlay.BorderSizePixel = 0
+	endMatchOverlay.Visible = false
+	endMatchOverlay.Parent = gui
+
+	local endMatchTitle = createLabel(
+		endMatchOverlay,
+		"EndMatchTitle",
+		UDim2.fromScale(0.2, 0.36),
+		UDim2.fromScale(0.6, 0.12),
+		"VICTORY"
+	)
+	endMatchTitle.TextStrokeTransparency = 0.2
+	endMatchTitle.TextColor3 = Color3.fromRGB(120, 190, 255)
+
+	local endMatchSubtitle = createLabel(
+		endMatchOverlay,
+		"EndMatchSubtitle",
+		UDim2.fromScale(0.25, 0.49),
+		UDim2.fromScale(0.5, 0.055),
+		"Blue wins"
+	)
+	endMatchSubtitle.TextStrokeTransparency = 0.35
+
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, 12)
 	corner.Parent = panel
@@ -106,7 +136,24 @@ function HudController.start()
 		return
 	end
 	matchRemote.OnClientEvent:Connect(function(state, winner)
-		stateLabel.Text = if state == "Ended" then "VICTOIRE : " .. tostring(winner) else string.upper(tostring(state))
+		if state == "Ended" then
+			local winningTeam = tostring(winner)
+			local playerTeam = tostring(player:GetAttribute("Team") or "?")
+			local playerWon = winningTeam == playerTeam
+
+			stateLabel.Text = "FIN : " .. winningTeam .. " WINS"
+
+			endMatchOverlay.Visible = true
+			endMatchTitle.Text = if playerWon then "VICTORY" else "DEFEAT"
+			endMatchSubtitle.Text = winningTeam .. " wins"
+
+			endMatchTitle.TextColor3 = if playerWon
+				then Color3.fromRGB(120, 190, 255)
+				else Color3.fromRGB(255, 100, 105)
+		else
+			stateLabel.Text = string.upper(tostring(state))
+			endMatchOverlay.Visible = false
+		end
 	end)
 end
 
