@@ -35,11 +35,118 @@ function HudController.start()
 	panel.Name = "StatusPanel"
 	panel.AnchorPoint = Vector2.new(0.5, 1)
 	panel.Position = UDim2.fromScale(0.5, 0.975)
-	panel.Size = UDim2.fromOffset(460, 138)
+	panel.Size = UDim2.fromOffset(520, 178)
 	panel.BackgroundColor3 = Color3.fromRGB(17, 24, 34)
 	panel.BackgroundTransparency = 0.12
 	panel.BorderSizePixel = 0
 	panel.Parent = gui
+
+	local currentCharacter: Model? = nil
+
+	local itemDetailsPanel = Instance.new("Frame")
+	itemDetailsPanel.Name = "ItemDetailsPanel"
+	itemDetailsPanel.Size = UDim2.fromOffset(260, 170)
+	itemDetailsPanel.Position = UDim2.fromOffset(20, 210)
+	itemDetailsPanel.BackgroundColor3 = Color3.fromRGB(16, 20, 30)
+	itemDetailsPanel.BackgroundTransparency = 0.05
+	itemDetailsPanel.BorderSizePixel = 0
+	itemDetailsPanel.Visible = false
+	itemDetailsPanel.Parent = gui
+
+	local itemDetailsCorner = Instance.new("UICorner")
+	itemDetailsCorner.CornerRadius = UDim.new(0, 10)
+	itemDetailsCorner.Parent = itemDetailsPanel
+
+	local itemDetailsText = Instance.new("TextLabel")
+	itemDetailsText.Name = "ItemDetailsText"
+	itemDetailsText.Position = UDim2.fromOffset(14, 12)
+	itemDetailsText.Size = UDim2.new(1, -28, 1, -58)
+	itemDetailsText.BackgroundTransparency = 1
+	itemDetailsText.Font = Enum.Font.GothamMedium
+	itemDetailsText.TextColor3 = Color3.fromRGB(240, 243, 250)
+	itemDetailsText.TextSize = 16
+	itemDetailsText.TextWrapped = true
+	itemDetailsText.TextXAlignment = Enum.TextXAlignment.Left
+	itemDetailsText.TextYAlignment = Enum.TextYAlignment.Top
+	itemDetailsText.Text = ""
+	itemDetailsText.Parent = itemDetailsPanel
+
+	local closeItemDetailsButton = Instance.new("TextButton")
+	closeItemDetailsButton.Name = "CloseItemDetailsButton"
+	closeItemDetailsButton.Position = UDim2.new(1, -88, 1, -38)
+	closeItemDetailsButton.Size = UDim2.fromOffset(74, 26)
+	closeItemDetailsButton.BackgroundColor3 = Color3.fromRGB(50, 66, 88)
+	closeItemDetailsButton.BorderSizePixel = 0
+	closeItemDetailsButton.Font = Enum.Font.GothamBold
+	closeItemDetailsButton.Text = "Close"
+	closeItemDetailsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	closeItemDetailsButton.TextScaled = true
+	closeItemDetailsButton.Parent = itemDetailsPanel
+
+	local closeItemDetailsCorner = Instance.new("UICorner")
+	closeItemDetailsCorner.CornerRadius = UDim.new(0, 6)
+	closeItemDetailsCorner.Parent = closeItemDetailsButton
+
+	local function getStatLine(statName: string, value: any): string
+		local displayName = statName
+		if statName == "AttackDamage" then
+			displayName = "Attack Damage"
+		elseif statName == "MaxHealth" then
+			displayName = "Max Health"
+		elseif statName == "MoveSpeed" then
+			displayName = "Move Speed"
+		elseif statName == "AttackRange" then
+			displayName = "Attack Range"
+		elseif statName == "AttackCooldown" then
+			displayName = "Attack Cooldown"
+		end
+
+		if typeof(value) == "number" and value > 0 then
+			return "+" .. tostring(value) .. " " .. displayName
+		end
+
+		return tostring(value) .. " " .. displayName
+	end
+
+	local function showItemDetails(itemId: any)
+		if typeof(itemId) ~= "string" or itemId == "" then
+			itemDetailsText.Text = "Empty Slot\nNo item equipped."
+			itemDetailsPanel.Visible = true
+			return
+		end
+
+		local item = ItemData.Items[itemId]
+		if typeof(item) ~= "table" then
+			itemDetailsText.Text = "Unknown Item\n" .. itemId
+			itemDetailsPanel.Visible = true
+			return
+		end
+
+		local displayName = if typeof(item.DisplayName) == "string" then item.DisplayName else itemId
+		local cost = if typeof(item.Cost) == "number" then item.Cost else 0
+		local lines: { string } = {}
+
+		table.insert(lines, displayName)
+		table.insert(lines, "Cost: " .. tostring(cost) .. "g")
+		table.insert(lines, "")
+		table.insert(lines, "Stats:")
+
+		local stats = item.Stats
+		if typeof(stats) == "table" then
+			for statName, value in stats do
+				table.insert(lines, getStatLine(statName, value))
+			end
+		else
+			table.insert(lines, "No stats")
+		end
+
+		itemDetailsText.Text = table.concat(lines, "\n")
+		itemDetailsPanel.Visible = true
+	end
+
+	closeItemDetailsButton.MouseButton1Click:Connect(function()
+		itemDetailsPanel.Visible = false
+	end)
 
 	local endMatchOverlay = Instance.new("Frame")
 	endMatchOverlay.Name = "EndMatchOverlay"
@@ -78,7 +185,7 @@ function HudController.start()
 	local healthBack = Instance.new("Frame")
 	healthBack.Name = "HealthBack"
 	healthBack.Position = UDim2.fromOffset(18, 38)
-	healthBack.Size = UDim2.fromOffset(424, 22)
+	healthBack.Size = UDim2.fromOffset(484, 22)
 	healthBack.BackgroundColor3 = Color3.fromRGB(55, 25, 30)
 	healthBack.BorderSizePixel = 0
 	healthBack.Parent = panel
@@ -182,6 +289,64 @@ function HudController.start()
 	createShopButton("RubyCrystal", "Ruby\n400g", UDim2.fromOffset(166, 88))
 	createShopButton("Boots", "Boots\n300g", UDim2.fromOffset(314, 88))
 
+	local inventorySlots: { [number]: TextButton } = {}
+
+	local function getShortItemName(itemId: any): string
+		if typeof(itemId) ~= "string" or itemId == "" then
+			return "Empty"
+		end
+
+		if itemId == "LongSword" then
+			return "Sword"
+		elseif itemId == "RubyCrystal" then
+			return "Ruby"
+		elseif itemId == "Boots" then
+			return "Boots"
+		end
+
+		return itemId
+	end
+
+	local function createInventorySlot(slotIndex: number, position: UDim2): TextButton
+		local label = Instance.new("TextButton")
+		label.Name = "InventorySlot" .. tostring(slotIndex)
+		label.Size = UDim2.fromOffset(66, 30)
+		label.Position = position
+		label.BackgroundColor3 = Color3.fromRGB(24, 30, 42)
+		label.BackgroundTransparency = 0.05
+		label.BorderSizePixel = 0
+		label.Font = Enum.Font.GothamBold
+		label.TextScaled = true
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.TextStrokeTransparency = 0.7
+		label.Text = tostring(slotIndex) .. ": Empty"
+		label.Parent = panel
+
+		local slotCorner = Instance.new("UICorner")
+		slotCorner.CornerRadius = UDim.new(0, 6)
+		slotCorner.Parent = label
+
+		inventorySlots[slotIndex] = label
+		label.MouseButton1Click:Connect(function()
+			local character = currentCharacter
+			if not character then
+				showItemDetails(nil)
+				return
+			end
+
+			local itemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+			showItemDetails(itemId)
+		end)
+		return label
+	end
+
+	createInventorySlot(1, UDim2.fromOffset(18, 132))
+	createInventorySlot(2, UDim2.fromOffset(92, 132))
+	createInventorySlot(3, UDim2.fromOffset(166, 132))
+	createInventorySlot(4, UDim2.fromOffset(240, 132))
+	createInventorySlot(5, UDim2.fromOffset(314, 132))
+	createInventorySlot(6, UDim2.fromOffset(388, 132))
+
 	local function updateTeam()
 		local teamName = player:GetAttribute("Team")
 		teamLabel.Text = "ÉQUIPE " .. tostring(teamName or "?")
@@ -191,6 +356,8 @@ function HudController.start()
 	end
 
 	local function bindCharacter(character: Model)
+		currentCharacter = character
+
 		local function updateHealth()
 			local health = character:GetAttribute("Health")
 			local maxHealth = character:GetAttribute("MaxHealth")
@@ -239,6 +406,35 @@ function HudController.start()
 			"InventoryCount",
 		}
 
+		local function updateInventory()
+			for slotIndex = 1, 6 do
+				local itemId = character:GetAttribute("InventorySlot" .. tostring(slotIndex))
+				local label = inventorySlots[slotIndex]
+
+				if label then
+					local itemName = getShortItemName(itemId)
+					label.Text = tostring(slotIndex) .. ": " .. itemName
+
+					if itemName == "Empty" then
+						label.BackgroundColor3 = Color3.fromRGB(24, 30, 42)
+						label.TextColor3 = Color3.fromRGB(145, 145, 145)
+					elseif itemName == "Sword" then
+						label.BackgroundColor3 = Color3.fromRGB(80, 58, 42)
+						label.TextColor3 = Color3.fromRGB(255, 220, 170)
+					elseif itemName == "Ruby" then
+						label.BackgroundColor3 = Color3.fromRGB(82, 35, 45)
+						label.TextColor3 = Color3.fromRGB(255, 150, 160)
+					elseif itemName == "Boots" then
+						label.BackgroundColor3 = Color3.fromRGB(45, 62, 82)
+						label.TextColor3 = Color3.fromRGB(170, 215, 255)
+					else
+						label.BackgroundColor3 = Color3.fromRGB(38, 48, 64)
+						label.TextColor3 = Color3.fromRGB(255, 255, 255)
+					end
+				end
+			end
+		end
+
 		local function updateProgression()
 			local level = character:GetAttribute("Level")
 			local gold = character:GetAttribute("Gold")
@@ -277,9 +473,14 @@ function HudController.start()
 		for _, attributeName in statsAttributeNames do
 			character:GetAttributeChangedSignal(attributeName):Connect(updateStatsPanel)
 		end
+		for slotIndex = 1, 6 do
+			character:GetAttributeChangedSignal("InventorySlot" .. tostring(slotIndex)):Connect(updateInventory)
+		end
+		character:GetAttributeChangedSignal("InventoryCount"):Connect(updateInventory)
 		updateHealth()
 		updateProgression()
 		updateStatsPanel()
+		updateInventory()
 	end
 
 	player:GetAttributeChangedSignal("Team"):Connect(updateTeam)
