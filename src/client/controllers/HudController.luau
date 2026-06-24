@@ -42,6 +42,7 @@ function HudController.start()
 	panel.Parent = gui
 
 	local currentCharacter: Model? = nil
+	local selectedInventorySlot: number? = nil
 
 	local itemDetailsPanel = Instance.new("Frame")
 	itemDetailsPanel.Name = "ItemDetailsPanel"
@@ -87,6 +88,23 @@ function HudController.start()
 	closeItemDetailsCorner.CornerRadius = UDim.new(0, 6)
 	closeItemDetailsCorner.Parent = closeItemDetailsButton
 
+	local sellItemButton = Instance.new("TextButton")
+	sellItemButton.Name = "SellItemButton"
+	sellItemButton.Position = UDim2.fromOffset(14, 132)
+	sellItemButton.Size = UDim2.fromOffset(74, 26)
+	sellItemButton.BackgroundColor3 = Color3.fromRGB(105, 38, 45)
+	sellItemButton.BorderSizePixel = 0
+	sellItemButton.Font = Enum.Font.GothamBold
+	sellItemButton.Text = "SELL"
+	sellItemButton.TextColor3 = Color3.fromRGB(255, 220, 220)
+	sellItemButton.TextScaled = true
+	sellItemButton.Visible = false
+	sellItemButton.Parent = itemDetailsPanel
+
+	local sellItemCorner = Instance.new("UICorner")
+	sellItemCorner.CornerRadius = UDim.new(0, 6)
+	sellItemCorner.Parent = sellItemButton
+
 	local function getStatLine(statName: string, value: any): string
 		local displayName = statName
 		if statName == "AttackDamage" then
@@ -111,6 +129,7 @@ function HudController.start()
 	local function showItemDetails(itemId: any)
 		if typeof(itemId) ~= "string" or itemId == "" then
 			itemDetailsText.Text = "Empty Slot\nNo item equipped."
+			sellItemButton.Visible = false
 			itemDetailsPanel.Visible = true
 			return
 		end
@@ -118,6 +137,7 @@ function HudController.start()
 		local item = ItemData.Items[itemId]
 		if typeof(item) ~= "table" then
 			itemDetailsText.Text = "Unknown Item\n" .. itemId
+			sellItemButton.Visible = false
 			itemDetailsPanel.Visible = true
 			return
 		end
@@ -141,11 +161,13 @@ function HudController.start()
 		end
 
 		itemDetailsText.Text = table.concat(lines, "\n")
+		sellItemButton.Visible = true
 		itemDetailsPanel.Visible = true
 	end
 
 	closeItemDetailsButton.MouseButton1Click:Connect(function()
 		itemDetailsPanel.Visible = false
+		selectedInventorySlot = nil
 	end)
 
 	local endMatchOverlay = Instance.new("Frame")
@@ -328,6 +350,7 @@ function HudController.start()
 
 		inventorySlots[slotIndex] = label
 		label.MouseButton1Click:Connect(function()
+			selectedInventorySlot = slotIndex
 			local character = currentCharacter
 			if not character then
 				showItemDetails(nil)
@@ -507,6 +530,23 @@ function HudController.start()
 			shopBuyRequest:FireServer(itemId)
 		end)
 	end
+
+	local shopSellRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_SELL_REQUEST, 10)
+	if not shopSellRequest or not shopSellRequest:IsA("RemoteEvent") then
+		warn("[MOBA] RemoteEvent ShopSellRequest indisponible.")
+		return
+	end
+
+	sellItemButton.MouseButton1Click:Connect(function()
+		local slotIndex = selectedInventorySlot
+		if not slotIndex then
+			return
+		end
+
+		shopSellRequest:FireServer(slotIndex)
+		selectedInventorySlot = nil
+		itemDetailsPanel.Visible = false
+	end)
 
 	local matchRemote = remotes:WaitForChild(SharedConstants.REMOTES.MATCH_STATE_UPDATE, 10)
 	if not matchRemote or not matchRemote:IsA("RemoteEvent") then

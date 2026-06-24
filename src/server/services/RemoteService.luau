@@ -49,6 +49,7 @@ function RemoteService.start()
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.MATCH_STATE_UPDATE)
 
 	local shopBuyRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_BUY_REQUEST)
+	local shopSellRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_SELL_REQUEST)
 	local debugAddGoldRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST)
 	debugAddGoldRequest.OnServerEvent:Connect(function(player)
 		local debugConfig = SharedConstants.DEBUG
@@ -108,6 +109,17 @@ function RemoteService.start()
 		local success, reason = ShopService.buyItem(player, itemId)
 		if not success then
 			warn("[MOBA] Shop buy failed:", player.Name, itemId, reason)
+		end
+	end)
+
+	shopSellRequest.OnServerEvent:Connect(function(player, slotIndex)
+		if typeof(slotIndex) ~= "number" then
+			return
+		end
+
+		local success, reason = ShopService.sellItem(player, slotIndex)
+		if not success then
+			warn("[MOBA] Shop sell failed:", player.Name, slotIndex, reason)
 		end
 	end)
 end
