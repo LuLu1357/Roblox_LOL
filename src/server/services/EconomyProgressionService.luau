@@ -1,6 +1,7 @@
 --!strict
 
 local EconomyProgressionService = {}
+local Players = game:GetService("Players")
 
 local MAX_LEVEL = 18
 
@@ -145,7 +146,43 @@ function EconomyProgressionService.awardKillRewards(killer: Instance, killed: In
 
 	EconomyProgressionService.tryLevelUp(killer)
 end
+function EconomyProgressionService.saveChampionProgressionToPlayer(champion: Instance)
+	local ownerUserId = champion:GetAttribute("OwnerUserId")
+	if typeof(ownerUserId) ~= "number" then
+		return
+	end
 
+	for _, player in Players:GetPlayers() do
+		if player.UserId == ownerUserId then
+			player:SetAttribute("Gold", champion:GetAttribute("Gold") or 0)
+			player:SetAttribute("XP", champion:GetAttribute("XP") or 0)
+			player:SetAttribute("Level", champion:GetAttribute("Level") or 1)
+			player:SetAttribute("ProgressionMaxHealth", champion:GetAttribute("MaxHealth") or 650)
+			player:SetAttribute("ProgressionAttackDamage", champion:GetAttribute("AttackDamage") or 35)
+			return
+		end
+	end
+end
+
+function EconomyProgressionService.applyPlayerProgressionToChampion(player: Player, champion: Instance)
+	local gold = player:GetAttribute("Gold")
+	local xp = player:GetAttribute("XP")
+	local level = player:GetAttribute("Level")
+	local maxHealth = player:GetAttribute("ProgressionMaxHealth")
+	local attackDamage = player:GetAttribute("ProgressionAttackDamage")
+
+	champion:SetAttribute("Gold", if typeof(gold) == "number" then gold else 0)
+	champion:SetAttribute("XP", if typeof(xp) == "number" then xp else 0)
+	champion:SetAttribute("Level", if typeof(level) == "number" then level else 1)
+
+	if typeof(maxHealth) == "number" then
+		champion:SetAttribute("MaxHealth", maxHealth)
+	end
+
+	if typeof(attackDamage) == "number" then
+		champion:SetAttribute("AttackDamage", attackDamage)
+	end
+end
 function EconomyProgressionService.start()
 	print("[MOBA] EconomyProgressionService started")
 end

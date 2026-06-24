@@ -7,7 +7,7 @@ local Workspace = game:GetService("Workspace")
 local ChampionData = require(ReplicatedStorage.Modules.ChampionData)
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local Utility = require(script.Parent.Utility)
-
+local EconomyProgressionService = require(script.Parent.EconomyProgressionService)
 local ChampionService = {}
 
 local function getSpawnForTeam(teamName: string): BasePart?
@@ -61,9 +61,20 @@ local function setupCharacter(player: Player, character: Model)
 	character:SetAttribute("MoveSpeed", data.MoveSpeed)
 	character:SetAttribute("Dead", false)
 
-	humanoid.WalkSpeed = data.MoveSpeed
-	humanoid.MaxHealth = data.MaxHealth
-	humanoid.Health = data.MaxHealth
+	EconomyProgressionService.applyPlayerProgressionToChampion(player, character)
+
+	local restoredMaxHealth = character:GetAttribute("MaxHealth")
+	if typeof(restoredMaxHealth) == "number" then
+		character:SetAttribute("Health", restoredMaxHealth)
+	end
+
+	local finalMaxHealth = character:GetAttribute("MaxHealth")
+	if typeof(finalMaxHealth) ~= "number" then
+		finalMaxHealth = data.MaxHealth
+	end
+
+	humanoid.MaxHealth = finalMaxHealth
+	humanoid.Health = finalMaxHealth
 
 	local units = Workspace:FindFirstChild("Units")
 	if not units or not units:IsA("Folder") then

@@ -148,6 +148,10 @@ end
 function CombatService.handleDeath(killer: Instance, victim: Instance)
 	EconomyProgressionService.awardKillRewards(killer, victim)
 
+	if victim:GetAttribute("UnitType") == "Champion" then
+		EconomyProgressionService.saveChampionProgressionToPlayer(victim)
+	end
+
 	victim:SetAttribute("Dead", true)
 	local root = Utility.getRoot(victim)
 	if root then
