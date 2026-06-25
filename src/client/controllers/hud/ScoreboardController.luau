@@ -1,6 +1,7 @@
 --!strict
 
 local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 
 local ScoreboardController = {}
 ScoreboardController.__index = ScoreboardController
@@ -35,7 +36,7 @@ local function createScoreboardRow(parent: Instance, text: string): TextLabel
     row.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     row.TextSize = 16
     row.TextXAlignment = Enum.TextXAlignment.Left
-    row.TextYAlignment = Enum.TextYAlignment.Center
+    row.TextYAlignment = Enum.TextzYAlignment.Center
     row.Text = text
     row.ClipsDescendants = true
     row.Parent = parent
@@ -55,8 +56,16 @@ function ScoreboardController.new(gui: Instance, scoreboardRequest: Instance?, s
     self:createScoreboardPanel()
     self:SetRemotes(scoreboardRequest, scoreboardUpdate)
 
+    pcall(function()
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+    end)
+
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed or UserInputService:GetFocusedTextBox() ~= nil then
+        if UserInputService:GetFocusedTextBox() ~= nil then
+            return
+        end
+
+        if gameProcessed and input.KeyCode ~= Enum.KeyCode.Tab then
             return
         end
 
