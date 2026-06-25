@@ -18,6 +18,9 @@ export type AbilityDefinition = {
 	ExecuteBonusDamage: number?,
 	ExecuteThreshold: number?,
 	DashOffset: number?,
+	IconText: string?,
+	IconColor: { R: number, G: number, B: number }?,
+	Description: string?,
 }
 
 local spells: { [string]: { [number]: AbilityDefinition } } = {
@@ -30,6 +33,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Range = 18,
 			Damage = 60,
 			Cooldown = 5,
+			IconText = "SB",
+			IconColor = { R = 110, G = 150, B = 255 },
+			Description = "Melee hit. Deals 60 damage.",
 		},
 		[2] = {
 			Id = "Tank_Guard",
@@ -38,6 +44,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Type = "SelfHeal",
 			Heal = 160,
 			Cooldown = 10,
+			IconText = "G",
+			IconColor = { R = 80, G = 210, B = 120 },
+			Description = "Heals yourself for 160.",
 		},
 		[3] = {
 			Id = "Tank_GroundSlam",
@@ -47,6 +56,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Radius = 22,
 			Damage = 70,
 			Cooldown = 8,
+			IconText = "GS",
+			IconColor = { R = 190, G = 140, B = 80 },
+			Description = "Area damage around you. Deals 70 damage.",
 		},
 		[4] = {
 			Id = "Tank_Unbreakable",
@@ -56,6 +68,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			MaxHealthBonus = 350,
 			Duration = 8,
 			Cooldown = 35,
+			IconText = "U",
+			IconColor = { R = 220, G = 190, B = 90 },
+			Description = "Temporarily increases max health by 350 for 8 seconds.",
 		},
 	},
 
@@ -69,6 +84,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Damage = 90,
 			Cooldown = 6,
 			DashOffset = 4,
+			IconText = "DS",
+			IconColor = { R = 170, G = 80, B = 220 },
+			Description = "Dash to an enemy and deal 90 damage.",
 		},
 		[2] = {
 			Id = "Assassin_SmokeStep",
@@ -77,6 +95,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Type = "DashForward",
 			DashDistance = 28,
 			Cooldown = 8,
+			IconText = "SS",
+			IconColor = { R = 80, G = 80, B = 80 },
+			Description = "Dash forward through the shadows.",
 		},
 		[3] = {
 			Id = "Assassin_Backstab",
@@ -86,6 +107,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Range = 16,
 			Damage = 130,
 			Cooldown = 9,
+			IconText = "BS",
+			IconColor = { R = 200, G = 60, B = 80 },
+			Description = "Close range attack dealing 130 damage.",
 		},
 		[4] = {
 			Id = "Assassin_Execute",
@@ -97,6 +121,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			ExecuteBonusDamage = 160,
 			ExecuteThreshold = 0.35,
 			Cooldown = 35,
+			IconText = "E",
+			IconColor = { R = 220, G = 90, B = 90 },
+			Description = "Deal bonus damage to low health enemies.",
 		},
 	},
 
@@ -109,6 +136,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Range = 60,
 			Damage = 85,
 			Cooldown = 4,
+			IconText = "FB",
+			IconColor = { R = 230, G = 90, B = 55 },
+			Description = "Launch a fireball at the nearest enemy.",
 		},
 		[2] = {
 			Id = "Mage_FrostNova",
@@ -118,6 +148,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Radius = 24,
 			Damage = 55,
 			Cooldown = 7,
+			IconText = "FN",
+			IconColor = { R = 100, G = 170, B = 235 },
+			Description = "Freeze enemies around you for 55 damage.",
 		},
 		[3] = {
 			Id = "Mage_ArcaneBurst",
@@ -127,6 +160,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Range = 65,
 			Damage = 130,
 			Cooldown = 9,
+			IconText = "AB",
+			IconColor = { R = 170, G = 80, B = 255 },
+			Description = "Burst magic damage at a distant target.",
 		},
 		[4] = {
 			Id = "Mage_Meteor",
@@ -137,6 +173,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Radius = 28,
 			Damage = 220,
 			Cooldown = 40,
+			IconText = "M",
+			IconColor = { R = 185, G = 110, B = 35 },
+			Description = "Call a meteor to impact at target location.",
 		},
 	},
 
@@ -149,6 +188,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Range = 70,
 			Damage = 75,
 			Cooldown = 5,
+			IconText = "PS",
+			IconColor = { R = 240, G = 190, B = 100 },
+			Description = "Fire a powerful shot at range.",
 		},
 		[2] = {
 			Id = "Marksman_Roll",
@@ -157,6 +199,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Type = "DashForward",
 			DashDistance = 22,
 			Cooldown = 10,
+			IconText = "R",
+			IconColor = { R = 120, G = 190, B = 220 },
+			Description = "Quickly roll forward.",
 		},
 		[3] = {
 			Id = "Marksman_PiercingShot",
@@ -166,6 +211,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Range = 80,
 			Damage = 120,
 			Cooldown = 8,
+			IconText = "PS",
+			IconColor = { R = 225, G = 180, B = 65 },
+			Description = "Piercing ranged shot dealing 120 damage.",
 		},
 		[4] = {
 			Id = "Marksman_BulletStorm",
@@ -175,6 +223,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Radius = 34,
 			Damage = 170,
 			Cooldown = 38,
+			IconText = "BS",
+			IconColor = { R = 240, G = 150, B = 70 },
+			Description = "Deal area damage around you.",
 		},
 	},
 
@@ -186,6 +237,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Type = "SelfHeal",
 			Heal = 100,
 			Cooldown = 7,
+			IconText = "H",
+			IconColor = { R = 90, G = 230, B = 170 },
+			Description = "Restore health to yourself.",
 		},
 		[2] = {
 			Id = "Support_GreaterHeal",
@@ -195,6 +249,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Range = 40,
 			Heal = 160,
 			Cooldown = 9,
+			IconText = "GH",
+			IconColor = { R = 95, G = 230, B = 180 },
+			Description = "Heal an ally or yourself for 160.",
 		},
 		[3] = {
 			Id = "Support_HolyPulse",
@@ -204,6 +261,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Radius = 24,
 			Damage = 60,
 			Cooldown = 8,
+			IconText = "HP",
+			IconColor = { R = 200, G = 215, B = 255 },
+			Description = "Damage nearby enemies with holy energy.",
 		},
 		[4] = {
 			Id = "Support_Sanctuary",
@@ -213,6 +273,9 @@ local spells: { [string]: { [number]: AbilityDefinition } } = {
 			Radius = 36,
 			Heal = 240,
 			Cooldown = 40,
+			IconText = "S",
+			IconColor = { R = 160, G = 220, B = 190 },
+			Description = "Heal nearby allied champions.",
 		},
 	},
 }

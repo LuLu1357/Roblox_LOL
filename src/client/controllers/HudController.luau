@@ -6,6 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local ItemData = require(ReplicatedStorage.Modules.ItemData)
+local AbilityData = require(ReplicatedStorage.Modules.AbilityData)
 
 local HudController = {}
 local player = Players.LocalPlayer
@@ -23,6 +24,85 @@ local function createLabel(parent: Instance, name: string, position: UDim2, size
 	label.Text = text
 	label.Parent = parent
 	return label
+end
+
+local function color3FromData(colorData: any): Color3
+	if typeof(colorData) == "Color3" then
+		return colorData
+	end
+
+	if typeof(colorData) == "table"
+		and typeof(colorData.R) == "number"
+		and typeof(colorData.G) == "number"
+		and typeof(colorData.B) == "number"
+	then
+		return Color3.fromRGB(colorData.R, colorData.G, colorData.B)
+	end
+
+	return Color3.fromRGB(110, 110, 110)
+end
+
+local function formatSpellStatLine(label: string, value: any): string
+	if typeof(value) ~= "number" then
+		return ""
+	end
+
+	if label == "Cooldown" or label == "Duration" or label == "Range" or label == "Radius" or label == "DashDistance" then
+		return string.format("%s: %ss", label, value)
+	end
+
+	return string.format("%s: %s", label, tostring(value))
+end
+
+local function buildSpellTooltipText(spell: table?, slot: number): string
+	if typeof(spell) ~= "table" then
+		return string.format("Slot %d\nNo spell available.", slot)
+	end
+
+	local lines: { string } = {}
+	local name = if typeof(spell.DisplayName) == "string" then spell.DisplayName else "Spell"
+	table.insert(lines, name)
+	if typeof(spell.Type) == "string" then
+		table.insert(lines, "Type: " .. spell.Type)
+	end
+
+	if typeof(spell.Damage) == "number" then
+		table.insert(lines, formatSpellStatLine("Damage", spell.Damage))
+	end
+	if typeof(spell.Heal) == "number" then
+		table.insert(lines, formatSpellStatLine("Heal", spell.Heal))
+	end
+	if typeof(spell.Range) == "number" then
+		table.insert(lines, formatSpellStatLine("Range", spell.Range))
+	end
+	if typeof(spell.Radius) == "number" then
+		table.insert(lines, formatSpellStatLine("Radius", spell.Radius))
+	end
+	if typeof(spell.Duration) == "number" then
+		table.insert(lines, formatSpellStatLine("Duration", spell.Duration))
+	end
+	if typeof(spell.DashDistance) == "number" then
+		table.insert(lines, formatSpellStatLine("DashDistance", spell.DashDistance))
+	end
+	if typeof(spell.MaxHealthBonus) == "number" then
+		table.insert(lines, formatSpellStatLine("MaxHealthBonus", spell.MaxHealthBonus))
+	end
+	if typeof(spell.ExecuteThreshold) == "number" then
+		table.insert(lines, formatSpellStatLine("ExecuteThreshold", spell.ExecuteThreshold))
+	end
+	if typeof(spell.ExecuteBonusDamage) == "number" then
+		table.insert(lines, formatSpellStatLine("ExecuteBonusDamage", spell.ExecuteBonusDamage))
+	end
+	if typeof(spell.Cooldown) == "number" then
+		table.insert(lines, formatSpellStatLine("Cooldown", spell.Cooldown))
+	end
+
+	if typeof(spell.Description) == "string" and spell.Description ~= "" then
+		table.insert(lines, "")
+		table.insert(lines, spell.Description)
+	end
+
+	return table.concat(lines, "\n")
 end
 
 function HudController.start()
@@ -48,6 +128,241 @@ function HudController.start()
 	local selectChampionRequest: RemoteEvent? = nil
 	local debugSpawnDummyRequest: RemoteEvent? = nil
 	local debugClearDummiesRequest: RemoteEvent? = nil
+	local abilityRequest: RemoteEvent? = nil
+	local abilityFeedbackRemote: RemoteEvent? = nil
+	local spellButtons: { [number]: TextButton } = {}
+	local spellInfo: { [number]: table? } = {}
+	local spellCooldownEnds: { [number]: number } = {}
+	local hoveredSpellSlot: number? = nil
+
+	local spellBar = Instance.new("Frame")
+	spellBar.Name = "SpellBar"
+	spellBar.Position = UDim2.fromOffset(18, 70)
+	spellBar.Size = UDim2.fromOffset(484, 52)
+	spellBar.BackgroundTransparency = 1
+	spellBar.Parent = panel
+
+	local function updateSpellCooldownUI()
+		for slot = 1, 4 do
+			local button = spellButtons[slot]
+			if not button then
+				continue
+			end
+
+			local endsAt = spellCooldownEnds[slot] or 0
+			local remaining = endsAt - os.clock()
+			local overlay = button:FindFirstChild("CooldownOverlay")
+			local label = button:FindFirstChild("CooldownLabel")
+			if remaining > 0 then
+				if overlay and overlay:IsA("Frame") then
+					overlay.Visible = true
+				end
+				if label and label:IsA("TextLabel") then
+					label.Visible = true
+					if remaining > 1 then
+						label.Text = tostring(math.ceil(remaining))
+					else
+						label.Text = string.format("%.1f", remaining)
+					end
+				end
+			else
+				if overlay and overlay:IsA("Frame") then
+					overlay.Visible = false
+				end
+				if label and label:IsA("TextLabel") then
+					label.Visible = false
+				end
+			end
+		end
+	end
+
+	local spellTooltip = Instance.new("Frame")
+	spellTooltip.Name = "SpellTooltip"
+	spellTooltip.Size = UDim2.fromOffset(260, 150)
+	spellTooltip.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
+	spellTooltip.BackgroundTransparency = 0.04
+	spellTooltip.BorderSizePixel = 0
+	spellTooltip.ZIndex = 50
+	spellTooltip.Visible = false
+	spellTooltip.Parent = gui
+
+	local spellTooltipCorner = Instance.new("UICorner")
+	spellTooltipCorner.CornerRadius = UDim.new(0, 10)
+	spellTooltipCorner.Parent = spellTooltip
+
+	local tooltipText = Instance.new("TextLabel")
+	tooltipText.Name = "TooltipText"
+	tooltipText.Position = UDim2.fromOffset(10, 10)
+	tooltipText.Size = UDim2.new(1, -20, 1, -20)
+	tooltipText.BackgroundTransparency = 1
+	tooltipText.Font = Enum.Font.Gotham
+	tooltipText.TextColor3 = Color3.fromRGB(235, 240, 250)
+	tooltipText.TextSize = 14
+	tooltipText.TextWrapped = true
+	tooltipText.TextXAlignment = Enum.TextXAlignment.Left
+	tooltipText.TextYAlignment = Enum.TextYAlignment.Top
+	tooltipText.RichText = false
+	tooltipText.Text = ""
+	tooltipText.Parent = spellTooltip
+
+	local function hideSpellTooltip()
+		hoveredSpellSlot = nil
+		spellTooltip.Visible = false
+	end
+
+	local function showSpellTooltip(slot: number)
+		local button = spellButtons[slot]
+		if not button then
+			hideSpellTooltip()
+			return
+		end
+
+		local absolutePos = button.AbsolutePosition
+		spellTooltip.Position = UDim2.fromOffset(absolutePos.X, absolutePos.Y - 158)
+		spellTooltip.Visible = true
+		tooltipText.Text = buildSpellTooltipText(spellInfo[slot], slot)
+	end
+
+	local function updateSpellButton(slot: number)
+		local button = spellButtons[slot]
+		if not button then
+			return
+		end
+
+		local spell = spellInfo[slot]
+		local iconLabel = button:FindFirstChild("IconLabel") :: TextLabel?
+		local keyLabel = button:FindFirstChild("KeyLabel") :: TextLabel?
+		local bgColor = Color3.fromRGB(70, 70, 70)
+		local text = "-"
+		local textColor = Color3.fromRGB(255, 255, 255)
+
+		if typeof(spell) == "table" then
+			text = if typeof(spell.IconText) == "string" and spell.IconText ~= ""
+				then spell.IconText
+				else spell.DisplayName or "?"
+			bgColor = color3FromData(spell.IconColor)
+			textColor = Color3.fromRGB(20, 20, 20)
+		else
+			bgColor = Color3.fromRGB(45, 45, 45)
+			textColor = Color3.fromRGB(180, 180, 180)
+		end
+
+		button.BackgroundColor3 = bgColor
+		if iconLabel then
+			iconLabel.Text = text
+			iconLabel.TextColor3 = textColor
+		end
+		if keyLabel then
+			keyLabel.Text = tostring(slot)
+		end
+	end
+
+	local function updateSpellButtons()
+		local championId = currentCharacter and currentCharacter:GetAttribute("ChampionId")
+		local championSpells = if typeof(championId) == "string" then AbilityData.Spells[championId] else nil
+		spellCooldownEnds = {}
+		for slot = 1, 4 do
+			spellInfo[slot] = championSpells and championSpells[slot] or nil
+			updateSpellButton(slot)
+		end
+		hideSpellTooltip()
+	end
+
+	local function createSpellButton(slot: number, position: UDim2)
+		local button = Instance.new("TextButton")
+		button.Name = "SpellButton" .. tostring(slot)
+		button.Position = position
+		button.Size = UDim2.fromOffset(48, 48)
+		button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+		button.BorderSizePixel = 0
+		button.Font = Enum.Font.GothamBold
+		button.Text = ""
+		button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		button.TextScaled = false
+		button.AutoButtonColor = true
+		button.Parent = spellBar
+
+		local iconLabel = Instance.new("TextLabel")
+		iconLabel.Name = "IconLabel"
+		iconLabel.Size = UDim2.new(1, 0, 1, 0)
+		iconLabel.Position = UDim2.fromOffset(0, 0)
+		iconLabel.BackgroundTransparency = 1
+		iconLabel.Font = Enum.Font.GothamBold
+		iconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		iconLabel.TextScaled = true
+		iconLabel.Text = "-"
+		iconLabel.Parent = button
+
+		local keyLabel = Instance.new("TextLabel")
+		keyLabel.Name = "KeyLabel"
+		keyLabel.Position = UDim2.fromOffset(4, 4)
+		keyLabel.Size = UDim2.fromOffset(12, 14)
+		keyLabel.BackgroundTransparency = 1
+		keyLabel.Font = Enum.Font.GothamBold
+		keyLabel.TextColor3 = Color3.fromRGB(230, 230, 230)
+		keyLabel.TextSize = 12
+		keyLabel.Text = tostring(slot)
+		keyLabel.TextScaled = false
+		keyLabel.Parent = button
+
+		local cooldownOverlay = Instance.new("Frame")
+		cooldownOverlay.Name = "CooldownOverlay"
+		cooldownOverlay.Size = UDim2.fromScale(1, 1)
+		cooldownOverlay.Position = UDim2.fromOffset(0, 0)
+		cooldownOverlay.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+		cooldownOverlay.BackgroundTransparency = 0.55
+		cooldownOverlay.Visible = false
+		cooldownOverlay.BorderSizePixel = 0
+		cooldownOverlay.Parent = button
+
+		local cooldownLabel = Instance.new("TextLabel")
+		cooldownLabel.Name = "CooldownLabel"
+		cooldownLabel.Size = UDim2.fromScale(1, 1)
+		cooldownLabel.Position = UDim2.fromOffset(0, 0)
+		cooldownLabel.BackgroundTransparency = 1
+		cooldownLabel.Font = Enum.Font.GothamBold
+		cooldownLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		cooldownLabel.TextScaled = true
+		cooldownLabel.Text = ""
+		cooldownLabel.Visible = false
+		cooldownLabel.Parent = button
+
+		button.MouseButton1Click:Connect(function()
+			if abilityRequest then
+				abilityRequest:FireServer(slot)
+			end
+		end)
+
+		button.MouseEnter:Connect(function()
+			hoveredSpellSlot = slot
+			task.delay(0.45, function()
+				if hoveredSpellSlot == slot then
+					showSpellTooltip(slot)
+				end
+			end)
+		end)
+
+		button.MouseLeave:Connect(function()
+			if hoveredSpellSlot == slot then
+				hoveredSpellSlot = nil
+			end
+			hideSpellTooltip()
+		end)
+
+		spellButtons[slot] = button
+		return button
+	end
+
+	for slot = 1, 4 do
+		createSpellButton(slot, UDim2.fromOffset((slot - 1) * 56, 0))
+	end
+
+	task.spawn(function()
+		while gui.Parent do
+			updateSpellCooldownUI()
+			task.wait(0.1)
+		end
+	end)
 
 	local shopPanel = Instance.new("Frame")
 	shopPanel.Name = "ShopPanel"
@@ -938,6 +1253,7 @@ function HudController.start()
 			updateProgression()
 			updateCraftButtons(character)
 		end)
+		character:GetAttributeChangedSignal("ChampionId"):Connect(updateSpellButtons)
 		character:GetAttributeChangedSignal("XP"):Connect(updateProgression)
 		for _, attributeName in statsAttributeNames do
 			character:GetAttributeChangedSignal(attributeName):Connect(updateStatsPanel)
@@ -950,6 +1266,7 @@ function HudController.start()
 		updateProgression()
 		updateStatsPanel()
 		updateInventoryAndCraft()
+		updateSpellButtons()
 	end
 
 	player:GetAttributeChangedSignal("Team"):Connect(updateTeam)
@@ -1039,6 +1356,26 @@ function HudController.start()
 
 			shopCraftRequest:FireServer(targetItemId)
 		end)
+	end
+
+	local abilityRequestRemote = remotes:WaitForChild(SharedConstants.REMOTES.ABILITY_REQUEST, 10)
+	if abilityRequestRemote and abilityRequestRemote:IsA("RemoteEvent") then
+		abilityRequest = abilityRequestRemote
+	else
+		warn("[MOBA] RemoteEvent AbilityRequest indisponible.")
+	end
+
+	local abilityFeedbackRemoteInstance = remotes:WaitForChild(SharedConstants.REMOTES.ABILITY_FEEDBACK, 10)
+	if abilityFeedbackRemoteInstance and abilityFeedbackRemoteInstance:IsA("RemoteEvent") then
+		abilityFeedbackRemote = abilityFeedbackRemoteInstance
+		abilityFeedbackRemote.OnClientEvent:Connect(function(state, displayName, slot, cooldown)
+			if typeof(slot) == "number" and slot >= 1 and slot <= 4 and typeof(cooldown) == "number" then
+				spellCooldownEnds[slot] = os.clock() + cooldown
+				updateSpellCooldownUI()
+			end
+		end)
+	else
+		warn("[MOBA] RemoteEvent AbilityFeedback indisponible.")
 	end
 
 	local matchRemote = remotes:WaitForChild(SharedConstants.REMOTES.MATCH_STATE_UPDATE, 10)
