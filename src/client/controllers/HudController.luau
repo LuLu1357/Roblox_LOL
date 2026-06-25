@@ -47,8 +47,24 @@ local function formatSpellStatLine(label: string, value: any): string
 		return ""
 	end
 
-	if label == "Cooldown" or label == "Duration" or label == "Range" or label == "Radius" or label == "DashDistance" then
-		return string.format("%s: %ss", label, value)
+	if label == "Cooldown" or label == "Duration" then
+		return string.format("%s: %ss", label, tostring(value))
+	end
+
+	if label == "DashDistance" then
+		return "Dash Distance: " .. tostring(value)
+	end
+
+	if label == "MaxHealthBonus" then
+		return "Max Health Bonus: " .. tostring(value)
+	end
+
+	if label == "ExecuteBonusDamage" then
+		return "Execute Bonus Damage: " .. tostring(value)
+	end
+
+	if label == "ExecuteThreshold" then
+		return "Execute Threshold: " .. tostring(math.floor(value * 100)) .. "%"
 	end
 
 	return string.format("%s: %s", label, tostring(value))
@@ -178,11 +194,11 @@ function HudController.start()
 
 	local spellTooltip = Instance.new("Frame")
 	spellTooltip.Name = "SpellTooltip"
-	spellTooltip.Size = UDim2.fromOffset(260, 150)
+	spellTooltip.Size = UDim2.fromOffset(280, 190)
 	spellTooltip.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
 	spellTooltip.BackgroundTransparency = 0.04
 	spellTooltip.BorderSizePixel = 0
-	spellTooltip.ZIndex = 50
+	spellTooltip.ZIndex = 100
 	spellTooltip.Visible = false
 	spellTooltip.Parent = gui
 
@@ -195,6 +211,7 @@ function HudController.start()
 	tooltipText.Position = UDim2.fromOffset(10, 10)
 	tooltipText.Size = UDim2.new(1, -20, 1, -20)
 	tooltipText.BackgroundTransparency = 1
+	tooltipText.ZIndex = 101
 	tooltipText.Font = Enum.Font.Gotham
 	tooltipText.TextColor3 = Color3.fromRGB(235, 240, 250)
 	tooltipText.TextSize = 14
@@ -202,6 +219,8 @@ function HudController.start()
 	tooltipText.TextXAlignment = Enum.TextXAlignment.Left
 	tooltipText.TextYAlignment = Enum.TextYAlignment.Top
 	tooltipText.RichText = false
+	tooltipText.TextTransparency = 0
+	tooltipText.Visible = true
 	tooltipText.Text = ""
 	tooltipText.Parent = spellTooltip
 
@@ -217,10 +236,16 @@ function HudController.start()
 			return
 		end
 
+		local tooltip = buildSpellTooltipText(spellInfo[slot], slot)
+		if tooltip == "" then
+			tooltip = "Slot " .. tostring(slot) .. "\nNo tooltip data."
+			print("[MOBA][HUD] Spell tooltip", slot, tooltip)
+		end
+		tooltipText.Text = tooltip
+
 		local absolutePos = button.AbsolutePosition
 		spellTooltip.Position = UDim2.fromOffset(absolutePos.X, absolutePos.Y - 158)
 		spellTooltip.Visible = true
-		tooltipText.Text = buildSpellTooltipText(spellInfo[slot], slot)
 	end
 
 	local function updateSpellButton(slot: number)
