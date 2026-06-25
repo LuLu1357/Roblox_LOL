@@ -183,6 +183,9 @@ Après chaque changement important, consigner : date, décision, fichiers ou obj
 - Test Play reussi : `Map validation passed`, `Health bar validation passed`, 22 tours runtime avec `VisualModel`, 22 barres de vie, anciennes parts invisibles, tour attaquant encore. Verification client : tir de `BlueTopOuterTower` avec origine a distance `0` de `TowerLaserOrigin` et environ `17.5` studs du `HumanoidRootPart`.
 - Collision physique des tours corrigee sans changer le gameplay : backup `backups/GameTest-editable-before-tower-hitbox-flame-20260625-135734.rbxlx`, creation de 22 `TowerHitbox` invisibles `CanCollide = true`, `CanQuery = true`, et conservation des 22 `VisualModel` decoratifs sans collision.
 - Flammes de tours renforcees : 22 `Fire` ajustes a `Size >= 7`, `Heat >= 9`, et 22 `PointLight` ajustes a `Brightness = 3.5`, `Range = 12`, couleur equipe. Test Play OK : healthbars visibles, tours attaquent, minions continuent a se battre, laser a distance `0` de `TowerLaserOrigin`, pas d'erreur console observee.
+- Propagation manuelle depuis `BlueMidOuterTower` : backup `backups/GameTest-editable-before-propagate-tower-hitbox2-20260625-142348.rbxlx`, puis `TowerHit2box` ajoute aux 21 autres tours et `TowerHitbox` de base aligne sur les 22 tours.
+- Dimensions/offsets verifies en Edit : `TowerHitbox` = `4, 14, 4` avec offset relatif Y `0.1471118927001953`; `TowerHit2box` = `10.99995231628418, 2.1499102115631104, 8.50000286102295` avec offset relatif Y `-6.77504825592041`.
+- Verification ciblee : 22 tours, 22 `TowerHitbox`, 22 `TowerHit2box`, 0 ecart de taille/position/proprietes, 0 part de `VisualModel` collidable. Aucun attribut gameplay ou service serveur modifie.
 
 ### 24 juin 2026 — Jarvis
 
