@@ -45,6 +45,9 @@ function HudController.start()
 	local currentCharacter: Model? = nil
 	local selectedInventorySlot: number? = nil
 	local shopSellRequest: RemoteEvent? = nil
+	local selectChampionRequest: RemoteEvent? = nil
+	local debugSpawnDummyRequest: RemoteEvent? = nil
+	local debugClearDummiesRequest: RemoteEvent? = nil
 
 	local shopPanel = Instance.new("Frame")
 	shopPanel.Name = "ShopPanel"
@@ -123,6 +126,174 @@ function HudController.start()
 	shopItemDetailsText.TextYAlignment = Enum.TextYAlignment.Top
 	shopItemDetailsText.Text = "Empty Slot\n\nLeft click: details\nRight click: sell"
 	shopItemDetailsText.Parent = shopItemDetails
+
+	local championSelectPanel = Instance.new("Frame")
+	championSelectPanel.Name = "ChampionSelectPanel"
+	championSelectPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+	championSelectPanel.Position = UDim2.fromScale(0.5, 0.5)
+	championSelectPanel.Size = UDim2.fromOffset(560, 190)
+	championSelectPanel.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
+	championSelectPanel.BackgroundTransparency = 0.04
+	championSelectPanel.BorderSizePixel = 0
+	championSelectPanel.Visible = false
+	championSelectPanel.Parent = gui
+
+	local championSelectCorner = Instance.new("UICorner")
+	championSelectCorner.CornerRadius = UDim.new(0, 12)
+	championSelectCorner.Parent = championSelectPanel
+
+	local championSelectTitle = createLabel(
+		championSelectPanel,
+		"ChampionSelectTitle",
+		UDim2.fromOffset(20, 16),
+		UDim2.fromOffset(300, 30),
+		"SELECT CHAMPION"
+	)
+	championSelectTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+	local championSelectHint = createLabel(
+		championSelectPanel,
+		"ChampionSelectHint",
+		UDim2.fromOffset(20, 48),
+		UDim2.fromOffset(360, 20),
+		"Choose a class to respawn"
+	)
+	championSelectHint.TextXAlignment = Enum.TextXAlignment.Left
+
+	local closeChampionSelectButton = Instance.new("TextButton")
+	closeChampionSelectButton.Name = "CloseChampionSelectButton"
+	closeChampionSelectButton.Position = UDim2.fromOffset(510, 14)
+	closeChampionSelectButton.Size = UDim2.fromOffset(30, 30)
+	closeChampionSelectButton.BackgroundColor3 = Color3.fromRGB(65, 45, 50)
+	closeChampionSelectButton.BorderSizePixel = 0
+	closeChampionSelectButton.Font = Enum.Font.GothamBold
+	closeChampionSelectButton.Text = "X"
+	closeChampionSelectButton.TextColor3 = Color3.fromRGB(255, 220, 220)
+	closeChampionSelectButton.TextScaled = true
+	closeChampionSelectButton.Parent = championSelectPanel
+
+	local closeChampionSelectCorner = Instance.new("UICorner")
+	closeChampionSelectCorner.CornerRadius = UDim.new(0, 6)
+	closeChampionSelectCorner.Parent = closeChampionSelectButton
+
+	local championSelectButtons: { [string]: TextButton } = {}
+
+	local function createChampionSelectButton(championId: string, position: UDim2): TextButton
+		local button = Instance.new("TextButton")
+		button.Name = championId
+		button.Position = position
+		button.Size = UDim2.fromOffset(96, 58)
+		button.BackgroundColor3 = Color3.fromRGB(38, 48, 64)
+		button.BackgroundTransparency = 0.05
+		button.BorderSizePixel = 0
+		button.Font = Enum.Font.GothamBold
+		button.Text = championId
+		button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		button.TextScaled = true
+		button.Parent = championSelectPanel
+
+		local buttonCorner = Instance.new("UICorner")
+		buttonCorner.CornerRadius = UDim.new(0, 8)
+		buttonCorner.Parent = button
+
+		championSelectButtons[championId] = button
+		button.MouseButton1Click:Connect(function()
+			local remote = selectChampionRequest
+			if not remote then
+				return
+			end
+
+			remote:FireServer(championId)
+			championSelectPanel.Visible = false
+		end)
+		return button
+	end
+
+	createChampionSelectButton("Tank", UDim2.fromOffset(20, 92))
+	createChampionSelectButton("Assassin", UDim2.fromOffset(128, 92))
+	createChampionSelectButton("Mage", UDim2.fromOffset(236, 92))
+	createChampionSelectButton("Marksman", UDim2.fromOffset(344, 92))
+	createChampionSelectButton("Support", UDim2.fromOffset(452, 92))
+
+	closeChampionSelectButton.MouseButton1Click:Connect(function()
+		championSelectPanel.Visible = false
+	end)
+
+	local trainingPanel = Instance.new("Frame")
+	trainingPanel.Name = "TrainingPanel"
+	trainingPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+	trainingPanel.Position = UDim2.fromScale(0.5, 0.5)
+	trainingPanel.Size = UDim2.fromOffset(360, 300)
+	trainingPanel.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
+	trainingPanel.BackgroundTransparency = 0.05
+	trainingPanel.BorderSizePixel = 0
+	trainingPanel.Visible = false
+	trainingPanel.Parent = gui
+
+	local trainingPanelCorner = Instance.new("UICorner")
+	trainingPanelCorner.CornerRadius = UDim.new(0, 12)
+	trainingPanelCorner.Parent = trainingPanel
+
+	local trainingTitle = createLabel(
+		trainingPanel,
+		"TrainingTitle",
+		UDim2.fromOffset(24, 18),
+		UDim2.fromOffset(312, 30),
+		"TRAINING DUMMIES"
+	)
+	trainingTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+	local trainingSpawnButtons: { [string]: TextButton } = {}
+
+	local function createTrainingButton(name: string, text: string, position: UDim2): TextButton
+		local button = Instance.new("TextButton")
+		button.Name = name
+		button.Position = position
+		button.Size = UDim2.fromOffset(312, 34)
+		button.BackgroundColor3 = Color3.fromRGB(38, 48, 64)
+		button.BackgroundTransparency = 0.04
+		button.BorderSizePixel = 0
+		button.Font = Enum.Font.GothamBold
+		button.Text = text
+		button.TextColor3 = Color3.fromRGB(255, 255, 255)
+		button.TextScaled = true
+		button.Parent = trainingPanel
+
+		local buttonCorner = Instance.new("UICorner")
+		buttonCorner.CornerRadius = UDim.new(0, 8)
+		buttonCorner.Parent = button
+
+		return button
+	end
+
+	trainingSpawnButtons.EnemyChampion = createTrainingButton(
+		"SpawnEnemyChampionButton",
+		"Spawn Enemy Champion",
+		UDim2.fromOffset(24, 68)
+	)
+	trainingSpawnButtons.AllyChampion = createTrainingButton(
+		"SpawnAllyChampionButton",
+		"Spawn Ally Champion",
+		UDim2.fromOffset(24, 112)
+	)
+	trainingSpawnButtons.EnemyMinion = createTrainingButton(
+		"SpawnEnemyMinionButton",
+		"Spawn Enemy Minion",
+		UDim2.fromOffset(24, 156)
+	)
+	trainingSpawnButtons.AllyMinion = createTrainingButton(
+		"SpawnAllyMinionButton",
+		"Spawn Ally Minion",
+		UDim2.fromOffset(24, 200)
+	)
+
+	local clearDummiesButton = createTrainingButton(
+		"ClearDummiesButton",
+		"Clear Dummies",
+		UDim2.fromOffset(24, 244)
+	)
+	clearDummiesButton.BackgroundColor3 = Color3.fromRGB(66, 45, 52)
+	clearDummiesButton.TextColor3 = Color3.fromRGB(255, 220, 225)
 
 	local function getStatLine(statName: string, value: any): string
 		local displayName = statName
@@ -214,6 +385,10 @@ function HudController.start()
 
 		if input.KeyCode == Enum.KeyCode.P then
 			shopPanel.Visible = not shopPanel.Visible
+			if shopPanel.Visible then
+				championSelectPanel.Visible = false
+				trainingPanel.Visible = false
+			end
 		end
 	end)
 
@@ -300,11 +475,44 @@ function HudController.start()
 	local shopHintLabel = createLabel(panel, "ShopHint", UDim2.fromOffset(448, 8), UDim2.fromOffset(54, 24), "P: SHOP")
 	shopHintLabel.TextXAlignment = Enum.TextXAlignment.Right
 
+	local championSelectToggleButton = Instance.new("TextButton")
+	championSelectToggleButton.Name = "ChampionSelectToggleButton"
+	championSelectToggleButton.Position = UDim2.fromOffset(378, 60)
+	championSelectToggleButton.Size = UDim2.fromOffset(124, 18)
+	championSelectToggleButton.BackgroundColor3 = Color3.fromRGB(50, 66, 88)
+	championSelectToggleButton.BorderSizePixel = 0
+	championSelectToggleButton.Font = Enum.Font.GothamBold
+	championSelectToggleButton.Text = "CHAMPIONS"
+	championSelectToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	championSelectToggleButton.TextScaled = true
+	championSelectToggleButton.Parent = panel
+
+	local championSelectToggleCorner = Instance.new("UICorner")
+	championSelectToggleCorner.CornerRadius = UDim.new(0, 5)
+	championSelectToggleCorner.Parent = championSelectToggleButton
+
+	local trainingToggleButton = Instance.new("TextButton")
+	trainingToggleButton.Name = "TrainingToggleButton"
+	trainingToggleButton.AnchorPoint = Vector2.new(0.5, 1)
+	trainingToggleButton.Position = UDim2.new(0.5, 0, 0.975, -92)
+	trainingToggleButton.Size = UDim2.fromOffset(104, 24)
+	trainingToggleButton.BackgroundColor3 = Color3.fromRGB(52, 68, 58)
+	trainingToggleButton.BorderSizePixel = 0
+	trainingToggleButton.Font = Enum.Font.GothamBold
+	trainingToggleButton.Text = "TRAINING"
+	trainingToggleButton.TextColor3 = Color3.fromRGB(230, 255, 235)
+	trainingToggleButton.TextScaled = true
+	trainingToggleButton.Parent = gui
+
+	local trainingToggleCorner = Instance.new("UICorner")
+	trainingToggleCorner.CornerRadius = UDim.new(0, 6)
+	trainingToggleCorner.Parent = trainingToggleButton
+
 	local statsPanel = Instance.new("Frame")
 	statsPanel.Name = "StatsPanel"
 	statsPanel.AnchorPoint = Vector2.new(1, 1)
 	statsPanel.Position = UDim2.new(1, 0, 0, -10)
-	statsPanel.Size = UDim2.fromOffset(220, 238)
+	statsPanel.Size = UDim2.fromOffset(220, 300)
 	statsPanel.BackgroundColor3 = Color3.fromRGB(17, 24, 34)
 	statsPanel.BackgroundTransparency = 0.08
 	statsPanel.BorderSizePixel = 0
@@ -330,6 +538,25 @@ function HudController.start()
 
 	statsToggleButton.MouseButton1Click:Connect(function()
 		statsPanel.Visible = not statsPanel.Visible
+		if statsPanel.Visible then
+			trainingPanel.Visible = false
+		end
+	end)
+	championSelectToggleButton.MouseButton1Click:Connect(function()
+		championSelectPanel.Visible = not championSelectPanel.Visible
+		if championSelectPanel.Visible then
+			shopPanel.Visible = false
+			statsPanel.Visible = false
+			trainingPanel.Visible = false
+		end
+	end)
+	trainingToggleButton.MouseButton1Click:Connect(function()
+		trainingPanel.Visible = not trainingPanel.Visible
+		if trainingPanel.Visible then
+			shopPanel.Visible = false
+			championSelectPanel.Visible = false
+			statsPanel.Visible = false
+		end
 	end)
 
 	local shopButtons: { [string]: TextButton } = {}
@@ -580,6 +807,17 @@ function HudController.start()
 			end
 		end
 		local function updateStatsPanel()
+			local championId = character:GetAttribute("ChampionId")
+			local championRole = character:GetAttribute("ChampionRole")
+			for buttonChampionId, button in championSelectButtons do
+				local isSelected = championId == buttonChampionId
+				button.BackgroundColor3 = if isSelected
+					then Color3.fromRGB(55, 95, 75)
+					else Color3.fromRGB(38, 48, 64)
+				button.TextColor3 = if isSelected
+					then Color3.fromRGB(220, 255, 225)
+					else Color3.fromRGB(255, 255, 255)
+			end
 			local level = character:GetAttribute("Level")
 			local gold = character:GetAttribute("Gold")
 			local xp = character:GetAttribute("XP")
@@ -592,7 +830,9 @@ function HudController.start()
 			local inventoryCount = character:GetAttribute("InventoryCount")
 
 			statsText.Text = string.format(
-				"LVL: %s\nGold: %s\nXP: %s\nHP: %s / %s\nAD: %s\nRange: %s\nCooldown: %s\nSpeed: %s\nItems: %s",
+				"Champion: %s\nRole: %s\nLVL: %s\nGold: %s\nXP: %s\nHP: %s / %s\nAD: %s\nRange: %s\nCooldown: %s\nSpeed: %s\nItems: %s",
+				tostring(championId or "?"),
+				tostring(championRole or "?"),
 				tostring(level or 1),
 				tostring(gold or 0),
 				tostring(xp or 0),
@@ -607,6 +847,8 @@ function HudController.start()
 		end
 
 		local statsAttributeNames = {
+			"ChampionId",
+			"ChampionRole",
 			"Level",
 			"Gold",
 			"XP",
@@ -721,6 +963,46 @@ function HudController.start()
 	if not remotes or not remotes:IsA("Folder") then
 		warn("[MOBA] Remotes indisponibles : vérifie que le serveur a démarré et que Workspace.Map existe.")
 		return
+	end
+
+	local selectChampionRemote = remotes:WaitForChild(SharedConstants.REMOTES.SELECT_CHAMPION_REQUEST, 10)
+	if selectChampionRemote and selectChampionRemote:IsA("RemoteEvent") then
+		selectChampionRequest = selectChampionRemote
+	else
+		warn("[MOBA] RemoteEvent SelectChampionRequest indisponible.")
+	end
+
+	local debugSpawnDummyRemote = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_SPAWN_DUMMY_REQUEST, 10)
+	if debugSpawnDummyRemote and debugSpawnDummyRemote:IsA("RemoteEvent") then
+		debugSpawnDummyRequest = debugSpawnDummyRemote
+		for dummyKind, button in trainingSpawnButtons do
+			local buttonDummyKind = dummyKind
+			button.MouseButton1Click:Connect(function()
+				local remote = debugSpawnDummyRequest
+				if not remote then
+					return
+				end
+
+				remote:FireServer(buttonDummyKind)
+			end)
+		end
+	else
+		warn("[MOBA] RemoteEvent DebugSpawnDummyRequest indisponible.")
+	end
+
+	local debugClearDummiesRemote = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_CLEAR_DUMMIES_REQUEST, 10)
+	if debugClearDummiesRemote and debugClearDummiesRemote:IsA("RemoteEvent") then
+		debugClearDummiesRequest = debugClearDummiesRemote
+		clearDummiesButton.MouseButton1Click:Connect(function()
+			local remote = debugClearDummiesRequest
+			if not remote then
+				return
+			end
+
+			remote:FireServer()
+		end)
+	else
+		warn("[MOBA] RemoteEvent DebugClearDummiesRequest indisponible.")
 	end
 
 	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST, 10)

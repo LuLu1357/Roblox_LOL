@@ -65,12 +65,22 @@ function InputController.start()
 	local debugAddGoldRequest = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST) :: RemoteEvent
 	local recallRequest = remotes:WaitForChild(SharedConstants.REMOTES.RECALL_REQUEST) :: RemoteEvent
 	local recallStateUpdate = remotes:WaitForChild(SharedConstants.REMOTES.RECALL_STATE_UPDATE) :: RemoteEvent
+	local abilityRequest = remotes:WaitForChild(SharedConstants.REMOTES.ABILITY_REQUEST) :: RemoteEvent
+	local abilityFeedback = remotes:WaitForChild(SharedConstants.REMOTES.ABILITY_FEEDBACK) :: RemoteEvent
 
 	recallStateUpdate.OnClientEvent:Connect(function(state, duration, reason)
 		print("[MOBA][RECALL]", state, duration, reason)
 	end)
+	abilityFeedback.OnClientEvent:Connect(function(state, displayName, slot, cooldown)
+		print("[MOBA][ABILITY]", state, displayName, slot, cooldown)
+	end)
 
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if not gameProcessed and input.KeyCode == Enum.KeyCode.One then
+			abilityRequest:FireServer(1)
+			return
+		end
+
 		if not gameProcessed and input.KeyCode == Enum.KeyCode.R then
 			recallRequest:FireServer()
 			return

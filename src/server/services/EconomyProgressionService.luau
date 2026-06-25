@@ -109,6 +109,10 @@ function EconomyProgressionService.tryLevelUp(champion: Instance)
 end
 
 function EconomyProgressionService.awardKillRewards(killer: Instance, killed: Instance)
+	if killed:GetAttribute("NoRewards") == true then
+		return
+	end
+
 	if not isChampion(killer) then
 		return
 	end

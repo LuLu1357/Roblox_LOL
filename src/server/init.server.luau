@@ -2,6 +2,7 @@
 
 local Workspace = game:GetService("Workspace")
 
+local AbilityService = require(script.services.AbilityService)
 local ChampionService = require(script.services.ChampionService)
 local JungleService = require(script.services.JungleService)
 local MapValidatorService = require(script.services.MapValidatorService)
@@ -12,6 +13,7 @@ local RecallService = require(script.services.RecallService)
 local RemoteService = require(script.services.RemoteService)
 local TeamService = require(script.services.TeamService)
 local TowerService = require(script.services.TowerService)
+local TrainingDummyService = require(script.services.TrainingDummyService)
 local VisionService = require(script.services.VisionService)
 local EconomyProgressionService = require(script.services.EconomyProgressionService)
 local ShopService = require(script.services.ShopService)
@@ -28,10 +30,12 @@ end
 assert(units:IsA("Folder"), "[MOBA] Workspace.Units must be a Folder")
 
 RemoteService.start()
+AbilityService.start()
 RecallService.start()
 MapValidatorService.start()
 TeamService.start()
 ChampionService.start()
+TrainingDummyService.start()
 TowerService.start()
 JungleService.start()
 NexusService.start()

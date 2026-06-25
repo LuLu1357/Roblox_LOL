@@ -3,8 +3,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local AbilityService = require(script.Parent.AbilityService)
 local ShopService = require(script.Parent.ShopService)
 local RecallService = require(script.Parent.RecallService)
+local TrainingDummyService = require(script.Parent.TrainingDummyService)
 
 
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
@@ -48,13 +50,18 @@ function RemoteService.start()
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.COMBAT_FEEDBACK)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.VISION_UPDATE)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.MATCH_STATE_UPDATE)
+	local abilityRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.ABILITY_REQUEST)
+	getOrCreateRemote(remotes, SharedConstants.REMOTES.ABILITY_FEEDBACK)
 	local recallRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_REQUEST)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_STATE_UPDATE)
+	local selectChampionRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SELECT_CHAMPION_REQUEST)
 
 	local shopBuyRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_BUY_REQUEST)
 	local shopSellRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_SELL_REQUEST)
 	local shopCraftRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SHOP_CRAFT_REQUEST)
 	local debugAddGoldRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.DEBUG_ADD_GOLD_REQUEST)
+	local debugSpawnDummyRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.DEBUG_SPAWN_DUMMY_REQUEST)
+	local debugClearDummiesRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.DEBUG_CLEAR_DUMMIES_REQUEST)
 	debugAddGoldRequest.OnServerEvent:Connect(function(player)
 		local debugConfig = SharedConstants.DEBUG
 		if typeof(debugConfig) ~= "table" or debugConfig.ALLOW_DEBUG_GOLD ~= true then
@@ -87,6 +94,36 @@ function RemoteService.start()
 		))
 	end)
 
+	debugSpawnDummyRequest.OnServerEvent:Connect(function(player, dummyKind)
+		local debugConfig = SharedConstants.DEBUG
+		if typeof(debugConfig) ~= "table" or debugConfig.ALLOW_TRAINING_DUMMIES ~= true then
+			warn("[MOBA][DUMMY] Spawn refused:", player.Name)
+			return
+		end
+
+		if typeof(dummyKind) ~= "string" then
+			return
+		end
+
+		local success, reason = TrainingDummyService.spawnDummy(player, dummyKind)
+		if not success then
+			warn("[MOBA][DUMMY] Spawn failed:", player.Name, dummyKind, reason)
+		end
+	end)
+
+	debugClearDummiesRequest.OnServerEvent:Connect(function(player)
+		local debugConfig = SharedConstants.DEBUG
+		if typeof(debugConfig) ~= "table" or debugConfig.ALLOW_TRAINING_DUMMIES ~= true then
+			warn("[MOBA][DUMMY] Clear refused:", player.Name)
+			return
+		end
+
+		local success, reason = TrainingDummyService.clearDummies(player)
+		if not success then
+			warn("[MOBA][DUMMY] Clear failed:", player.Name, reason)
+		end
+	end)
+
 	attackRequest.OnServerEvent:Connect(function(player, target)
 		if typeof(target) ~= "Instance" then
 			return
@@ -105,10 +142,33 @@ function RemoteService.start()
 		CombatService.tryAutoAttack(champion, target, player)
 	end)
 
+	abilityRequest.OnServerEvent:Connect(function(player, slot, target)
+		if typeof(slot) ~= "number" then
+			return
+		end
+
+		local optionalTarget = if typeof(target) == "Instance" then target else nil
+		local success, reason = AbilityService.castAbility(player, slot, optionalTarget)
+		if not success then
+			warn("[MOBA] Ability failed:", player.Name, slot, reason)
+		end
+	end)
+
 	recallRequest.OnServerEvent:Connect(function(player)
 		local success, reason = RecallService.startRecall(player)
 		if not success then
 			warn("[MOBA] Recall failed:", player.Name, reason)
+		end
+	end)
+
+	selectChampionRequest.OnServerEvent:Connect(function(player, championId)
+		if typeof(championId) ~= "string" then
+			return
+		end
+
+		local success, reason = ChampionService.setSelectedChampion(player, championId)
+		if not success then
+			warn("[MOBA] Select champion failed:", player.Name, championId, reason)
 		end
 	end)
 

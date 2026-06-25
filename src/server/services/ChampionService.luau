@@ -43,7 +43,12 @@ local function setupCharacter(player: Player, character: Model)
 		return
 	end
 
-	local data = ChampionData.Default
+	local selectedChampionId = player:GetAttribute("SelectedChampionId")
+	local data = ChampionData.getChampion(if typeof(selectedChampionId) == "string" then selectedChampionId else nil)
+	if selectedChampionId ~= data.Id then
+		player:SetAttribute("SelectedChampionId", data.Id)
+	end
+
 	local teamName = player:GetAttribute("Team")
 	if typeof(teamName) ~= "string" then
 		teamName = SharedConstants.TEAMS.BLUE
@@ -53,12 +58,15 @@ local function setupCharacter(player: Player, character: Model)
 	character:SetAttribute("UnitType", "Champion")
 	character:SetAttribute("OwnerUserId", player.UserId)
 	character:SetAttribute("Team", teamName)
+	character:SetAttribute("ChampionId", data.Id)
+	character:SetAttribute("ChampionRole", data.Role)
 	character:SetAttribute("MaxHealth", data.MaxHealth)
 	character:SetAttribute("Health", data.MaxHealth)
 	character:SetAttribute("AttackDamage", data.AttackDamage)
 	character:SetAttribute("AttackRange", data.AttackRange)
 	character:SetAttribute("AttackCooldown", data.AttackCooldown)
 	character:SetAttribute("MoveSpeed", data.MoveSpeed)
+	character:SetAttribute("InventoryCount", 0)
 	character:SetAttribute("Dead", false)
 
 	EconomyProgressionService.applyPlayerProgressionToChampion(player, character)
@@ -93,8 +101,11 @@ local function setupCharacter(player: Player, character: Model)
 		character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
 	end
 	Utility.attachHealthBar(character)
+	print(string.format("[MOBA] %s spawned as %s", player.Name, data.DisplayName))
 
 	local watchedAttributes = {
+		"ChampionId",
+		"ChampionRole",
 		"Level",
 		"Gold",
 		"XP",
@@ -147,6 +158,44 @@ function ChampionService.getChampionFromPlayer(player: Player): Model?
 		end
 	end
 	return nil
+end
+
+function ChampionService.setSelectedChampion(player: Player, championId: string): (boolean, string)
+	local targetData = ChampionData.Champions[championId]
+	if not targetData then
+		return false, "Unknown champion"
+	end
+
+	local champion = ChampionService.getChampionFromPlayer(player)
+	local shouldRespawn = champion ~= nil and champion:GetAttribute("Dead") ~= true
+	if champion and shouldRespawn then
+		EconomyProgressionService.saveChampionProgressionToPlayer(champion)
+
+		local currentChampionId = champion:GetAttribute("ChampionId")
+		local currentData = ChampionData.getChampion(
+			if typeof(currentChampionId) == "string" then currentChampionId else nil
+		)
+		local currentMaxHealth = champion:GetAttribute("MaxHealth")
+		local currentAttackDamage = champion:GetAttribute("AttackDamage")
+		local maxHealthBonus = if typeof(currentMaxHealth) == "number"
+			then currentMaxHealth - currentData.MaxHealth
+			else 0
+		local attackDamageBonus = if typeof(currentAttackDamage) == "number"
+			then currentAttackDamage - currentData.AttackDamage
+			else 0
+
+		player:SetAttribute("ProgressionMaxHealth", math.max(1, targetData.MaxHealth + maxHealthBonus))
+		player:SetAttribute("ProgressionAttackDamage", targetData.AttackDamage + attackDamageBonus)
+	end
+
+	player:SetAttribute("SelectedChampionId", championId)
+	print(string.format("[MOBA] %s selected champion %s", player.Name, targetData.DisplayName))
+
+	if shouldRespawn then
+		player:LoadCharacter()
+	end
+
+	return true, "Selected"
 end
 
 function ChampionService.start()

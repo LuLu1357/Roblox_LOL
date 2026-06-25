@@ -56,6 +56,15 @@ SharedConstants.REMOTES = {
 	DEBUG_ADD_GOLD_REQUEST = "DebugAddGoldRequest",
 	RECALL_REQUEST = "RecallRequest",
 	RECALL_STATE_UPDATE = "RecallStateUpdate",
+	SELECT_CHAMPION_REQUEST = "SelectChampionRequest",
+	ABILITY_REQUEST = "AbilityRequest",
+	ABILITY_FEEDBACK = "AbilityFeedback",
+	DEBUG_SPAWN_DUMMY_REQUEST = "DebugSpawnDummyRequest",
+	DEBUG_CLEAR_DUMMIES_REQUEST = "DebugClearDummiesRequest",
+}
+
+SharedConstants.ABILITIES = {
+	MAX_TARGET_SEARCH_RADIUS = 80,
 }
 
 SharedConstants.RECALL = {
@@ -71,5 +80,6 @@ SharedConstants.DEBUG = {
 
 	ALLOW_DEBUG_GOLD = true,
 	DEBUG_GOLD_AMOUNT = 10000,
+	ALLOW_TRAINING_DUMMIES = true,
 }
 return SharedConstants
