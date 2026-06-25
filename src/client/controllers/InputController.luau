@@ -76,14 +76,23 @@ function InputController.start()
 	end)
 
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if not gameProcessed and input.KeyCode == Enum.KeyCode.One then
-			abilityRequest:FireServer(1)
-			return
-		end
-
-		if not gameProcessed and input.KeyCode == Enum.KeyCode.R then
-			recallRequest:FireServer()
-			return
+		if not gameProcessed then
+			if input.KeyCode == Enum.KeyCode.One then
+				abilityRequest:FireServer(1)
+				return
+			elseif input.KeyCode == Enum.KeyCode.Two then
+				abilityRequest:FireServer(2)
+				return
+			elseif input.KeyCode == Enum.KeyCode.Three then
+				abilityRequest:FireServer(3)
+				return
+			elseif input.KeyCode == Enum.KeyCode.Four then
+				abilityRequest:FireServer(4)
+				return
+			elseif input.KeyCode == Enum.KeyCode.R then
+				recallRequest:FireServer()
+				return
+			end
 		end
 
 		if input.KeyCode == Enum.KeyCode.G then
