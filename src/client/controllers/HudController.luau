@@ -15,6 +15,7 @@ local TrainingPanelController = require(script.Parent.hud.TrainingPanelControlle
 local HudController = {}
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
+local started = false
 
 local function createLabel(parent: Instance, name: string, position: UDim2, size: UDim2, text: string): TextLabel
 	local label = Instance.new("TextLabel")
@@ -31,102 +32,12 @@ local function createLabel(parent: Instance, name: string, position: UDim2, size
 	return label
 end
 
-local function color3FromData(colorData: any): Color3
-	if typeof(colorData) == "Color3" then
-		return colorData
-	end
-
-	if typeof(colorData) == "table"
-		and typeof(colorData.R) == "number"
-		and typeof(colorData.G) == "number"
-		and typeof(colorData.B) == "number"
-	then
-		return Color3.fromRGB(colorData.R, colorData.G, colorData.B)
-	end
-
-	return Color3.fromRGB(110, 110, 110)
-end
-
-local function formatSpellStatLine(label: string, value: any): string
-	if typeof(value) ~= "number" then
-		return ""
-	end
-
-	if label == "Cooldown" or label == "Duration" then
-		return string.format("%s: %ss", label, tostring(value))
-	end
-
-	if label == "DashDistance" then
-		return "Dash Distance: " .. tostring(value)
-	end
-
-	if label == "MaxHealthBonus" then
-		return "Max Health Bonus: " .. tostring(value)
-	end
-
-	if label == "ExecuteBonusDamage" then
-		return "Execute Bonus Damage: " .. tostring(value)
-	end
-
-	if label == "ExecuteThreshold" then
-		return "Execute Threshold: " .. tostring(math.floor(value * 100)) .. "%"
-	end
-
-	return string.format("%s: %s", label, tostring(value))
-end
-
-local function buildSpellTooltipText(spell: table?, slot: number): string
-	if typeof(spell) ~= "table" then
-		return string.format("Slot %d\nNo spell available.", slot)
-	end
-
-	local lines: { string } = {}
-	local name = if typeof(spell.DisplayName) == "string" then spell.DisplayName else "Spell"
-	table.insert(lines, name)
-	if typeof(spell.Type) == "string" then
-		table.insert(lines, "Type: " .. spell.Type)
-	end
-
-	if typeof(spell.Damage) == "number" then
-		table.insert(lines, formatSpellStatLine("Damage", spell.Damage))
-	end
-	if typeof(spell.Heal) == "number" then
-		table.insert(lines, formatSpellStatLine("Heal", spell.Heal))
-	end
-	if typeof(spell.Range) == "number" then
-		table.insert(lines, formatSpellStatLine("Range", spell.Range))
-	end
-	if typeof(spell.Radius) == "number" then
-		table.insert(lines, formatSpellStatLine("Radius", spell.Radius))
-	end
-	if typeof(spell.Duration) == "number" then
-		table.insert(lines, formatSpellStatLine("Duration", spell.Duration))
-	end
-	if typeof(spell.DashDistance) == "number" then
-		table.insert(lines, formatSpellStatLine("DashDistance", spell.DashDistance))
-	end
-	if typeof(spell.MaxHealthBonus) == "number" then
-		table.insert(lines, formatSpellStatLine("MaxHealthBonus", spell.MaxHealthBonus))
-	end
-	if typeof(spell.ExecuteThreshold) == "number" then
-		table.insert(lines, formatSpellStatLine("ExecuteThreshold", spell.ExecuteThreshold))
-	end
-	if typeof(spell.ExecuteBonusDamage) == "number" then
-		table.insert(lines, formatSpellStatLine("ExecuteBonusDamage", spell.ExecuteBonusDamage))
-	end
-	if typeof(spell.Cooldown) == "number" then
-		table.insert(lines, formatSpellStatLine("Cooldown", spell.Cooldown))
-	end
-
-	if typeof(spell.Description) == "string" and spell.Description ~= "" then
-		table.insert(lines, "")
-		table.insert(lines, spell.Description)
-	end
-
-	return table.concat(lines, "\n")
-end
-
 function HudController.start()
+	if started then
+		return
+	end
+	started = true
+
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "MobaHUD"
 	gui.ResetOnSpawn = false
@@ -144,15 +55,6 @@ function HudController.start()
 	panel.BorderSizePixel = 0
 	panel.Parent = gui
 
-	local currentCharacter: Model? = nil
-	local selectedInventorySlot: number? = nil
-	local shopSellRequest: RemoteEvent? = nil
-	local selectChampionRequest: RemoteEvent? = nil
-	local debugSpawnDummyRequest: RemoteEvent? = nil
-	local debugClearDummiesRequest: RemoteEvent? = nil
-	local abilityRequest: RemoteEvent? = nil
-	local abilityFeedbackRemote: RemoteEvent? = nil
-	local scoreboardController: any = nil
 	local championSelectPanelController: any = ChampionSelectPanelController.new(gui, nil)
 	local trainingPanelController: any = TrainingPanelController.new(gui)
 	local spellBarController: any = SpellBarController.new(panel, nil, nil, AbilityData, mouse)
@@ -168,17 +70,17 @@ function HudController.start()
 			return
 		end
 
-			if input.KeyCode == Enum.KeyCode.P then
-				shopController:ToggleVisible()
-				if shopController:IsVisible() then
-					if championSelectPanelController then
-						championSelectPanelController:SetVisible(false)
-					end
-					if trainingPanelController then
-						trainingPanelController:SetVisible(false)
-					end
+		if input.KeyCode == Enum.KeyCode.P then
+			shopController:ToggleVisible()
+			if shopController:IsVisible() then
+				if championSelectPanelController then
+					championSelectPanelController:SetVisible(false)
+				end
+				if trainingPanelController then
+					trainingPanelController:SetVisible(false)
 				end
 			end
+		end
 	end)
 
 	local endMatchOverlay = Instance.new("Frame")
@@ -344,7 +246,6 @@ function HudController.start()
 	end
 
 	local function bindCharacter(character: Model)
-		currentCharacter = character
 		if spellBarController then
 			spellBarController:BindCharacter(character)
 		end
@@ -421,7 +322,6 @@ function HudController.start()
 
 	local selectChampionRemote = remotes:WaitForChild(SharedConstants.REMOTES.SELECT_CHAMPION_REQUEST, 10)
 	if selectChampionRemote and selectChampionRemote:IsA("RemoteEvent") then
-		selectChampionRequest = selectChampionRemote
 		if championSelectPanelController then
 			championSelectPanelController:SetSelectChampionRequest(selectChampionRemote)
 		end
@@ -431,7 +331,6 @@ function HudController.start()
 
 	local debugSpawnDummyRemote = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_SPAWN_DUMMY_REQUEST, 10)
 	if debugSpawnDummyRemote and debugSpawnDummyRemote:IsA("RemoteEvent") then
-		debugSpawnDummyRequest = debugSpawnDummyRemote
 		trainingPanelController:SetSpawnRemote(debugSpawnDummyRemote)
 	else
 		warn("[MOBA] RemoteEvent DebugSpawnDummyRequest indisponible.")
@@ -439,7 +338,6 @@ function HudController.start()
 
 	local debugClearDummiesRemote = remotes:WaitForChild(SharedConstants.REMOTES.DEBUG_CLEAR_DUMMIES_REQUEST, 10)
 	if debugClearDummiesRemote and debugClearDummiesRemote:IsA("RemoteEvent") then
-		debugClearDummiesRequest = debugClearDummiesRemote
 		trainingPanelController:SetClearDummiesRemote(debugClearDummiesRemote)
 	else
 		warn("[MOBA] RemoteEvent DebugClearDummiesRequest indisponible.")
@@ -456,7 +354,6 @@ function HudController.start()
 		warn("[MOBA] RemoteEvent ShopSellRequest indisponible.")
 		return
 	end
-	shopSellRequest = shopSellRemote
 
 	local shopCraftRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_CRAFT_REQUEST, 10)
 	if not shopCraftRequest or not shopCraftRequest:IsA("RemoteEvent") then
@@ -469,7 +366,6 @@ function HudController.start()
 
 	local abilityRequestRemote = remotes:WaitForChild(SharedConstants.REMOTES.ABILITY_REQUEST, 10)
 	if abilityRequestRemote and abilityRequestRemote:IsA("RemoteEvent") then
-		abilityRequest = abilityRequestRemote
 		spellBarController:SetAbilityRequest(abilityRequestRemote)
 	else
 		warn("[MOBA] RemoteEvent AbilityRequest indisponible.")
@@ -477,7 +373,6 @@ function HudController.start()
 
 	local abilityFeedbackRemoteInstance = remotes:WaitForChild(SharedConstants.REMOTES.ABILITY_FEEDBACK, 10)
 	if abilityFeedbackRemoteInstance and abilityFeedbackRemoteInstance:IsA("RemoteEvent") then
-		abilityFeedbackRemote = abilityFeedbackRemoteInstance
 		spellBarController:SetAbilityFeedbackRemote(abilityFeedbackRemoteInstance)
 	else
 		warn("[MOBA] RemoteEvent AbilityFeedback indisponible.")
@@ -485,18 +380,14 @@ function HudController.start()
 
 	local scoreboardRequestRemote = remotes:WaitForChild(SharedConstants.REMOTES.SCOREBOARD_REQUEST, 10)
 	local scoreboardUpdateRemote = remotes:WaitForChild(SharedConstants.REMOTES.SCOREBOARD_UPDATE, 10)
-	scoreboardController = ScoreboardController.new(gui, scoreboardRequestRemote, scoreboardUpdateRemote)
 
-	if scoreboardRequestRemote and scoreboardRequestRemote:IsA("RemoteEvent") then
-		scoreboardRequest = scoreboardRequestRemote
-	else
+	if not scoreboardRequestRemote or not scoreboardRequestRemote:IsA("RemoteEvent") then
 		warn("[MOBA] RemoteEvent ScoreboardRequest indisponible.")
 	end
-	if scoreboardUpdateRemote and scoreboardUpdateRemote:IsA("RemoteEvent") then
-		scoreboardUpdate = scoreboardUpdateRemote
-	else
+	if not scoreboardUpdateRemote or not scoreboardUpdateRemote:IsA("RemoteEvent") then
 		warn("[MOBA] RemoteEvent ScoreboardUpdate indisponible.")
 	end
+	ScoreboardController.new(gui, scoreboardRequestRemote, scoreboardUpdateRemote)
 
 	local matchRemote = remotes:WaitForChild(SharedConstants.REMOTES.MATCH_STATE_UPDATE, 10)
 	if not matchRemote or not matchRemote:IsA("RemoteEvent") then

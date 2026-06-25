@@ -50,12 +50,18 @@ function ScoreboardController.new(gui: Instance, scoreboardRequest: Instance?, s
     self.scoreboardPanel = nil
     self.scoreboardBlueRows = nil
     self.scoreboardRedRows = nil
+    self.scoreboardHeld = false
 
     self:createScoreboardPanel()
     self:SetRemotes(scoreboardRequest, scoreboardUpdate)
 
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed or UserInputService:GetFocusedTextBox() ~= nil then
+            return
+        end
+
         if input.KeyCode == Enum.KeyCode.Tab then
+            self.scoreboardHeld = true
             if self.scoreboardPanel then
                 self.scoreboardPanel.Visible = true
             end
@@ -68,12 +74,22 @@ function ScoreboardController.new(gui: Instance, scoreboardRequest: Instance?, s
         end
     end)
 
-    UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    UserInputService.InputEnded:Connect(function(input)
         if input.KeyCode == Enum.KeyCode.Tab then
+            self.scoreboardHeld = false
             if self.scoreboardPanel then
                 self.scoreboardPanel.Visible = false
             end
             return
+        end
+    end)
+
+    task.spawn(function()
+        while self.scoreboardPanel and self.scoreboardPanel.Parent do
+            if self.scoreboardHeld and self.scoreboardRequest then
+                self.scoreboardRequest:FireServer()
+            end
+            task.wait(0.5)
         end
     end)
 
