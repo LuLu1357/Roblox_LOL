@@ -6,7 +6,9 @@ local CombatFeedbackController = require(script.controllers.CombatFeedbackContro
 local FogController = require(script.controllers.FogController)
 local HudController = require(script.controllers.HudController)
 local InputController = require(script.controllers.InputController)
+local VisualController = require(script.controllers.VisualController)
 
+VisualController.start()
 InputController.start()
 AutoAttackController.start()
 CombatFeedbackController.start()
