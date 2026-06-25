@@ -181,6 +181,8 @@ Après chaque changement important, consigner : date, décision, fichiers ou obj
 - Les 66 anciennes parts directes de tours sont invisibles et conservees comme hitbox/logique avec `CanQuery = true`; aucun attribut gameplay de tour n'a ete modifie.
 - `TowerLaserOrigin` cree dans les 22 `VisualModel`; `CombatService` envoie cette origine visuelle optionnelle au client, et `CombatFeedbackController` l'utilise pour faire partir le rayon de la flamme avec fallback ancien.
 - Test Play reussi : `Map validation passed`, `Health bar validation passed`, 22 tours runtime avec `VisualModel`, 22 barres de vie, anciennes parts invisibles, tour attaquant encore. Verification client : tir de `BlueTopOuterTower` avec origine a distance `0` de `TowerLaserOrigin` et environ `17.5` studs du `HumanoidRootPart`.
+- Collision physique des tours corrigee sans changer le gameplay : backup `backups/GameTest-editable-before-tower-hitbox-flame-20260625-135734.rbxlx`, creation de 22 `TowerHitbox` invisibles `CanCollide = true`, `CanQuery = true`, et conservation des 22 `VisualModel` decoratifs sans collision.
+- Flammes de tours renforcees : 22 `Fire` ajustes a `Size >= 7`, `Heat >= 9`, et 22 `PointLight` ajustes a `Brightness = 3.5`, `Range = 12`, couleur equipe. Test Play OK : healthbars visibles, tours attaquent, minions continuent a se battre, laser a distance `0` de `TowerLaserOrigin`, pas d'erreur console observee.
 
 ### 24 juin 2026 — Jarvis
 

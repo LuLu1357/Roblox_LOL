@@ -154,3 +154,30 @@ Decision Jarvis :
 
 - Generalisation acceptee pour prototype.
 - Surveiller la performance mobile plus tard, car chaque tour ajoute environ 95 `BasePart`.
+
+## 25 juin 2026 - Hitbox et flamme des tours
+
+Statut :
+
+- Correction appliquee aux 22 tours avec `VisualModel`.
+- Gameplay de tour conserve : attributs de degats, range, cooldown, team et health non modifies.
+
+Actions faites :
+
+- Sauvegarde locale creee : `backups/GameTest-editable-before-tower-hitbox-flame-20260625-135734.rbxlx`.
+- 22 `TowerHitbox` invisibles creees directement sous les tours : `Size = 7,14,7`, `CanCollide = true`, `CanQuery = true`.
+- `VisualModel` conserve decoratif : 2090 `BasePart` visuelles sans collision/touch/query/shadow.
+- 22 anciennes parts directes hors `VisualModel` et hors `TowerHitbox` restent invisibles et non-collidables.
+- 22 flammes agrandies : `Fire.Size >= 7`, `Fire.Heat >= 9`.
+- 22 `PointLight` augmentees : `Brightness = 3.5`, `Range = 12`, couleur equipe.
+
+Verification :
+
+- Edit : 22 tours, 22 hitboxes solides, 22 flammes, 22 lights, 0 visual part collidable.
+- Play : map validation OK, health bar validation OK, 22 hitboxes runtime solides, 22 healthbars, minions endommages et tour attaquant encore.
+- Laser : tir de `BlueTopOuterTower` avec origine a distance `0` de `TowerLaserOrigin`.
+
+Decision Jarvis :
+
+- Collision corrigee pour le prototype.
+- A surveiller plus tard : interaction fine joueur/tour et ressenti de largeur de hitbox en session manuelle.
