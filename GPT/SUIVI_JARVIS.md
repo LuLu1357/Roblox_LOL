@@ -174,6 +174,9 @@ Après chaque changement important, consigner : date, décision, fichiers ou obj
 - Aucun gameplay serveur, RemoteEvent, RemoteFunction ou connexion de gameplay n'a ete modifie.
 - Rapport complet ajoute dans `GPT/ASSET_AUDITS.md`.
 - Verifications reussies : inspection Studio MCP, `xmllint --noout GameTest-editable.rbxlx`, scan local des signatures suspectes et `rojo build default.project.json --output /tmp/GameTest-audit.rbxlx`.
+- Test visuel de tour ajoute sans toucher au gameplay : `DragonTorchTowerVisual` nettoye depuis l'asset `239822675`, range dans `ServerStorage.Assets.Models.Towers`, puis clone en `VisualModel` uniquement sur `BlueTopOuterTower` et `RedTopOuterTower`.
+- Sauvegarde locale avant ce test : `backups/GameTest-editable-before-dragon-torch-tower-test-20260625-131931.rbxlx`.
+- Verification ciblee : 95 `BasePart`, 0 script, collisions/touch/query/shadow desactivees, `PointLight` limitee a `Brightness = 2` et `Range = 8`; attributs gameplay des deux tours inchanges.
 
 ### 24 juin 2026 — Jarvis
 

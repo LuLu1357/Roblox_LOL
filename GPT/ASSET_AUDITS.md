@@ -99,3 +99,31 @@ Decision Jarvis :
 - Asset autorise uniquement comme decor de jungle nettoye.
 - Ne pas l'utiliser comme objectif de gameplay.
 - Avant integration propre dans `ReplicatedStorage.Assets.Models.Jungle`, ajouter ou confirmer une strategie Rojo pour les assets Studio-owned afin d'eviter que Rojo supprime les instances inconnues.
+
+## 25 juin 2026 - DragonTorchTowerVisual
+
+Nom :
+
+- Import initial : `Model`
+- ID : `239822675`
+- Nom nettoye : `DragonTorchTowerVisual`
+
+Statut :
+
+- Safe apres nettoyage.
+- Test place uniquement sur `BlueTopOuterTower` et `RedTopOuterTower`.
+
+Actions faites :
+
+- Sauvegarde locale creee : `backups/GameTest-editable-before-dragon-torch-tower-test-20260625-131931.rbxlx`.
+- Modele range dans `ServerStorage.Assets.Models.Towers.DragonTorchTowerVisual`.
+- Aucun `Script`, `LocalScript`, `ModuleScript`, `require(...)` ou `loadstring` detecte apres nettoyage.
+- 95 `BasePart` nettoyees : `Anchored = true`, `CanCollide = false`, `CanTouch = false`, `CanQuery = false`, `CastShadow = false`.
+- `PointLight` limitee a `Brightness = 2`, `Range = 8`.
+- Clones decoratifs `VisualModel` ajoutes seulement sous `Workspace.Map.Towers.BlueTopOuterTower` et `Workspace.Map.Towers.RedTopOuterTower`.
+- Attributs gameplay des tours verifies inchanges : `Team`, `UnitType`, `Health`, `MaxHealth`, `AttackDamage`, `AttackRange`.
+
+Decision Jarvis :
+
+- Bon candidat visuel pour test, mais encore un peu lourd pour generalisation immediate sur 22 tours.
+- Evaluer visuellement ces 2 tours avant de dupliquer partout ou chercher une version plus legere.
