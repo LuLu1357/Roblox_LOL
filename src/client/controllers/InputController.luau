@@ -9,7 +9,19 @@ local UserInputService = game:GetService("UserInputService")
 
 local InputController = {}
 local player = Players.LocalPlayer
+local mouse = player:GetMouse()
 
+local function getMouseWorldPosition(): Vector3?
+	if mouse and mouse.Hit then
+		return mouse.Hit.Position
+	end
+	return nil
+end
+
+local function fireAbility(slot: number, abilityRequest: RemoteEvent)
+	local mousePosition = getMouseWorldPosition()
+	abilityRequest:FireServer(slot, nil, mousePosition)
+end
 
 local moveState = {
 	Forward = false,
@@ -78,16 +90,16 @@ function InputController.start()
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if not gameProcessed then
 			if input.KeyCode == Enum.KeyCode.One then
-				abilityRequest:FireServer(1)
+				fireAbility(1, abilityRequest)
 				return
 			elseif input.KeyCode == Enum.KeyCode.Two then
-				abilityRequest:FireServer(2)
+				fireAbility(2, abilityRequest)
 				return
 			elseif input.KeyCode == Enum.KeyCode.Three then
-				abilityRequest:FireServer(3)
+				fireAbility(3, abilityRequest)
 				return
 			elseif input.KeyCode == Enum.KeyCode.Four then
-				abilityRequest:FireServer(4)
+				fireAbility(4, abilityRequest)
 				return
 			elseif input.KeyCode == Enum.KeyCode.R then
 				recallRequest:FireServer()

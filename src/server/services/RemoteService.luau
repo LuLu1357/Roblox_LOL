@@ -52,6 +52,7 @@ function RemoteService.start()
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.MATCH_STATE_UPDATE)
 	local abilityRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.ABILITY_REQUEST)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.ABILITY_FEEDBACK)
+	getOrCreateRemote(remotes, SharedConstants.REMOTES.ABILITY_VFX)
 	local recallRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_REQUEST)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_STATE_UPDATE)
 	local selectChampionRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SELECT_CHAMPION_REQUEST)
@@ -142,13 +143,14 @@ function RemoteService.start()
 		CombatService.tryAutoAttack(champion, target, player)
 	end)
 
-	abilityRequest.OnServerEvent:Connect(function(player, slot, target)
+	abilityRequest.OnServerEvent:Connect(function(player, slot, target, mousePosition)
 		if typeof(slot) ~= "number" then
 			return
 		end
 
 		local optionalTarget = if typeof(target) == "Instance" then target else nil
-		local success, reason = AbilityService.castAbility(player, slot, optionalTarget)
+		local optionalMousePosition = if typeof(mousePosition) == "Vector3" then mousePosition else nil
+		local success, reason = AbilityService.castAbility(player, slot, optionalTarget, optionalMousePosition)
 		if not success then
 			warn("[MOBA] Ability failed:", player.Name, slot, reason)
 		end

@@ -59,6 +59,7 @@ SharedConstants.REMOTES = {
 	SELECT_CHAMPION_REQUEST = "SelectChampionRequest",
 	ABILITY_REQUEST = "AbilityRequest",
 	ABILITY_FEEDBACK = "AbilityFeedback",
+	ABILITY_VFX = "AbilityVFX",
 	DEBUG_SPAWN_DUMMY_REQUEST = "DebugSpawnDummyRequest",
 	DEBUG_CLEAR_DUMMIES_REQUEST = "DebugClearDummiesRequest",
 }

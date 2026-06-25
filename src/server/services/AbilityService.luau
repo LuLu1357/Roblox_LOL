@@ -98,6 +98,87 @@ local function getTargetInRange(champion: Model, optionalTarget: Instance?, rang
 	return findNearestEnemy(champion, range)
 end
 
+local function getDirectionToMouse(champion: Model, mousePosition: Vector3?): Vector3?
+	local root = getRoot(champion)
+	if not root or typeof(mousePosition) ~= "Vector3" then
+		return nil
+	end
+
+	local direction = Vector3.new(
+		mousePosition.X - root.Position.X,
+		0,
+		mousePosition.Z - root.Position.Z
+	)
+
+	if direction.Magnitude < 0.01 then
+		return nil
+	end
+
+	return direction.Unit
+end
+
+local function clampMousePositionToRange(champion: Model, mousePosition: Vector3, range: number): Vector3?
+	local root = getRoot(champion)
+	if not root then
+		return nil
+	end
+
+	local offset = Vector3.new(
+		mousePosition.X - root.Position.X,
+		0,
+		mousePosition.Z - root.Position.Z
+	)
+
+	if offset.Magnitude <= range then
+		return Vector3.new(mousePosition.X, root.Position.Y, mousePosition.Z)
+	end
+
+	local direction = offset.Unit
+	local clamped = root.Position + direction * range
+	return Vector3.new(clamped.X, root.Position.Y, clamped.Z)
+end
+
+local function findEnemyAlongLine(champion: Model, direction: Vector3, range: number, width: number): Model?
+	local units = Workspace:FindFirstChild("Units")
+	if not units or not units:IsA("Folder") then
+		return nil
+	end
+
+	local root = getRoot(champion)
+	if not root then
+		return nil
+	end
+
+	local bestTarget: Model? = nil
+	local bestDistance = range
+
+	for _, candidate in units:GetChildren() do
+		if candidate:IsA("Model") and isValidEnemyTarget(champion, candidate) then
+			local targetRoot = getRoot(candidate)
+			if targetRoot then
+				local toTarget = targetRoot.Position - root.Position
+				local flat = Vector3.new(toTarget.X, 0, toTarget.Z)
+				local forwardDistance = flat:Dot(direction)
+
+				if forwardDistance > 0 and forwardDistance <= range then
+					local closestPoint = root.Position + direction * forwardDistance
+					local perpendicularDistance = (
+					Vector3.new(targetRoot.Position.X, root.Position.Y, targetRoot.Position.Z)
+					- closestPoint
+				).Magnitude
+
+					if perpendicularDistance <= width and forwardDistance < bestDistance then
+						bestDistance = forwardDistance
+						bestTarget = candidate
+					end
+				end
+			end
+		end
+	end
+
+	return bestTarget
+end
+
 local function getHealthPercent(target: Model): number
 	local health = target:GetAttribute("Health")
 	local maxHealth = target:GetAttribute("MaxHealth")
@@ -214,7 +295,46 @@ local function fireAbilityFeedback(player: Player, displayName: string, slot: nu
 	end
 end
 
-function AbilityService.castAbility(player: Player, slot: number, optionalTarget: Instance?): (boolean, string)
+local function fireAbilityVFX(caster: Model, spell: table, slot: number, target: Model?, centerPosition: Vector3?)
+	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+	if not remotes or not remotes:IsA("Folder") then
+		return
+	end
+
+	local remote = remotes:FindFirstChild(SharedConstants.REMOTES.ABILITY_VFX)
+	if not remote or not remote:IsA("RemoteEvent") then
+		return
+	end
+
+	local casterRoot = getRoot(caster)
+	local targetRoot = target and getRoot(target)
+
+	local payload = {
+		SpellId = spell.Id,
+		DisplayName = spell.DisplayName,
+		Type = spell.Type,
+		Slot = slot,
+		Caster = caster,
+		Target = target,
+		CasterPosition = casterRoot and casterRoot.Position or nil,
+		TargetPosition = targetRoot and targetRoot.Position or centerPosition,
+		CenterPosition = centerPosition,
+		Radius = spell.Radius,
+		Range = spell.Range,
+		Damage = spell.Damage,
+		Heal = spell.Heal,
+		ChampionId = caster:GetAttribute("ChampionId"),
+	}
+
+	remote:FireAllClients(payload)
+end
+
+function AbilityService.castAbility(
+	player: Player,
+	slot: number,
+	optionalTarget: Instance?,
+	optionalMousePosition: Vector3?
+): (boolean, string)
 	if slot < 1 or slot > 4 or slot % 1 ~= 0 then
 		return false, "Invalid slot"
 	end
@@ -283,7 +403,22 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			range = math.min(range, maxSearchRadius)
 		end
 
-		local target = getTargetInRange(champion, optionalTarget, range)
+		local target: Model? = nil
+		local effectiveRange = range
+
+		if spell.Type == "RangedDamage" and spell.CastMode == "MouseDirection" then
+			local direction = getDirectionToMouse(champion, optionalMousePosition)
+			local width = if typeof(spell.Width) == "number" then spell.Width else 5
+			if direction then
+				target = findEnemyAlongLine(champion, direction, effectiveRange, width)
+			end
+			if not target then
+				target = getTargetInRange(champion, optionalTarget, effectiveRange)
+			end
+		else
+			target = getTargetInRange(champion, optionalTarget, effectiveRange)
+		end
+
 		if not target then
 			return false, "No target"
 		end
@@ -307,6 +442,7 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			target.Name,
 			damage
 		))
+		fireAbilityVFX(champion, spell, slot, target, nil)
 	elseif abilityType == "AoEDamage" then
 		local radius = spell.Radius
 		local damage = spell.Damage
@@ -334,6 +470,7 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			spell.DisplayName,
 			#targets
 		))
+		fireAbilityVFX(champion, spell, slot, nil, root.Position)
 	elseif abilityType == "AoEDamageAtTarget" then
 		local range = spell.Range
 		local radius = spell.Radius
@@ -348,21 +485,26 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			range = math.min(range, maxSearchRadius)
 		end
 
-		local target = getTargetInRange(champion, optionalTarget, range)
-		if not target then
-			return false, "No target"
+		local center: Vector3? = nil
+		local target: Model? = nil
+
+		if spell.CastMode == "AreaAtMouse" and typeof(optionalMousePosition) == "Vector3" then
+			center = clampMousePositionToRange(champion, optionalMousePosition, range)
 		end
 
-		local targetRoot = getRoot(target)
-		if not targetRoot then
-			return false, "Target root missing"
+		if not center then
+			target = getTargetInRange(champion, optionalTarget, range)
+			if not target then
+				return false, "No target"
+			end
+			local targetRoot = getRoot(target)
+			if not targetRoot then
+				return false, "Target root missing"
+			end
+			center = targetRoot.Position
 		end
 
-		local targets = findEnemiesInRadius(champion, targetRoot.Position, radius)
-		if #targets == 0 then
-			return false, "No target"
-		end
-
+		local targets = findEnemiesInRadius(champion, center, radius)
 		for _, enemy in targets do
 			CombatService.applyDamage(champion, enemy, damage)
 		end
@@ -373,6 +515,7 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			spell.DisplayName,
 			#targets
 		))
+		fireAbilityVFX(champion, spell, slot, nil, center)
 	elseif abilityType == "DashForward" then
 		local dashDistance = spell.DashDistance
 		if typeof(dashDistance) ~= "number" or dashDistance <= 0 then
@@ -384,12 +527,27 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			return false, "Champion root missing"
 		end
 
-		root.CFrame = root.CFrame + root.CFrame.LookVector * dashDistance
+		local direction = getDirectionToMouse(champion, optionalMousePosition)
+		if not direction then
+			direction = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z)
+			if direction.Magnitude > 0 then
+				direction = direction.Unit
+			end
+		end
+
+		if direction and direction.Magnitude > 0 then
+			root.CFrame = root.CFrame + direction * dashDistance
+		else
+			root.CFrame = root.CFrame + root.CFrame.LookVector * dashDistance
+		end
+
+		local destination = root.Position
 		print(string.format(
 			"[MOBA][ABILITY] %s cast %s",
 			player.Name,
 			spell.DisplayName
 		))
+		fireAbilityVFX(champion, spell, slot, nil, destination)
 	elseif abilityType == "TemporaryMaxHealth" then
 		local maxHealthBonus = spell.MaxHealthBonus
 		local duration = spell.Duration
@@ -414,6 +572,7 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			spell.DisplayName,
 			maxHealthBonus
 		))
+		fireAbilityVFX(champion, spell, slot, nil, getRoot(champion) and getRoot(champion).Position or nil)
 
 		task.delay(duration, function()
 			local currentMax = champion:GetAttribute("MaxHealth")
@@ -465,6 +624,7 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			target.Name,
 			damageFinal
 		))
+		fireAbilityVFX(champion, spell, slot, target, nil)
 	elseif abilityType == "AllyOrSelfHeal" then
 		local range = spell.Range
 		local heal = spell.Heal
@@ -490,6 +650,7 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			targetName,
 			healed
 		))
+		fireAbilityVFX(champion, spell, slot, target, getRoot(target) and getRoot(target).Position or nil)
 	elseif abilityType == "TeamHeal" then
 		local radius = spell.Radius
 		local heal = spell.Heal
@@ -536,6 +697,7 @@ function AbilityService.castAbility(player: Player, slot: number, optionalTarget
 			healedCount,
 			totalHealed
 		))
+		fireAbilityVFX(champion, spell, slot, nil, root.Position)
 	else
 		return false, "Unsupported ability type"
 	end

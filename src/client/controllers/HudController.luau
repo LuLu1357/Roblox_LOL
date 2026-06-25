@@ -10,6 +10,7 @@ local AbilityData = require(ReplicatedStorage.Modules.AbilityData)
 
 local HudController = {}
 local player = Players.LocalPlayer
+local mouse = player:GetMouse()
 
 local function createLabel(parent: Instance, name: string, position: UDim2, size: UDim2, text: string): TextLabel
 	local label = Instance.new("TextLabel")
@@ -354,7 +355,8 @@ function HudController.start()
 
 		button.MouseButton1Click:Connect(function()
 			if abilityRequest then
-				abilityRequest:FireServer(slot)
+				local mousePosition = mouse and mouse.Hit and mouse.Hit.Position or nil
+				abilityRequest:FireServer(slot, nil, mousePosition)
 			end
 		end)
 
