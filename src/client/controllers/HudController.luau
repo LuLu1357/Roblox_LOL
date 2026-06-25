@@ -127,6 +127,7 @@ function HudController.start()
 	gui.Name = "MobaHUD"
 	gui.ResetOnSpawn = false
 	gui.IgnoreGuiInset = true
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = player:WaitForChild("PlayerGui")
 
 	local panel = Instance.new("Frame")
@@ -235,13 +236,14 @@ function HudController.start()
 		local row = Instance.new("TextLabel")
 		row.Name = "ScoreboardRow"
 		row.Size = UDim2.new(1, 0, 0, 24)
-		row.BackgroundTransparency = 0.35
+		row.BackgroundTransparency = 0.08
 		row.BackgroundColor3 = Color3.fromRGB(12, 18, 28)
 		row.BorderSizePixel = 0
+		row.ZIndex = 202
 		row.Font = Enum.Font.Gotham
 		row.TextColor3 = Color3.fromRGB(255, 255, 255)
 		row.TextTransparency = 0
-		row.TextStrokeTransparency = 0.4
+		row.TextStrokeTransparency = 0.25
 		row.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 		row.TextSize = 16
 		row.TextXAlignment = Enum.TextXAlignment.Left
@@ -314,7 +316,7 @@ function HudController.start()
 		scoreboardPanel.Position = UDim2.fromScale(0.5, 0.08)
 		scoreboardPanel.Size = UDim2.fromOffset(760, 360)
 		scoreboardPanel.BackgroundColor3 = Color3.fromRGB(12, 18, 28)
-		scoreboardPanel.BackgroundTransparency = 0.05
+		scoreboardPanel.BackgroundTransparency = 0.02
 		scoreboardPanel.BorderSizePixel = 0
 		scoreboardPanel.ZIndex = 200
 		scoreboardPanel.Visible = false
@@ -327,20 +329,24 @@ function HudController.start()
 		local title = createLabel(scoreboardPanel, "ScoreboardTitle", UDim2.fromOffset(20, 16), UDim2.fromOffset(220, 28), "SCOREBOARD")
 		title.Font = scoreboardTitleFont
 		title.TextSize = 22
+		title.ZIndex = 201
 		local hint = createLabel(scoreboardPanel, "ScoreboardHint", UDim2.fromOffset(20, 44), UDim2.fromOffset(320, 18), "Release TAB to hide")
 		hint.Font = Enum.Font.Gotham
 		hint.TextSize = 14
+		hint.ZIndex = 201
 
 		local blueTitle = createLabel(scoreboardPanel, "BlueTeamTitle", UDim2.fromOffset(20, 74), UDim2.fromOffset(180, 22), "Blue Team")
 		blueTitle.TextColor3 = Color3.fromRGB(120, 180, 255)
 		blueTitle.Font = Enum.Font.GothamBold
 		blueTitle.TextSize = 18
+		blueTitle.ZIndex = 201
 
 		scoreboardBlueRows = Instance.new("Frame")
 		scoreboardBlueRows.Name = "BlueTeamRows"
 		scoreboardBlueRows.Position = UDim2.fromOffset(20, 102)
 		scoreboardBlueRows.Size = UDim2.fromOffset(360, 220)
 		scoreboardBlueRows.BackgroundTransparency = 1
+		scoreboardBlueRows.ZIndex = 201
 		scoreboardBlueRows.Parent = scoreboardPanel
 
 		local blueLayout = Instance.new("UIListLayout")
@@ -353,12 +359,14 @@ function HudController.start()
 		redTitle.TextColor3 = Color3.fromRGB(255, 120, 120)
 		redTitle.Font = Enum.Font.GothamBold
 		redTitle.TextSize = 18
+		redTitle.ZIndex = 201
 
 		scoreboardRedRows = Instance.new("Frame")
 		scoreboardRedRows.Name = "RedTeamRows"
 		scoreboardRedRows.Position = UDim2.fromOffset(380, 102)
 		scoreboardRedRows.Size = UDim2.fromOffset(360, 220)
 		scoreboardRedRows.BackgroundTransparency = 1
+		scoreboardRedRows.ZIndex = 201
 		scoreboardRedRows.Parent = scoreboardPanel
 
 		local redLayout = Instance.new("UIListLayout")
