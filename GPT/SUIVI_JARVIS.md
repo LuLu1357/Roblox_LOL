@@ -1,6 +1,6 @@
 # Suivi partagé — GPT ↔ Jarvis
 
-Dernière mise à jour : 24 juin 2026
+Dernière mise à jour : 25 juin 2026
 
 Ce document est la source de vérité opérationnelle du projet `GameTest`. Tout assistant doit le lire avant une modification, vérifier l'état réel des fichiers et de Roblox Studio, puis consigner les changements et les tests réellement effectués.
 
@@ -26,6 +26,7 @@ Périmètre volontairement limité :
 5. `tools/generate_editable_place.mjs` est uniquement un générateur initial de secours. Ne jamais le relancer sur la carte actuelle sans demande explicite de Lucas et sauvegarde préalable.
 6. Aucun asset externe ne doit être importé sans validation.
 7. Les ajouts doivent rester petits, testables et utiles au gameplay immédiat.
+8. Les audits d'assets externes sont consignés dans `GPT/ASSET_AUDITS.md`.
 
 ## Environnement validé
 
@@ -161,6 +162,18 @@ Output attendu observé sans erreur rouge :
 Après chaque changement important, consigner : date, décision, fichiers ou objets Studio modifiés, tests réellement exécutés, erreurs restantes et prochaine action. Ne jamais déclarer une fonction terminée uniquement parce qu'elle existe dans le code.
 
 ## Journal consolidé
+
+### 25 juin 2026 - Jarvis
+
+- Nouvel audit d'asset externe effectue sur `Japanese Sakura Stone Toro Lantern`, importe dans `Workspace`.
+- Risque confirme dans Studio : `Workspace.Japanese Sakura Stone Toro Lantern.Vines.qPerfectionWeld` utilisait les attributs de `AutomaticModel`, dont `MarketplaceService`, `GetProductInfo`, `Players`, `PlayerAdded`, `PromptPurchase` et `123823600358195`.
+- Sauvegarde locale creee avant nettoyage : `backups/GameTest-editable-before-asset-audit-lantern-20260625-125803.rbxlx`.
+- Asset nettoye en decor uniquement : suppression de `qPerfectionWeld`, `AutomaticModel` et `ThumbnailCamera`; renommage en `JungleLanternVisual`.
+- Les 25 `BasePart` de l'asset sont `Anchored = true`, `CanCollide = false`, `CanTouch = false`, `CanQuery = false` et `CastShadow = false`.
+- La `PointLight` de l'asset a ete limitee a `Brightness = 2`, `Range = 6`, `Shadows = false`.
+- Aucun gameplay serveur, RemoteEvent, RemoteFunction ou connexion de gameplay n'a ete modifie.
+- Rapport complet ajoute dans `GPT/ASSET_AUDITS.md`.
+- Verifications reussies : inspection Studio MCP, `xmllint --noout GameTest-editable.rbxlx`, scan local des signatures suspectes et `rojo build default.project.json --output /tmp/GameTest-audit.rbxlx`.
 
 ### 24 juin 2026 — Jarvis
 
