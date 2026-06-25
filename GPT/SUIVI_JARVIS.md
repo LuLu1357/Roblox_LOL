@@ -177,6 +177,10 @@ Après chaque changement important, consigner : date, décision, fichiers ou obj
 - Test visuel de tour ajoute sans toucher au gameplay : `DragonTorchTowerVisual` nettoye depuis l'asset `239822675`, range dans `ServerStorage.Assets.Models.Towers`, puis clone en `VisualModel` uniquement sur `BlueTopOuterTower` et `RedTopOuterTower`.
 - Sauvegarde locale avant ce test : `backups/GameTest-editable-before-dragon-torch-tower-test-20260625-131931.rbxlx`.
 - Verification ciblee : 95 `BasePart`, 0 script, collisions/touch/query/shadow desactivees, `PointLight` limitee a `Brightness = 2` et `Range = 8`; attributs gameplay des deux tours inchanges.
+- Generalisation controlee du visuel de tour : backup `backups/GameTest-editable-before-all-tower-visuals-laser-origin-20260625-134649.rbxlx`, puis `VisualModel` applique aux 22 tours de `Workspace.Map.Towers` en conservant l'offset relatif du test `BlueTopOuterTower`.
+- Les 66 anciennes parts directes de tours sont invisibles et conservees comme hitbox/logique avec `CanQuery = true`; aucun attribut gameplay de tour n'a ete modifie.
+- `TowerLaserOrigin` cree dans les 22 `VisualModel`; `CombatService` envoie cette origine visuelle optionnelle au client, et `CombatFeedbackController` l'utilise pour faire partir le rayon de la flamme avec fallback ancien.
+- Test Play reussi : `Map validation passed`, `Health bar validation passed`, 22 tours runtime avec `VisualModel`, 22 barres de vie, anciennes parts invisibles, tour attaquant encore. Verification client : tir de `BlueTopOuterTower` avec origine a distance `0` de `TowerLaserOrigin` et environ `17.5` studs du `HumanoidRootPart`.
 
 ### 24 juin 2026 — Jarvis
 

@@ -1,7 +1,10 @@
 --!strict
 
+local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
+
+local localPlayer = Players.LocalPlayer
 
 local ScoreboardController = {}
 ScoreboardController.__index = ScoreboardController
@@ -21,22 +24,26 @@ local function createLabel(parent: Instance, name: string, position: UDim2, size
     return label
 end
 
-local function createScoreboardRow(parent: Instance, text: string): TextLabel
+local function createScoreboardRow(parent: Instance, text: string, isLocalPlayer: boolean?): TextLabel
     local row = Instance.new("TextLabel")
     row.Name = "ScoreboardRow"
     row.Size = UDim2.new(1, 0, 0, 24)
     row.BackgroundTransparency = 0.08
-    row.BackgroundColor3 = Color3.fromRGB(12, 18, 28)
+    row.BackgroundColor3 = if isLocalPlayer == true
+        then Color3.fromRGB(42, 58, 82)
+        else Color3.fromRGB(12, 18, 28)
     row.BorderSizePixel = 0
     row.ZIndex = 202
     row.Font = Enum.Font.Gotham
-    row.TextColor3 = Color3.fromRGB(255, 255, 255)
+    row.TextColor3 = if isLocalPlayer == true
+        then Color3.fromRGB(255, 235, 160)
+        else Color3.fromRGB(255, 255, 255)
     row.TextTransparency = 0
-    row.TextStrokeTransparency = 0.25
+    row.TextStrokeTransparency = if isLocalPlayer == true then 0.15 else 0.25
     row.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     row.TextSize = 16
     row.TextXAlignment = Enum.TextXAlignment.Left
-    row.TextYAlignment = Enum.TextzYAlignment.Center
+    row.TextYAlignment = Enum.TextYAlignment.Center
     row.Text = text
     row.ClipsDescendants = true
     row.Parent = parent
@@ -141,7 +148,15 @@ end
 function ScoreboardController:renderScoreboard(payload: table)
     self:clearScoreboardRows()
 
-    if self.scoreboardBlueRows and typeof(payload.Blue) == "table" then
+    local blueCount = if typeof(payload.Blue) == "table" then #payload.Blue else 0
+    local redCount = if typeof(payload.Red) == "table" then #payload.Red else 0
+    print(string.format(
+        "[MOBA][SCOREBOARD][CLIENT] Render Blue=%d Red=%d",
+        blueCount,
+        redCount
+    ))
+
+    if self.scoreboardBlueRows and blueCount > 0 then
         for _, entry in ipairs(payload.Blue) do
             local text = string.format(
                 "%s | %s | LVL %d | %d/%d/%d | CS %d | %dg",
@@ -154,11 +169,12 @@ function ScoreboardController:renderScoreboard(payload: table)
                 if typeof(entry.CS) == "number" then entry.CS else 0,
                 if typeof(entry.Gold) == "number" then entry.Gold else 0
             )
-            createScoreboardRow(self.scoreboardBlueRows, text)
+            local isLocalPlayer = localPlayer and entry.PlayerName == localPlayer.Name
+            createScoreboardRow(self.scoreboardBlueRows, text, isLocalPlayer)
         end
     end
 
-    if self.scoreboardRedRows and typeof(payload.Red) == "table" then
+    if self.scoreboardRedRows and redCount > 0 then
         for _, entry in ipairs(payload.Red) do
             local text = string.format(
                 "%s | %s | LVL %d | %d/%d/%d | CS %d | %dg",
@@ -171,8 +187,13 @@ function ScoreboardController:renderScoreboard(payload: table)
                 if typeof(entry.CS) == "number" then entry.CS else 0,
                 if typeof(entry.Gold) == "number" then entry.Gold else 0
             )
-            createScoreboardRow(self.scoreboardRedRows, text)
+            local isLocalPlayer = localPlayer and entry.PlayerName == localPlayer.Name
+            createScoreboardRow(self.scoreboardRedRows, text, isLocalPlayer)
         end
+    end
+
+    if blueCount == 0 and redCount == 0 and self.scoreboardBlueRows then
+        createScoreboardRow(self.scoreboardBlueRows, "No scoreboard entries received", false)
     end
 end
 

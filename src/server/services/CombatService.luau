@@ -50,11 +50,51 @@ local VALID_TARGETS = {
 	Inhibitor = true,
 }
 
+local function getTowerVisualOrigin(tower: Model): Vector3
+	local visual = tower:FindFirstChild("VisualModel")
+	if visual then
+		local origin = visual:FindFirstChild("TowerLaserOrigin", true)
+		if origin and origin:IsA("Attachment") then
+			return origin.WorldPosition
+		end
+
+		local highestPart: BasePart? = nil
+		for _, descendant in visual:GetDescendants() do
+			if descendant:IsA("BasePart") then
+				if not highestPart or descendant.Position.Y > highestPart.Position.Y then
+					highestPart = descendant
+				end
+			end
+		end
+
+		if highestPart then
+			return highestPart.Position
+		end
+	end
+
+	local root = tower:FindFirstChild("HumanoidRootPart")
+	if root and root:IsA("BasePart") then
+		return root.Position
+	end
+
+	local primary = tower.PrimaryPart
+	if primary then
+		return primary.Position
+	end
+
+	return tower:GetPivot().Position
+end
+
 local function emitCombatFeedback(attacker: Instance, target: Instance, damage: number)
 	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
 	local remote = remotes and remotes:FindFirstChild(SharedConstants.REMOTES.COMBAT_FEEDBACK)
 	if remote and remote:IsA("RemoteEvent") then
-		remote:FireAllClients(attacker, target, damage)
+		local originPosition: Vector3? = nil
+		if attacker:IsA("Model") and attacker:GetAttribute("UnitType") == "Tower" then
+			originPosition = getTowerVisualOrigin(attacker)
+		end
+
+		remote:FireAllClients(attacker, target, damage, originPosition)
 	end
 end
 

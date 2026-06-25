@@ -46,14 +46,14 @@ local function showDamageFlash(target: Instance)
 	end)
 end
 
-local function showAttackRay(attacker: Instance, target: Instance)
+local function showAttackRay(attacker: Instance, target: Instance, originPosition: Vector3?)
 	local attackerRoot = getRoot(attacker)
 	local targetRoot = getRoot(target)
 	if not attackerRoot or not targetRoot then
 		return
 	end
 
-	local startPosition = attackerRoot.Position
+	local startPosition = originPosition or attackerRoot.Position
 	local endPosition = targetRoot.Position
 	local distance = (endPosition - startPosition).Magnitude
 	if distance < 0.1 then
@@ -131,11 +131,12 @@ function CombatFeedbackController.start()
 	end
 
 	local overlay, damageLabel = createDamageWarning()
-	remote.OnClientEvent:Connect(function(attacker, target, damage)
+	remote.OnClientEvent:Connect(function(attacker, target, damage, originPosition)
 		if typeof(attacker) ~= "Instance" or typeof(target) ~= "Instance" or typeof(damage) ~= "number" then
 			return
 		end
-		showAttackRay(attacker, target)
+		local visualOrigin = if typeof(originPosition) == "Vector3" then originPosition else nil
+		showAttackRay(attacker, target, visualOrigin)
 		showDamageFlash(target)
 
 		if target == player.Character then

@@ -75,6 +75,15 @@ local function buildScoreboardEntry(player: Player): table
 	}
 end
 
+local function containsPlayerEntry(entries: { table }, playerName: string): boolean
+	for _, entry in ipairs(entries) do
+		if entry.PlayerName == playerName then
+			return true
+		end
+	end
+	return false
+end
+
 function RemoteService.start()
 	if started then
 		return
@@ -214,6 +223,26 @@ function RemoteService.start()
 				table.insert(blueEntries, entry)
 			end
 		end
+
+		local requesterFound = containsPlayerEntry(blueEntries, player.Name) or containsPlayerEntry(redEntries, player.Name)
+		if not requesterFound then
+			local requesterEntry = buildScoreboardEntry(player)
+			local requesterTeam = player:GetAttribute("Team")
+			if requesterTeam == SharedConstants.TEAMS.RED then
+				table.insert(redEntries, requesterEntry)
+			else
+				table.insert(blueEntries, requesterEntry)
+			end
+			warn("[MOBA][SCOREBOARD] Requester was missing from payload, added fallback:", player.Name)
+		end
+
+		print(string.format(
+			"[MOBA][SCOREBOARD] Sending to %s | Blue=%d Red=%d",
+			player.Name,
+			#blueEntries,
+			#redEntries
+		))
+
 		scoreboardUpdate:FireClient(player, {
 			Blue = blueEntries,
 			Red = redEntries,

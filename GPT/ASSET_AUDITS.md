@@ -127,3 +127,30 @@ Decision Jarvis :
 
 - Bon candidat visuel pour test, mais encore un peu lourd pour generalisation immediate sur 22 tours.
 - Evaluer visuellement ces 2 tours avant de dupliquer partout ou chercher une version plus legere.
+
+## 25 juin 2026 - Generalisation DragonTorchTowerVisual
+
+Statut :
+
+- Applique aux 22 tours existantes de `Workspace.Map.Towers`.
+- Les tours gameplay restent les modeles existants ; `VisualModel` reste decoratif.
+
+Actions faites :
+
+- Sauvegarde locale creee : `backups/GameTest-editable-before-all-tower-visuals-laser-origin-20260625-134649.rbxlx`.
+- Offset relatif repris depuis `BlueTopOuterTower.VisualModel`.
+- `VisualModel` remplace proprement l'ancien enfant du meme nom sur chaque tour.
+- 22 `TowerLaserOrigin` crees dans les visuels, proches de la flamme/lumiere.
+- Anciennes parts directes des tours rendues invisibles : 66 parts, `CanQuery = true`, sans collision/touch/shadow.
+- `CombatService` et `CombatFeedbackController` utilisent une origine visuelle optionnelle pour le rayon de tour, sans changer les degats, range, cooldown ou ciblage.
+
+Verification :
+
+- Edit : 22 tours, 22 `VisualModel`, 22 `TowerLaserOrigin`, 0 ancienne part visible, max light `Brightness = 2`, max `Range = 8`.
+- Play : map validation OK, health bar validation OK, 22 tours runtime avec healthbars.
+- Tir de test : `BlueTopOuterTower` envoie une origine exactement sur `TowerLaserOrigin` (`distance = 0`) et non sur le centre logique invisible.
+
+Decision Jarvis :
+
+- Generalisation acceptee pour prototype.
+- Surveiller la performance mobile plus tard, car chaque tour ajoute environ 95 `BasePart`.
