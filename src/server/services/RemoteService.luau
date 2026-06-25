@@ -52,8 +52,12 @@ local function buildScoreboardEntry(player: Player): table
 		end
 	end
 
-	local level = getPlayerNumberAttribute(player, "Level", 1)
-	local gold = getPlayerNumberAttribute(player, "Gold", 0)
+	local level = if champion
+		then getPlayerNumberAttribute(champion, "Level", getPlayerNumberAttribute(player, "Level", 1))
+		else getPlayerNumberAttribute(player, "Level", 1)
+	local gold = if champion
+		then getPlayerNumberAttribute(champion, "Gold", getPlayerNumberAttribute(player, "Gold", 0))
+		else getPlayerNumberAttribute(player, "Gold", 0)
 	local kills = getPlayerNumberAttribute(player, "Kills", 0)
 	local deaths = getPlayerNumberAttribute(player, "Deaths", 0)
 	local assists = getPlayerNumberAttribute(player, "Assists", 0)
