@@ -76,7 +76,7 @@ SharedConstants.RECALL = {
 }
 
 SharedConstants.DEBUG = {
-	GAME_SPEED = 3,
+	GAME_SPEED = 1,
 
 	SPAWN_BLUE_MINIONS = true,
 	SPAWN_RED_MINIONS = true,

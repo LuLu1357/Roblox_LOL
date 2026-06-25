@@ -181,3 +181,69 @@ Decision Jarvis :
 
 - Collision corrigee pour le prototype.
 - A surveiller plus tard : interaction fine joueur/tour et ressenti de largeur de hitbox en session manuelle.
+
+## 25 juin 2026 - Audit leger modeles sbires animes
+
+Emplacement analyse :
+
+- `ServerStorage.Assets.Models.sbires`
+
+Statut global :
+
+- Aucun modele n'est safe tel quel pour integration gameplay.
+- Tous les candidats contenant du code doivent rester hors gameplay jusqu'au nettoyage.
+
+Resultat court :
+
+- Modele sans nom : a nettoyer, 8 parts, 6 scripts/localscripts, 9 animations, 9 sons.
+- `Drooling Zombie` : a nettoyer/refuser tel quel, 7 parts, scripts + modules IA avec `require`, 10 animations.
+- `Pixy` : refuse tel quel, 37 parts dont 30 `MeshPart`, 15 scripts/localscripts, `qPerfectionWeld`, IA, respawn, jumpscare/kill scripts, 80 animations, 18 sons.
+- `The Goldhunter Warlord (245) Health: 91852 of 91852` : refuse, 15 scripts/localscripts, scripts `Teleport`, `Badge`, `Deadly`, attaques speciales, 9 animations.
+- `Ud'zal` : a nettoyer, 16 parts dont 14 `MeshPart`, 3 scripts/localscripts, 27 animations, 3 particules, 9 sons.
+
+Actions recommandees :
+
+- Supprimer tous les `Script`, `LocalScript` et `ModuleScript` avant toute utilisation.
+- Garder seulement le rig visuel, `Humanoid`/`Animator` et les `Animation` utiles si l'animation est voulue.
+- Desactiver collisions/touch/query sur les parts visuelles avant integration.
+- Eviter `Pixy` et `The Goldhunter Warlord` comme sbires de lane ; chercher ou nettoyer un modele plus leger.
+
+## 25 juin 2026 - Nettoyage Drooling Zombie vers MeleeMinionVisual
+
+Source :
+
+- `ServerStorage.Assets.Models.sbires.Drooling Zombie`
+- Copie propre : `ServerStorage.Assets.Models.Minions.MeleeMinionVisual`
+
+Backup :
+
+- `backups/GameTest-editable-before-clean-drooling-zombie-minion-20260625-145533.rbxlx`
+
+Actions faites :
+
+- Copie source dupliquee sans integration gameplay.
+- Tous les scripts de la copie supprimes : 3 `Script`, 0 `LocalScript`, 6 `ModuleScript`.
+- 0 `RemoteEvent` et 0 `RemoteFunction` trouves dans la copie.
+- 1 `Sound` supprime.
+- IA zombie, modules `ROBLOX_*`, script `Animate` et comportements source retires de la copie.
+- 3 animations utiles conservees dans `Animations` : `IdleAnimation`, `WalkAnimation`, `AttackAnimation`.
+- `Humanoid`, `Animator` et `HumanoidRootPart` presents ; `HumanoidRootPart` defini comme `PrimaryPart`.
+- 7 `BasePart` ajustees : `Anchored = false`, `CanCollide = false`, `CanTouch = false`, `CanQuery = false`, `Massless = true`.
+
+Verification :
+
+- Copie finale : 0 `Script`, 0 `LocalScript`, 0 `ModuleScript`, 0 remote, 0 son, 3 animations, 7 parts.
+- `Animator:LoadAnimation` reussi sur `IdleAnimation`, `WalkAnimation` et `AttackAnimation`.
+- Aucun service gameplay ni vague de minions modifie.
+
+Decision Jarvis :
+
+- Candidat propre utilisable pour un futur test visuel de sbire melee.
+- Ne pas brancher aux vagues avant un test visuel d'echelle, orientation, vitesse d'animation et lisibilite de loin.
+
+Integration runtime du 25 juin 2026 :
+
+- `MeleeMinionVisual` est clone en `VisualModel` sur les sbires de lane par `MinionService`.
+- Le clone runtime utilise `AnimationController + Animator`, afin d'eviter que le `Humanoid` du visuel reactive les collisions.
+- `WalkAnimation` joue pendant le deplacement, `IdleAnimation` a l'arret et `AttackAnimation` lors d'une attaque acceptee par `CombatService.tryAutoAttack`.
+- Test Play : 143 minions observes avec visuel, 0 script dans les `VisualModel`, 0 collision/touch/query sur les parts visuelles.

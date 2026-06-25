@@ -186,6 +186,11 @@ Après chaque changement important, consigner : date, décision, fichiers ou obj
 - Propagation manuelle depuis `BlueMidOuterTower` : backup `backups/GameTest-editable-before-propagate-tower-hitbox2-20260625-142348.rbxlx`, puis `TowerHit2box` ajoute aux 21 autres tours et `TowerHitbox` de base aligne sur les 22 tours.
 - Dimensions/offsets verifies en Edit : `TowerHitbox` = `4, 14, 4` avec offset relatif Y `0.1471118927001953`; `TowerHit2box` = `10.99995231628418, 2.1499102115631104, 8.50000286102295` avec offset relatif Y `-6.77504825592041`.
 - Verification ciblee : 22 tours, 22 `TowerHitbox`, 22 `TowerHit2box`, 0 ecart de taille/position/proprietes, 0 part de `VisualModel` collidable. Aucun attribut gameplay ou service serveur modifie.
+- Nettoyage d'un candidat sbire : backup `backups/GameTest-editable-before-clean-drooling-zombie-minion-20260625-145533.rbxlx`, copie `Drooling Zombie` creee en `ServerStorage.Assets.Models.Minions.MeleeMinionVisual`, sans integration aux vagues.
+- La copie `MeleeMinionVisual` contient 7 parts, `Humanoid`, `Animator`, `HumanoidRootPart` et 3 animations propres (`IdleAnimation`, `WalkAnimation`, `AttackAnimation`), avec 0 script, 0 module, 0 remote et 0 son. `Animator:LoadAnimation` reussi sur les 3 animations.
+- Branchement runtime du visuel anime sur les sbires de lane dans `src/server/services/MinionService.luau` : helper `attachMinionVisual`, clone `ServerStorage.Assets.Models.Minions.MeleeMinionVisual` en `VisualModel`, weld au root gameplay, ancien visuel sphere/accent masque.
+- Animation minions ajoutee sans changement de gameplay : `WalkAnimation` boucle pendant les deplacements, `IdleAnimation` a l'arret, `AttackAnimation` declenchee seulement quand `CombatService.tryAutoAttack` accepte l'attaque. Degats, vitesse, vie, ciblage et pathfinding inchanges.
+- Test Studio Play : `rojo build` OK, 143 minions runtime observes avec `VisualModel`, 0 script dans les visuels, 0 part visuelle collidable/touch/query/anchored, 0 ancien visuel visible, healthbars presentes, walk et attack tracks en lecture, minions endommages et morts observes, aucune erreur console liee au visuel.
 
 ### 24 juin 2026 — Jarvis
 
