@@ -135,7 +135,23 @@ local function setupCharacter(player: Player, character: Model)
 	end
 end
 
+local function ensurePlayerStats(player: Player)
+	if typeof(player:GetAttribute("Kills")) ~= "number" then
+		player:SetAttribute("Kills", 0)
+	end
+	if typeof(player:GetAttribute("Deaths")) ~= "number" then
+		player:SetAttribute("Deaths", 0)
+	end
+	if typeof(player:GetAttribute("Assists")) ~= "number" then
+		player:SetAttribute("Assists", 0)
+	end
+	if typeof(player:GetAttribute("CS")) ~= "number" then
+		player:SetAttribute("CS", 0)
+	end
+end
+
 local function initializePlayer(player: Player)
+	ensurePlayerStats(player)
 	player.CharacterAdded:Connect(function(character)
 		task.defer(setupCharacter, player, character)
 	end)

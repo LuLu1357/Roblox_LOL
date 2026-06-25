@@ -1,5 +1,6 @@
 --!strict
 local EconomyProgressionService = require(script.Parent.EconomyProgressionService)
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -81,6 +82,25 @@ local function getGameSpeed(): number
 	return speed
 end
 
+local function getPlayerFromChampion(champion: Instance): Player?
+	if not champion or not champion:IsA("Model") then
+		return nil
+	end
+
+	local ownerUserId = champion:GetAttribute("OwnerUserId")
+	if typeof(ownerUserId) ~= "number" then
+		return nil
+	end
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player.UserId == ownerUserId then
+			return player
+		end
+	end
+
+	return nil
+end
+
 local function canAttack(attacker: Instance, target: Instance, player: Player?): (boolean, string)
 	local attackerType = getUnitType(attacker)
 	local targetType = getUnitType(target)
@@ -146,9 +166,34 @@ function CombatService.applyDamage(attacker: Instance, target: Instance, amount:
 end
 
 function CombatService.handleDeath(killer: Instance, victim: Instance)
+	local victimIsChampion = victim:GetAttribute("UnitType") == "Champion"
+	local victimNoRewards = victim:GetAttribute("NoRewards") == true
+	local victimTrainingDummy = victim:GetAttribute("IsTrainingDummy") == true
+
+	if victimIsChampion and not victimNoRewards and not victimTrainingDummy then
+		local victimPlayer = getPlayerFromChampion(victim)
+		if victimPlayer then
+			local deaths = getNumberAttribute(victimPlayer, "Deaths", 0)
+			victimPlayer:SetAttribute("Deaths", deaths + 1)
+		end
+	end
+
+	if killer and killer:GetAttribute("UnitType") == "Champion" and victimIsChampion then
+		local killerTrainingDummy = killer:GetAttribute("IsTrainingDummy") == true
+		local killerNoRewards = killer:GetAttribute("NoRewards") == true
+		if not killerTrainingDummy and not killerNoRewards and not victimNoRewards and not victimTrainingDummy then
+			local killerPlayer = getPlayerFromChampion(killer)
+			local victimPlayer = getPlayerFromChampion(victim)
+			if killerPlayer and killerPlayer ~= victimPlayer then
+				local kills = getNumberAttribute(killerPlayer, "Kills", 0)
+				killerPlayer:SetAttribute("Kills", kills + 1)
+			end
+		end
+	end
+
 	EconomyProgressionService.awardKillRewards(killer, victim)
 
-	if victim:GetAttribute("UnitType") == "Champion" then
+	if victimIsChampion then
 		EconomyProgressionService.saveChampionProgressionToPlayer(victim)
 	end
 

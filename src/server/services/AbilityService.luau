@@ -11,8 +11,24 @@ local CombatService = require(script.Parent.CombatService)
 local Utility = require(script.Parent.Utility)
 
 local AbilityService = {}
-local cooldowns: { [Player]: { [number]: number } } = {}
+local cooldowns: { [Player]: { [string]: number } } = {}
 local started = false
+
+local function getCooldownKey(spell: table): string
+	if typeof(spell.Id) == "string" and spell.Id ~= "" then
+		return spell.Id
+	end
+
+	if typeof(spell.DisplayName) == "string" and spell.DisplayName ~= "" then
+		return spell.DisplayName
+	end
+
+	return "UnknownSpell"
+end
+
+local function clearPlayerCooldowns(player: Player)
+	cooldowns[player] = nil
+end
 
 local function getRoot(model: Model): BasePart?
 	local root = model:FindFirstChild("HumanoidRootPart")
@@ -190,6 +206,25 @@ local function getHealthPercent(target: Model): number
 	return math.clamp(health / maxHealth, 0, 1)
 end
 
+local function fireAbilityFeedback(
+	player: Player,
+	state: string,
+	displayName: string,
+	slot: number,
+	cooldown: number,
+	remaining: number?
+)
+	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+	if not remotes or not remotes:IsA("Folder") then
+		return
+	end
+
+	local remote = remotes:FindFirstChild(SharedConstants.REMOTES.ABILITY_FEEDBACK)
+	if remote and remote:IsA("RemoteEvent") then
+		remote:FireClient(player, state, displayName, slot, cooldown, remaining)
+	end
+end
+
 local function findEnemiesInRadius(champion: Model, centerPosition: Vector3, radius: number): { Model }
 	local results: { Model } = {}
 	local units = Workspace:FindFirstChild("Units")
@@ -283,18 +318,6 @@ local function healModel(target: Model, amount: number): number
 	return healed
 end
 
-local function fireAbilityFeedback(player: Player, displayName: string, slot: number, cooldown: number)
-	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
-	if not remotes or not remotes:IsA("Folder") then
-		return
-	end
-
-	local remote = remotes:FindFirstChild(SharedConstants.REMOTES.ABILITY_FEEDBACK)
-	if remote and remote:IsA("RemoteEvent") then
-		remote:FireClient(player, "Cast", displayName, slot, cooldown)
-	end
-end
-
 local function fireAbilityVFX(caster: Model, spell: table, slot: number, target: Model?, centerPosition: Vector3?)
 	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
 	if not remotes or not remotes:IsA("Folder") then
@@ -369,10 +392,20 @@ function AbilityService.castAbility(
 		cooldowns[player] = playerCooldowns
 	end
 
+	local cooldownKey = getCooldownKey(spell)
 	local now = os.clock()
-	local readyAt = playerCooldowns[slot] or 0
+	local readyAt = playerCooldowns[cooldownKey] or 0
 	if now < readyAt then
-		return false, "On cooldown"
+		local remaining = math.max(0, readyAt - now)
+		warn(string.format(
+			"[MOBA][ABILITY] %s tried %s slot %d but cooldown remaining %.1fs",
+			player.Name,
+			spell.DisplayName,
+			slot,
+			remaining
+		))
+		fireAbilityFeedback(player, "Cooldown", spell.DisplayName, slot, cooldown, remaining)
+		return false, string.format("On cooldown %.1fs", remaining)
 	end
 
 	local abilityType = spell.Type
@@ -702,8 +735,8 @@ function AbilityService.castAbility(
 		return false, "Unsupported ability type"
 	end
 
-	playerCooldowns[slot] = now + cooldown
-	fireAbilityFeedback(player, spell.DisplayName, slot, cooldown)
+	playerCooldowns[cooldownKey] = now + cooldown
+	fireAbilityFeedback(player, "Cast", spell.DisplayName, slot, cooldown, cooldown)
 	return true, "Cast"
 end
 
@@ -713,9 +746,18 @@ function AbilityService.start()
 	end
 	started = true
 
-	Players.PlayerRemoving:Connect(function(player)
-		cooldowns[player] = nil
-	end)
+	local function watchPlayer(player: Player)
+		player:GetAttributeChangedSignal("SelectedChampionId"):Connect(function()
+			clearPlayerCooldowns(player)
+		end)
+	end
+
+	for _, player in Players:GetPlayers() do
+		watchPlayer(player)
+	end
+
+	Players.PlayerAdded:Connect(watchPlayer)
+	Players.PlayerRemoving:Connect(clearPlayerCooldowns)
 
 	print("[MOBA] AbilityService started")
 end

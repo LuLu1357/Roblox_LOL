@@ -109,7 +109,7 @@ function EconomyProgressionService.tryLevelUp(champion: Instance)
 end
 
 function EconomyProgressionService.awardKillRewards(killer: Instance, killed: Instance)
-	if killed:GetAttribute("NoRewards") == true then
+	if killed:GetAttribute("NoRewards") == true or killed:GetAttribute("IsTrainingDummy") == true then
 		return
 	end
 
@@ -146,6 +146,22 @@ function EconomyProgressionService.awardKillRewards(killer: Instance, killed: In
 			xpReward,
 			killed.Name
 		))
+	end
+
+	if killedType == "Minion" then
+		local ownerUserId = killer:GetAttribute("OwnerUserId")
+		if typeof(ownerUserId) == "number" then
+			for _, player in ipairs(Players:GetPlayers()) do
+				if player.UserId == ownerUserId then
+					local currentCS = player:GetAttribute("CS")
+					if typeof(currentCS) ~= "number" then
+						currentCS = 0
+					end
+					player:SetAttribute("CS", currentCS + 1)
+					break
+				end
+			end
+		end
 	end
 
 	EconomyProgressionService.tryLevelUp(killer)

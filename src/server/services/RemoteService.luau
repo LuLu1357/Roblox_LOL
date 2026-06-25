@@ -1,5 +1,6 @@
 --!strict
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -31,6 +32,45 @@ local function getOrCreateRemote(folder: Folder, name: string): RemoteEvent
 	return remote
 end
 
+local function getPlayerNumberAttribute(player: Player, attributeName: string, fallback: number): number
+	local value = player:GetAttribute(attributeName)
+	return if typeof(value) == "number" then value else fallback
+end
+
+local function buildScoreboardEntry(player: Player): table
+	local champion = ChampionService.getChampionFromPlayer(player)
+	local championId = "None"
+	if champion then
+		local championAttr = champion:GetAttribute("ChampionId")
+		if typeof(championAttr) == "string" and championAttr ~= "" then
+			championId = championAttr
+		end
+	else
+		local selectedChampionId = player:GetAttribute("SelectedChampionId")
+		if typeof(selectedChampionId) == "string" and selectedChampionId ~= "" then
+			championId = selectedChampionId
+		end
+	end
+
+	local level = getPlayerNumberAttribute(player, "Level", 1)
+	local gold = getPlayerNumberAttribute(player, "Gold", 0)
+	local kills = getPlayerNumberAttribute(player, "Kills", 0)
+	local deaths = getPlayerNumberAttribute(player, "Deaths", 0)
+	local assists = getPlayerNumberAttribute(player, "Assists", 0)
+	local cs = getPlayerNumberAttribute(player, "CS", 0)
+
+	return {
+		PlayerName = player.Name,
+		ChampionId = championId,
+		Level = level,
+		Kills = kills,
+		Deaths = deaths,
+		Assists = assists,
+		CS = cs,
+		Gold = gold,
+	}
+end
+
 function RemoteService.start()
 	if started then
 		return
@@ -53,6 +93,8 @@ function RemoteService.start()
 	local abilityRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.ABILITY_REQUEST)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.ABILITY_FEEDBACK)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.ABILITY_VFX)
+	local scoreboardRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SCOREBOARD_REQUEST)
+	local scoreboardUpdate = getOrCreateRemote(remotes, SharedConstants.REMOTES.SCOREBOARD_UPDATE)
 	local recallRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_REQUEST)
 	getOrCreateRemote(remotes, SharedConstants.REMOTES.RECALL_STATE_UPDATE)
 	local selectChampionRequest = getOrCreateRemote(remotes, SharedConstants.REMOTES.SELECT_CHAMPION_REQUEST)
@@ -154,6 +196,24 @@ function RemoteService.start()
 		if not success then
 			warn("[MOBA] Ability failed:", player.Name, slot, reason)
 		end
+	end)
+
+	scoreboardRequest.OnServerEvent:Connect(function(player)
+		local blueEntries = {}
+		local redEntries = {}
+		for _, otherPlayer in ipairs(Players:GetPlayers()) do
+			local entry = buildScoreboardEntry(otherPlayer)
+			local teamName = otherPlayer:GetAttribute("Team")
+			if teamName == SharedConstants.TEAMS.RED then
+				table.insert(redEntries, entry)
+			else
+				table.insert(blueEntries, entry)
+			end
+		end
+		scoreboardUpdate:FireClient(player, {
+			Blue = blueEntries,
+			Red = redEntries,
+		})
 	end)
 
 	recallRequest.OnServerEvent:Connect(function(player)

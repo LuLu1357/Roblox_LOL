@@ -147,6 +147,11 @@ function HudController.start()
 	local debugClearDummiesRequest: RemoteEvent? = nil
 	local abilityRequest: RemoteEvent? = nil
 	local abilityFeedbackRemote: RemoteEvent? = nil
+	local scoreboardRequest: RemoteEvent? = nil
+	local scoreboardUpdate: RemoteEvent? = nil
+	local scoreboardPanel: Frame? = nil
+	local scoreboardBlueRows: Frame? = nil
+	local scoreboardRedRows: Frame? = nil
 	local spellButtons: { [number]: TextButton } = {}
 	local spellInfo: { [number]: table? } = {}
 	local spellCooldownEnds: { [number]: number } = {}
@@ -224,6 +229,146 @@ function HudController.start()
 	tooltipText.Visible = true
 	tooltipText.Text = ""
 	tooltipText.Parent = spellTooltip
+
+	local scoreboardTitleFont = Enum.Font.GothamBold
+	local function createScoreboardRow(parent: Instance, text: string): TextLabel
+		local row = Instance.new("TextLabel")
+		row.Name = "ScoreboardRow"
+		row.Size = UDim2.new(1, 0, 0, 24)
+		row.BackgroundTransparency = 0.35
+		row.BackgroundColor3 = Color3.fromRGB(12, 18, 28)
+		row.BorderSizePixel = 0
+		row.Font = Enum.Font.Gotham
+		row.TextColor3 = Color3.fromRGB(255, 255, 255)
+		row.TextTransparency = 0
+		row.TextStrokeTransparency = 0.4
+		row.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+		row.TextSize = 16
+		row.TextXAlignment = Enum.TextXAlignment.Left
+		row.TextYAlignment = Enum.TextYAlignment.Center
+		row.Text = text
+		row.ClipsDescendants = true
+		row.Parent = parent
+		return row
+	end
+
+	local function clearScoreboardRows()
+		if scoreboardBlueRows then
+			for _, child in ipairs(scoreboardBlueRows:GetChildren()) do
+				if child.Name == "ScoreboardRow" then
+					child:Destroy()
+				end
+			end
+		end
+		if scoreboardRedRows then
+			for _, child in ipairs(scoreboardRedRows:GetChildren()) do
+				if child.Name == "ScoreboardRow" then
+					child:Destroy()
+				end
+			end
+		end
+	end
+
+	local function renderScoreboard(payload: table)
+		clearScoreboardRows()
+
+		if scoreboardBlueRows and typeof(payload.Blue) == "table" then
+			for _, entry in ipairs(payload.Blue) do
+				local text = string.format(
+					"%s | %s | LVL %d | %d/%d/%d | CS %d | %dg",
+					tostring(entry.PlayerName or "Unknown"),
+					tostring(entry.ChampionId or "None"),
+					if typeof(entry.Level) == "number" then entry.Level else 1,
+					if typeof(entry.Kills) == "number" then entry.Kills else 0,
+					if typeof(entry.Deaths) == "number" then entry.Deaths else 0,
+					if typeof(entry.Assists) == "number" then entry.Assists else 0,
+					if typeof(entry.CS) == "number" then entry.CS else 0,
+					if typeof(entry.Gold) == "number" then entry.Gold else 0
+				)
+				createScoreboardRow(scoreboardBlueRows, text)
+			end
+		end
+
+		if scoreboardRedRows and typeof(payload.Red) == "table" then
+			for _, entry in ipairs(payload.Red) do
+				local text = string.format(
+					"%s | %s | LVL %d | %d/%d/%d | CS %d | %dg",
+					tostring(entry.PlayerName or "Unknown"),
+					tostring(entry.ChampionId or "None"),
+					if typeof(entry.Level) == "number" then entry.Level else 1,
+					if typeof(entry.Kills) == "number" then entry.Kills else 0,
+					if typeof(entry.Deaths) == "number" then entry.Deaths else 0,
+					if typeof(entry.Assists) == "number" then entry.Assists else 0,
+					if typeof(entry.CS) == "number" then entry.CS else 0,
+					if typeof(entry.Gold) == "number" then entry.Gold else 0
+				)
+				createScoreboardRow(scoreboardRedRows, text)
+			end
+		end
+	end
+
+	local function createScoreboardPanel()
+		scoreboardPanel = Instance.new("Frame")
+		scoreboardPanel.Name = "ScoreboardPanel"
+		scoreboardPanel.AnchorPoint = Vector2.new(0.5, 0)
+		scoreboardPanel.Position = UDim2.fromScale(0.5, 0.08)
+		scoreboardPanel.Size = UDim2.fromOffset(760, 360)
+		scoreboardPanel.BackgroundColor3 = Color3.fromRGB(12, 18, 28)
+		scoreboardPanel.BackgroundTransparency = 0.05
+		scoreboardPanel.BorderSizePixel = 0
+		scoreboardPanel.ZIndex = 200
+		scoreboardPanel.Visible = false
+		scoreboardPanel.Parent = gui
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 14)
+		corner.Parent = scoreboardPanel
+
+		local title = createLabel(scoreboardPanel, "ScoreboardTitle", UDim2.fromOffset(20, 16), UDim2.fromOffset(220, 28), "SCOREBOARD")
+		title.Font = scoreboardTitleFont
+		title.TextSize = 22
+		local hint = createLabel(scoreboardPanel, "ScoreboardHint", UDim2.fromOffset(20, 44), UDim2.fromOffset(320, 18), "Release TAB to hide")
+		hint.Font = Enum.Font.Gotham
+		hint.TextSize = 14
+
+		local blueTitle = createLabel(scoreboardPanel, "BlueTeamTitle", UDim2.fromOffset(20, 74), UDim2.fromOffset(180, 22), "Blue Team")
+		blueTitle.TextColor3 = Color3.fromRGB(120, 180, 255)
+		blueTitle.Font = Enum.Font.GothamBold
+		blueTitle.TextSize = 18
+
+		scoreboardBlueRows = Instance.new("Frame")
+		scoreboardBlueRows.Name = "BlueTeamRows"
+		scoreboardBlueRows.Position = UDim2.fromOffset(20, 102)
+		scoreboardBlueRows.Size = UDim2.fromOffset(360, 220)
+		scoreboardBlueRows.BackgroundTransparency = 1
+		scoreboardBlueRows.Parent = scoreboardPanel
+
+		local blueLayout = Instance.new("UIListLayout")
+		blueLayout.FillDirection = Enum.FillDirection.Vertical
+		blueLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		blueLayout.Padding = UDim.new(0, 4)
+		blueLayout.Parent = scoreboardBlueRows
+
+		local redTitle = createLabel(scoreboardPanel, "RedTeamTitle", UDim2.fromOffset(380, 74), UDim2.fromOffset(180, 22), "Red Team")
+		redTitle.TextColor3 = Color3.fromRGB(255, 120, 120)
+		redTitle.Font = Enum.Font.GothamBold
+		redTitle.TextSize = 18
+
+		scoreboardRedRows = Instance.new("Frame")
+		scoreboardRedRows.Name = "RedTeamRows"
+		scoreboardRedRows.Position = UDim2.fromOffset(380, 102)
+		scoreboardRedRows.Size = UDim2.fromOffset(360, 220)
+		scoreboardRedRows.BackgroundTransparency = 1
+		scoreboardRedRows.Parent = scoreboardPanel
+
+		local redLayout = Instance.new("UIListLayout")
+		redLayout.FillDirection = Enum.FillDirection.Vertical
+		redLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		redLayout.Padding = UDim.new(0, 4)
+		redLayout.Parent = scoreboardRedRows
+	end
+
+	createScoreboardPanel()
 
 	local function hideSpellTooltip()
 		hoveredSpellSlot = nil
@@ -721,6 +866,16 @@ function HudController.start()
 	end
 
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if input.KeyCode == Enum.KeyCode.Tab then
+			if scoreboardPanel then
+				scoreboardPanel.Visible = true
+			end
+			if scoreboardRequest then
+				scoreboardRequest:FireServer()
+			end
+			return
+		end
+
 		if gameProcessed or UserInputService:GetFocusedTextBox() ~= nil then
 			return
 		end
@@ -731,6 +886,19 @@ function HudController.start()
 				championSelectPanel.Visible = false
 				trainingPanel.Visible = false
 			end
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input, gameProcessed)
+		if input.KeyCode == Enum.KeyCode.Tab then
+			if scoreboardPanel then
+				scoreboardPanel.Visible = false
+			end
+			return
+		end
+
+		if gameProcessed or UserInputService:GetFocusedTextBox() ~= nil then
+			return
 		end
 	end)
 
@@ -1395,14 +1563,46 @@ function HudController.start()
 	local abilityFeedbackRemoteInstance = remotes:WaitForChild(SharedConstants.REMOTES.ABILITY_FEEDBACK, 10)
 	if abilityFeedbackRemoteInstance and abilityFeedbackRemoteInstance:IsA("RemoteEvent") then
 		abilityFeedbackRemote = abilityFeedbackRemoteInstance
-		abilityFeedbackRemote.OnClientEvent:Connect(function(state, displayName, slot, cooldown)
-			if typeof(slot) == "number" and slot >= 1 and slot <= 4 and typeof(cooldown) == "number" then
-				spellCooldownEnds[slot] = os.clock() + cooldown
-				updateSpellCooldownUI()
+		abilityFeedbackRemote.OnClientEvent:Connect(function(state, displayName, slot, cooldown, remaining)
+			if typeof(slot) ~= "number" or slot < 1 or slot > 4 then
+				return
+			end
+
+			local now = os.clock()
+			if state == "Cast" then
+				if typeof(cooldown) == "number" and cooldown > 0 then
+					spellCooldownEnds[slot] = now + cooldown
+					updateSpellCooldownUI()
+				end
+			elseif state == "Cooldown" then
+				local value = if typeof(remaining) == "number" and remaining > 0 then remaining else cooldown
+				if typeof(value) == "number" and value > 0 then
+					spellCooldownEnds[slot] = now + value
+					updateSpellCooldownUI()
+				end
 			end
 		end)
 	else
 		warn("[MOBA] RemoteEvent AbilityFeedback indisponible.")
+	end
+
+	local scoreboardRequestRemote = remotes:WaitForChild(SharedConstants.REMOTES.SCOREBOARD_REQUEST, 10)
+	local scoreboardUpdateRemote = remotes:WaitForChild(SharedConstants.REMOTES.SCOREBOARD_UPDATE, 10)
+	if scoreboardRequestRemote and scoreboardRequestRemote:IsA("RemoteEvent") then
+		scoreboardRequest = scoreboardRequestRemote
+	else
+		warn("[MOBA] RemoteEvent ScoreboardRequest indisponible.")
+	end
+	if scoreboardUpdateRemote and scoreboardUpdateRemote:IsA("RemoteEvent") then
+		scoreboardUpdate = scoreboardUpdateRemote
+		scoreboardUpdate.OnClientEvent:Connect(function(payload)
+			if typeof(payload) ~= "table" then
+				return
+			end
+			renderScoreboard(payload)
+		end)
+	else
+		warn("[MOBA] RemoteEvent ScoreboardUpdate indisponible.")
 	end
 
 	local matchRemote = remotes:WaitForChild(SharedConstants.REMOTES.MATCH_STATE_UPDATE, 10)
