@@ -247,3 +247,35 @@ Integration runtime du 25 juin 2026 :
 - Le clone runtime utilise `AnimationController + Animator`, afin d'eviter que le `Humanoid` du visuel reactive les collisions.
 - `WalkAnimation` joue pendant le deplacement, `IdleAnimation` a l'arret et `AttackAnimation` lors d'une attaque acceptee par `CombatService.tryAutoAttack`.
 - Test Play : 143 minions observes avec visuel, 0 script dans les `VisualModel`, 0 collision/touch/query sur les parts visuelles.
+
+## 25 juin 2026 - Reset visuels sbires
+
+Statut :
+
+- L'integration runtime ci-dessus est annulee.
+- Les dossiers `ServerStorage.Assets.Models.Minions` et `ServerStorage.Assets.Models.sbires` sont conserves vides.
+- `MinionService` ne clone plus de `VisualModel`, ne charge plus d'animations et ne reference plus `ServerStorage.Assets.Models.Minions`.
+- Les seules references `VisualModel` restantes dans le jeu concernent les tours.
+
+Backup :
+
+- `backups/GameTest-editable-before-reset-minion-visuals-20260625-160428.rbxlx`
+
+Suppressions :
+
+- `MeleeMinionVisual`
+- `RangedMinionVisual`
+- `Drooling Zombie` x3
+- `Pixy`
+- `The Goldhunter Warlord (245) Health: 91852 of 91852`
+- `Ud'zal`
+- `badAss sbire`
+- Modele sans nom dans `ServerStorage.Assets.Models.sbires`
+
+Verification :
+
+- Scan `src` + `GameTest-editable.rbxlx` : 0 reference active a `MeleeMinionVisual`, `RangedMinionVisual`, `Drooling Zombie`, `attachMinionVisual`, `MINION_VISUAL`, `WalkAnimation`, `IdleAnimation`, `AttackAnimation`.
+- Test Play : 36 sbires spawn initial, 36 healthbars, 36 sbires en mouvement, 0 `VisualModel` minion.
+- Duel force BlueMelee/RedMelee : attaque minion confirmee.
+- `BlueTopOuterTower` attaque encore un sbire rouge et conserve `VisualModel` + `TowerHitbox`.
+- Console Studio : aucune erreur observee.

@@ -191,6 +191,10 @@ Après chaque changement important, consigner : date, décision, fichiers ou obj
 - Branchement runtime du visuel anime sur les sbires de lane dans `src/server/services/MinionService.luau` : helper `attachMinionVisual`, clone `ServerStorage.Assets.Models.Minions.MeleeMinionVisual` en `VisualModel`, weld au root gameplay, ancien visuel sphere/accent masque.
 - Animation minions ajoutee sans changement de gameplay : `WalkAnimation` boucle pendant les deplacements, `IdleAnimation` a l'arret, `AttackAnimation` declenchee seulement quand `CombatService.tryAutoAttack` accepte l'attaque. Degats, vitesse, vie, ciblage et pathfinding inchanges.
 - Test Studio Play : `rojo build` OK, 143 minions runtime observes avec `VisualModel`, 0 script dans les visuels, 0 part visuelle collidable/touch/query/anchored, 0 ancien visuel visible, healthbars presentes, walk et attack tracks en lecture, minions endommages et morts observes, aucune erreur console liee au visuel.
+- Reset complet des visuels de sbires a la demande de Lucas : backup `backups/GameTest-editable-before-reset-minion-visuals-20260625-160428.rbxlx`, suppression des modeles de test `MeleeMinionVisual`, `RangedMinionVisual`, `Drooling Zombie`, `Pixy`, `The Goldhunter Warlord`, `Ud'zal`, `badAss sbire` et du modele sans nom dans `ServerStorage.Assets.Models.sbires`.
+- `src/server/services/MinionService.luau` revenu au fonctionnement simple : plus de clone `VisualModel`, plus de reference `ServerStorage.Assets.Models.Minions`, plus de `Animator`, plus de `WalkAnimation`/`IdleAnimation`/`AttackAnimation`, plus de logs `[MOBA][MINION_VISUAL]`.
+- Verification Studio/Edit et fichier local : dossiers `ServerStorage.Assets.Models.Minions` et `ServerStorage.Assets.Models.sbires` conserves vides ; seuls les 22 `VisualModel` de tours restent presents avec 22 `TowerHitbox`.
+- Test Play apres reset : 36 sbires spawn initial, 36 healthbars, 36 sbires en mouvement, 0 `VisualModel` minion ; duel force BlueMelee/RedMelee confirme les attaques ; `BlueTopOuterTower` tue un `RedRanged` et garde `VisualModel` + `TowerHitbox`; console sans erreur.
 
 ### 24 juin 2026 — Jarvis
 

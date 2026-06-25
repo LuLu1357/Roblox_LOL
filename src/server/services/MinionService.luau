@@ -1,7 +1,6 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 
 local MinionData = require(ReplicatedStorage.Modules.MinionData)
@@ -19,17 +18,6 @@ local FORMATION_SLOTS = { -4, 0, 4 }
 
 local TARGET_SEARCH_RANGE = 50
 local TARGET_DROP_RANGE = 50
-local MINION_VISUAL_LOG_LIMIT = 6
-
-type MinionAnimationState = {
-	IdleTrack: AnimationTrack?,
-	WalkTrack: AnimationTrack?,
-	AttackTrack: AnimationTrack?,
-	IsWalking: boolean,
-}
-
-local minionAnimationStates = setmetatable({}, { __mode = "k" }) :: { [Model]: MinionAnimationState }
-local minionVisualLogCount = 0
 
 local function getGameSpeed(): number
 	local debugConfig = SharedConstants.DEBUG
@@ -59,279 +47,6 @@ local function getMapFolder(childName: string): Instance?
 	end
 
 	return child
-end
-
-local function getFirstBasePart(instance: Instance): BasePart?
-	for _, descendant in instance:GetDescendants() do
-		if descendant:IsA("BasePart") then
-			return descendant
-		end
-	end
-
-	return nil
-end
-
-local function getMinionVisualTemplate(): Model?
-	local assets = ServerStorage:FindFirstChild("Assets")
-	local models = assets and assets:FindFirstChild("Models")
-	local minions = models and models:FindFirstChild("Minions")
-	local template = minions and minions:FindFirstChild("MeleeMinionVisual")
-
-	if template and template:IsA("Model") then
-		return template
-	end
-
-	warn("[MOBA][MINION_VISUAL] ServerStorage.Assets.Models.Minions.MeleeMinionVisual missing")
-	return nil
-end
-
-local function removeUnsafeVisualDescendants(visual: Model)
-	for _, descendant in visual:GetDescendants() do
-		if
-			descendant:IsA("Script")
-			or descendant:IsA("LocalScript")
-			or descendant:IsA("ModuleScript")
-			or descendant:IsA("RemoteEvent")
-			or descendant:IsA("RemoteFunction")
-			or descendant:IsA("Sound")
-		then
-			descendant:Destroy()
-		end
-	end
-end
-
-local function configureVisualParts(visual: Model)
-	for _, descendant in visual:GetDescendants() do
-		if descendant:IsA("BasePart") then
-			descendant.Anchored = false
-			descendant.CanCollide = false
-			descendant.CanTouch = false
-			descendant.CanQuery = false
-			descendant.Massless = true
-		end
-	end
-end
-
-local function hideLegacyGameplayVisual(minion: Model)
-	for _, child in minion:GetChildren() do
-		if child:IsA("BasePart") then
-			child.Transparency = 1
-			child.CastShadow = false
-		end
-	end
-end
-
-local function applyTeamAccent(visual: Model, teamName: string?)
-	local accentColor: Color3?
-	if teamName == SharedConstants.TEAMS.BLUE then
-		accentColor = Color3.fromRGB(85, 155, 255)
-	elseif teamName == SharedConstants.TEAMS.RED then
-		accentColor = Color3.fromRGB(235, 85, 80)
-	end
-
-	if not accentColor then
-		return
-	end
-
-	for _, descendant in visual:GetDescendants() do
-		if descendant:IsA("BasePart") then
-			local partName = string.lower(descendant.Name)
-			if partName == "torso" or partName == "uppertorso" or partName == "body" then
-				descendant.Color = descendant.Color:Lerp(accentColor, 0.28)
-				return
-			end
-		end
-	end
-end
-
-local function useAnimationControllerForVisual(visual: Model)
-	local humanoid = visual:FindFirstChildWhichIsA("Humanoid", true)
-	local existingAnimator = humanoid and humanoid:FindFirstChildWhichIsA("Animator")
-	local animationController = visual:FindFirstChildWhichIsA("AnimationController", true)
-
-	if not animationController then
-		animationController = Instance.new("AnimationController")
-		animationController.Name = "AnimationController"
-		animationController.Parent = visual
-	end
-
-	local controllerAnimator = animationController:FindFirstChildWhichIsA("Animator")
-	if existingAnimator then
-		existingAnimator.Parent = animationController
-	elseif not controllerAnimator then
-		controllerAnimator = Instance.new("Animator")
-		controllerAnimator.Parent = animationController
-	end
-
-	if humanoid then
-		humanoid:Destroy()
-	end
-end
-
-local function getAnimator(visual: Model): Animator?
-	local animationController = visual:FindFirstChildWhichIsA("AnimationController", true)
-	if animationController then
-		local animator = animationController:FindFirstChildWhichIsA("Animator")
-		if not animator then
-			animator = Instance.new("Animator")
-			animator.Parent = animationController
-		end
-		return animator
-	end
-
-	local humanoid = visual:FindFirstChildWhichIsA("Humanoid", true)
-	if humanoid then
-		local animator = humanoid:FindFirstChildWhichIsA("Animator")
-		if not animator then
-			animator = Instance.new("Animator")
-			animator.Parent = humanoid
-		end
-		return animator
-	end
-
-	return nil
-end
-
-local function loadAnimationTrack(animator: Animator, visual: Model, animationName: string, priority: Enum.AnimationPriority): AnimationTrack?
-	local animation = visual:FindFirstChild(animationName, true)
-	if not animation or not animation:IsA("Animation") then
-		return nil
-	end
-
-	local success, trackOrError = pcall(function()
-		return animator:LoadAnimation(animation)
-	end)
-
-	if not success then
-		warn(string.format("[MOBA][MINION_VISUAL] Failed to load %s: %s", animationName, tostring(trackOrError)))
-		return nil
-	end
-
-	local track = trackOrError :: AnimationTrack
-	track.Priority = priority
-	return track
-end
-
-local function setupMinionAnimations(minion: Model, visual: Model)
-	local animator = getAnimator(visual)
-	if not animator then
-		warn("[MOBA][MINION_VISUAL] Animator missing for", minion.Name)
-		return
-	end
-
-	local idleTrack = loadAnimationTrack(animator, visual, "IdleAnimation", Enum.AnimationPriority.Idle)
-	local walkTrack = loadAnimationTrack(animator, visual, "WalkAnimation", Enum.AnimationPriority.Movement)
-	local attackTrack = loadAnimationTrack(animator, visual, "AttackAnimation", Enum.AnimationPriority.Action)
-
-	if idleTrack then
-		idleTrack.Looped = true
-		idleTrack:Play(0.1)
-	end
-
-	if walkTrack then
-		walkTrack.Looped = true
-	end
-
-	if attackTrack then
-		attackTrack.Looped = false
-	end
-
-	minionAnimationStates[minion] = {
-		IdleTrack = idleTrack,
-		WalkTrack = walkTrack,
-		AttackTrack = attackTrack,
-		IsWalking = false,
-	}
-end
-
-local function setMinionWalking(minion: Model, isWalking: boolean)
-	local state = minionAnimationStates[minion]
-	if not state or state.IsWalking == isWalking then
-		return
-	end
-
-	state.IsWalking = isWalking
-
-	if state.WalkTrack then
-		if isWalking and not state.WalkTrack.IsPlaying then
-			state.WalkTrack:Play(0.1)
-		elseif not isWalking and state.WalkTrack.IsPlaying then
-			state.WalkTrack:Stop(0.15)
-		end
-	end
-
-	if state.IdleTrack then
-		if isWalking and state.IdleTrack.IsPlaying then
-			state.IdleTrack:Stop(0.15)
-		elseif not isWalking and not state.IdleTrack.IsPlaying then
-			state.IdleTrack:Play(0.15)
-		end
-	end
-end
-
-local function playMinionAttackAnimation(minion: Model)
-	local state = minionAnimationStates[minion]
-	local attackTrack = state and state.AttackTrack
-	if not attackTrack then
-		return
-	end
-
-	if attackTrack.IsPlaying then
-		attackTrack:Stop(0)
-	end
-
-	attackTrack:Play(0.05, 1, getGameSpeed())
-end
-
-local function attachMinionVisual(minion: Model)
-	local template = getMinionVisualTemplate()
-	local root = Utility.getRoot(minion) or getFirstBasePart(minion)
-
-	if not template or not root then
-		return
-	end
-
-	local oldVisual = minion:FindFirstChild("VisualModel")
-	if oldVisual then
-		oldVisual:Destroy()
-	end
-
-	local visual = template:Clone()
-	visual.Name = "VisualModel"
-	removeUnsafeVisualDescendants(visual)
-	useAnimationControllerForVisual(visual)
-	configureVisualParts(visual)
-	applyTeamAccent(visual, Utility.getTeam(minion))
-	visual.Parent = minion
-
-	local visualRoot: BasePart? = nil
-	local foundVisualRoot = visual:FindFirstChild("HumanoidRootPart", true)
-	if foundVisualRoot and foundVisualRoot:IsA("BasePart") then
-		visualRoot = foundVisualRoot
-	else
-		visualRoot = getFirstBasePart(visual)
-	end
-
-	visual:PivotTo(root.CFrame)
-
-	if visualRoot then
-		visual.PrimaryPart = visualRoot
-		visualRoot.CFrame = root.CFrame
-
-		local weld = Instance.new("WeldConstraint")
-		weld.Name = "VisualRootWeld"
-		weld.Part0 = root
-		weld.Part1 = visualRoot
-		weld.Parent = visualRoot
-	end
-
-	hideLegacyGameplayVisual(minion)
-	setupMinionAnimations(minion, visual)
-
-	if minionVisualLogCount < MINION_VISUAL_LOG_LIMIT then
-		minionVisualLogCount += 1
-		print("[MOBA][MINION_VISUAL] Attached animated visual")
-	end
 end
 
 local function sortedWaypoints(teamName: string, laneName: string): { BasePart }
@@ -492,22 +207,16 @@ local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset
 				local attackRange = if typeof(attackRangeAttribute) == "number" then attackRangeAttribute else 8
 
 				if Utility.distance(minion, currentTarget) <= attackRange then
-					setMinionWalking(minion, false)
-					local didAttack = CombatService.tryAutoAttack(minion, currentTarget, nil)
-					if didAttack then
-						playMinionAttackAnimation(minion)
-					end
+					CombatService.tryAutoAttack(minion, currentTarget, nil)
 				else
 					local targetRoot = Utility.getRoot(currentTarget)
 
 					if targetRoot then
 						local gameSpeed = getGameSpeed()
-						local reachedTarget = moveToward(minion, targetRoot.Position, moveSpeed * gameSpeed, 0.1)
-						setMinionWalking(minion, not reachedTarget)
+						moveToward(minion, targetRoot.Position, moveSpeed * gameSpeed, 0.1)
 					else
 						currentTarget = nil
 						minion:SetAttribute("AggroTarget", nil)
-						setMinionWalking(minion, false)
 					end
 				end
 			else
@@ -518,13 +227,9 @@ local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset
 					local gameSpeed = getGameSpeed()
 					local reachedWaypoint = moveToward(minion, targetPosition, moveSpeed * gameSpeed, 0.1)
 
-					setMinionWalking(minion, not reachedWaypoint)
-
 					if reachedWaypoint then
 						waypointIndex += 1
 					end
-				else
-					setMinionWalking(minion, false)
 				end
 			end
 
@@ -565,7 +270,6 @@ local function spawnSingle(
 	minion:SetAttribute("AggroTarget", nil)
 
 	minion.Parent = units
-	attachMinionVisual(minion)
 
 	runMinionAI(minion, waypoints, lateralOffset)
 end
