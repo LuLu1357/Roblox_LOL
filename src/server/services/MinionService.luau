@@ -6,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 local MinionData = require(ReplicatedStorage.Modules.MinionData)
 local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local CombatService = require(script.Parent.CombatService)
+local MinionVisualService = require(script.Parent.MinionVisualService)
 local UnitFactory = require(script.Parent.UnitFactory)
 local Utility = require(script.Parent.Utility)
 local MatchStateService = require(script.Parent.MatchStateService)
@@ -18,6 +19,29 @@ local FORMATION_SLOTS = { -4, 0, 4 }
 
 local TARGET_SEARCH_RANGE = 50
 local TARGET_DROP_RANGE = 50
+local MINION_UPDATE_INTERVAL = 0.05
+
+local function setMinionState(minion: Model, state: string)
+	if minion:GetAttribute("MinionState") ~= state then
+		minion:SetAttribute("MinionState", state)
+	end
+end
+
+local function markMinionAttack(minion: Model)
+	setMinionState(minion, "Attacking")
+
+	local attackTick = minion:GetAttribute("AttackTick")
+	if typeof(attackTick) ~= "number" then
+		attackTick = 0
+	end
+	minion:SetAttribute("AttackTick", attackTick + 1)
+
+	task.delay(0.35, function()
+		if minion.Parent and Utility.isAlive(minion) and minion:GetAttribute("MinionState") == "Attacking" then
+			setMinionState(minion, "Idle")
+		end
+	end)
+end
 
 local function getGameSpeed(): number
 	local debugConfig = SharedConstants.DEBUG
@@ -182,6 +206,7 @@ end
 local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset: number)
 	task.spawn(function()
 		local waypointIndex = 1
+		setMinionState(minion, "Idle")
 
 		local moveSpeedAttribute = minion:GetAttribute("MoveSpeed")
 		local moveSpeed = if typeof(moveSpeedAttribute) == "number" then moveSpeedAttribute else 10
@@ -207,16 +232,23 @@ local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset
 				local attackRange = if typeof(attackRangeAttribute) == "number" then attackRangeAttribute else 8
 
 				if Utility.distance(minion, currentTarget) <= attackRange then
-					CombatService.tryAutoAttack(minion, currentTarget, nil)
+					local success = CombatService.tryAutoAttack(minion, currentTarget, nil)
+					if success then
+						markMinionAttack(minion)
+					elseif minion:GetAttribute("MinionState") ~= "Attacking" then
+						setMinionState(minion, "Idle")
+					end
 				else
 					local targetRoot = Utility.getRoot(currentTarget)
 
 					if targetRoot then
 						local gameSpeed = getGameSpeed()
-						moveToward(minion, targetRoot.Position, moveSpeed * gameSpeed, 0.1)
+						setMinionState(minion, "Moving")
+						moveToward(minion, targetRoot.Position, moveSpeed * gameSpeed, MINION_UPDATE_INTERVAL)
 					else
 						currentTarget = nil
 						minion:SetAttribute("AggroTarget", nil)
+						setMinionState(minion, "Idle")
 					end
 				end
 			else
@@ -225,17 +257,22 @@ local function runMinionAI(minion: Model, waypoints: { BasePart }, lateralOffset
 				if waypoint then
 					local targetPosition = getOffsetWaypoint(waypoints, waypointIndex, lateralOffset)
 					local gameSpeed = getGameSpeed()
-					local reachedWaypoint = moveToward(minion, targetPosition, moveSpeed * gameSpeed, 0.1)
+					setMinionState(minion, "Moving")
+					local reachedWaypoint =
+						moveToward(minion, targetPosition, moveSpeed * gameSpeed, MINION_UPDATE_INTERVAL)
 
 					if reachedWaypoint then
 						waypointIndex += 1
 					end
+				else
+					setMinionState(minion, "Idle")
 				end
 			end
 
-			task.wait(0.1)
+			task.wait(MINION_UPDATE_INTERVAL)
 		end
 
+		setMinionState(minion, "Dead")
 		task.wait(2)
 
 		if minion.Parent then
@@ -259,6 +296,9 @@ local function spawnSingle(
 		return
 	end
 
+	minion:SetAttribute("MinionState", "Idle")
+	minion:SetAttribute("AttackTick", 0)
+
 	local units = Workspace:FindFirstChild("Units")
 	if not units or not units:IsA("Folder") then
 		warn("[MOBA] Workspace.Units manquant : minion non créé.")
@@ -270,6 +310,7 @@ local function spawnSingle(
 	minion:SetAttribute("AggroTarget", nil)
 
 	minion.Parent = units
+	MinionVisualService.AttachVisual(minion, teamName, minionType)
 
 	runMinionAI(minion, waypoints, lateralOffset)
 end
