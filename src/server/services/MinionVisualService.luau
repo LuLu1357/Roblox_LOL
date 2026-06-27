@@ -1,6 +1,9 @@
 --!strict
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+
+local VisualConfig = require(ReplicatedStorage.Modules.VisualConfig)
 
 local MinionVisualService = {}
 
@@ -47,6 +50,20 @@ local function lowerName(instanceOrValue: any): string
 	return string.lower(tostring(instanceOrValue))
 end
 
+local function findInstanceByPath(root: Instance, slashPath: string): Instance?
+	local current: Instance? = root
+
+	for pathPart in string.gmatch(slashPath, "[^/]+") do
+		if not current then
+			return nil
+		end
+
+		current = current:FindFirstChild(pathPart)
+	end
+
+	return current
+end
+
 local function getRoot(model: Model): BasePart?
 	local humanoidRootPart = model:FindFirstChild("HumanoidRootPart")
 	if humanoidRootPart and humanoidRootPart:IsA("BasePart") then
@@ -61,6 +78,17 @@ local function getVisualOffset(minionType: string): Vector3
 end
 
 local function getSbiresFolder(): Instance?
+	local legacyAssetModels = VisualConfig.LegacyAssetModels
+	if typeof(legacyAssetModels) == "table" then
+		local minionsRoot = legacyAssetModels.MinionsRoot
+		if typeof(minionsRoot) == "string" then
+			local configuredRoot = findInstanceByPath(ServerStorage, minionsRoot)
+			if configuredRoot then
+				return configuredRoot
+			end
+		end
+	end
+
 	local assets = ServerStorage:FindFirstChild("Assets")
 	local models = assets and assets:FindFirstChild("Models")
 	local sbires = models and models:FindFirstChild("sbires")
@@ -83,6 +111,111 @@ end
 
 local function isRuntimeVisualCandidate(model: Model): boolean
 	return model:FindFirstAncestor("archive") == nil and model:FindFirstAncestor("candidates") == nil
+end
+
+local function resolveModelFromEntry(entry: any): (Model?, string?)
+	local path: string? = nil
+	local modelName: string? = nil
+
+	if typeof(entry) == "string" then
+		path = entry
+	elseif typeof(entry) == "table" then
+		local entryPath = entry.Path
+		local entryModelName = entry.ModelName
+
+		if typeof(entryPath) == "string" then
+			path = entryPath
+		end
+		if typeof(entryModelName) == "string" then
+			modelName = entryModelName
+		end
+	end
+
+	if not path or path == "" then
+		return nil, nil
+	end
+
+	local container = findInstanceByPath(ServerStorage, path)
+	if not container then
+		return nil, path
+	end
+
+	if container:IsA("Model") then
+		return container, path
+	end
+
+	if modelName and modelName ~= "" then
+		local model = container:FindFirstChild(modelName)
+		if model and model:IsA("Model") then
+			return model, path .. "/" .. modelName
+		end
+
+		return nil, path .. "/" .. modelName
+	end
+
+	return nil, path
+end
+
+local function findConfiguredMinionVisualSource(teamName: string?, minionType: string): Model?
+	if typeof(teamName) ~= "string" then
+		return nil
+	end
+
+	local assetModels = VisualConfig.AssetModels
+	if typeof(assetModels) ~= "table" then
+		return nil
+	end
+
+	local minions = assetModels.Minions
+	if typeof(minions) ~= "table" then
+		return nil
+	end
+
+	local teamConfig = minions[teamName]
+	if typeof(teamConfig) ~= "table" then
+		return nil
+	end
+
+	local entry = teamConfig[minionType]
+	if entry == nil then
+		return nil
+	end
+
+	if not findInstanceByPath(ServerStorage, "Assets/Models/Minions") then
+		return nil
+	end
+
+	local source, expectedPath = resolveModelFromEntry(entry)
+	if not expectedPath then
+		return nil
+	end
+
+	if not source then
+		warnOnce(
+			"configured-missing:" .. teamName .. ":" .. minionType,
+			"Configured Blender minion visual missing at ServerStorage." .. expectedPath .. "; using legacy/default fallback"
+		)
+		return nil
+	end
+
+	if not isRuntimeVisualCandidate(source) then
+		warnOnce(
+			"configured-runtime-invalid:" .. source:GetFullName(),
+			"Configured Blender minion visual is in a non-runtime folder: " .. source:GetFullName()
+		)
+		return nil
+	end
+
+	if not isValidVisualSource(source) then
+		warnOnce(
+			"configured-root-invalid:" .. source:GetFullName(),
+			"Configured Blender minion visual has no HumanoidRootPart or PrimaryPart: " .. source:GetFullName()
+		)
+		return nil
+	end
+
+	logOnce("selected:configured:" .. source:GetFullName(), "Configured minion visual selected: " .. source:GetFullName())
+	return source
 end
 
 local function getFolderPreferenceScore(model: Model, preferredFolderName: string): number
@@ -190,6 +323,11 @@ local function logResolvedContainer(minionType: string, source: Model)
 end
 
 local function getVisualSource(teamName: string?, minionType: string): Model?
+	local configuredSource = findConfiguredMinionVisualSource(teamName, minionType)
+	if configuredSource then
+		return configuredSource
+	end
+
 	local sbires = getSbiresFolder()
 	if not sbires then
 		warnOnce(
@@ -359,14 +497,14 @@ function MinionVisualService.AttachVisual(minionModel: Model, teamName: string?,
 	visualModel.Name = "VisualModel"
 	sanitizeVisualClone(visualModel)
 
-	local visualRoot = visualModel:FindFirstChild("HumanoidRootPart")
-	if not visualRoot or not visualRoot:IsA("BasePart") then
-		warnLog("Cannot attach VisualModel; HumanoidRootPart missing in " .. source:GetFullName())
+	local visualRoot = getVisualRoot(visualModel)
+	if not visualRoot then
+		warnLog("Cannot attach VisualModel; HumanoidRootPart/PrimaryPart missing in " .. source:GetFullName())
 		visualModel:Destroy()
 		return
 	end
 
-	visualModel.PrimaryPart = visualRoot :: BasePart
+	visualModel.PrimaryPart = visualRoot
 	visualModel.Parent = minionModel
 	visualModel:PivotTo(gameplayRoot.CFrame * CFrame.new(getVisualOffset(resolvedMinionType)))
 	sanitizeVisualClone(visualModel)

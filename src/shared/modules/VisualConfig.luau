@@ -71,4 +71,97 @@ VisualConfig.AssetFolders = {
 	"Packages",
 }
 
+VisualConfig.AssetModels = {
+	Minions = {
+		Blue = {
+			Melee = {
+				Path = "Assets/Models/Minions/Blue/Melee",
+				ModelName = "BlueMeleeVisual",
+			},
+			Ranged = {
+				Path = "Assets/Models/Minions/Blue/Ranged",
+				ModelName = "BlueRangedVisual",
+			},
+			Siege = {
+				Path = "Assets/Models/Minions/Blue/Siege",
+				ModelName = "BlueSiegeVisual",
+			},
+		},
+		Red = {
+			Melee = {
+				Path = "Assets/Models/Minions/Red/Melee",
+				ModelName = "RedMeleeVisual",
+			},
+			Ranged = {
+				Path = "Assets/Models/Minions/Red/Ranged",
+				ModelName = "RedRangedVisual",
+			},
+			Siege = {
+				Path = "Assets/Models/Minions/Red/Siege",
+				ModelName = "RedSiegeVisual",
+			},
+		},
+	},
+	Jungle = {
+		Dragon = {
+			Path = "Assets/Models/Jungle/Dragon",
+			ModelName = "Dragon",
+		},
+		Golem = {
+			Path = "Assets/Models/Jungle/Golem",
+			ModelName = "Golem",
+		},
+		Wolf = {
+			Path = "Assets/Models/Jungle/Wolf",
+			ModelName = "Wolf",
+		},
+		SmallMonster = {
+			Path = "Assets/Models/Jungle/SmallMonster",
+			ModelName = "SmallMonster",
+		},
+	},
+	Structures = {
+		Towers = {
+			Blue = {
+				Path = "Assets/Models/Structures/Towers",
+				ModelName = "BlueTowerVisual",
+			},
+			Red = {
+				Path = "Assets/Models/Structures/Towers",
+				ModelName = "RedTowerVisual",
+			},
+		},
+		Inhibitors = {
+			Blue = {
+				Path = "Assets/Models/Structures/Inhibitors",
+				ModelName = "BlueInhibitorVisual",
+			},
+			Red = {
+				Path = "Assets/Models/Structures/Inhibitors",
+				ModelName = "RedInhibitorVisual",
+			},
+		},
+		Nexus = {
+			Blue = {
+				Path = "Assets/Models/Structures/Nexus",
+				ModelName = "BlueNexusVisual",
+			},
+			Red = {
+				Path = "Assets/Models/Structures/Nexus",
+				ModelName = "RedNexusVisual",
+			},
+		},
+	},
+	Props = {
+		Jungle = "Assets/Models/Props/Jungle",
+		Base = "Assets/Models/Props/Base",
+		Shop = "Assets/Models/Props/Shop",
+	},
+}
+
+VisualConfig.LegacyAssetModels = {
+	MinionsRoot = "Assets/Models/sbires",
+	TowersRoot = "Assets/Models/Towers",
+}
+
 return VisualConfig

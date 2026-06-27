@@ -908,6 +908,123 @@ Le rapport initial indique que les mesures runtime avancées n'ont pas pu être 
 
 ---
 
+## Phase parallèle — Préparation des modèles Blender
+
+Cette phase peut avancer en parallèle de la stabilisation serveur. Le code gameplay doit rester prioritaire pour les P0/P1, mais la production des modèles Blender peut commencer maintenant si les conventions d'import sont claires. L'objectif est de préparer les visuels sans casser les systèmes existants : les unités runtime restent dans `Workspace.Units`, les données gameplay restent dans les modules partagés, et les modèles Studio restent compatibles avec les services serveur.
+
+### Pourquoi travailler les modèles maintenant
+
+- Les corrections P0/P1 concernent surtout le serveur, les connexions, les remotes et les boucles d'IA.
+- Les modèles Blender peuvent être produits et importés dans `ServerStorage.Assets.Models` sans modifier l'équilibrage.
+- Une convention stable évite de refaire les imports plus tard.
+- Les visuels peuvent être testés un par un avec fallback vers les assets actuels.
+
+### Assets prioritaires
+
+Ordre recommandé :
+
+1. `BlueMeleeVisual` et `RedMeleeVisual` pour valider le pipeline minion.
+2. `BlueRangedVisual` et `RedRangedVisual`.
+3. `BlueSiegeVisual` et `RedSiegeVisual`.
+4. Monstres jungle : `Wolf`, `Golem`, `Dragon`.
+5. Structures : towers, inhibitors, nexus.
+6. Props de map : jungle, base, shop.
+
+### Convention cible
+
+Les futurs modèles Blender doivent être rangés sous :
+
+```txt
+ServerStorage
+└── Assets
+    └── Models
+        ├── Minions
+        │   ├── Blue
+        │   │   ├── Melee/BlueMeleeVisual
+        │   │   ├── Ranged/BlueRangedVisual
+        │   │   └── Siege/BlueSiegeVisual
+        │   └── Red
+        │       ├── Melee/RedMeleeVisual
+        │       ├── Ranged/RedRangedVisual
+        │       └── Siege/RedSiegeVisual
+        ├── Jungle
+        │   ├── Dragon/Dragon
+        │   ├── Golem/Golem
+        │   ├── Wolf/Wolf
+        │   └── SmallMonster/SmallMonster
+        ├── Structures
+        │   ├── Towers
+        │   ├── Inhibitors
+        │   └── Nexus
+        └── Props
+            ├── Jungle
+            ├── Base
+            └── Shop
+```
+
+Les anciens dossiers restent utilisables pendant la migration :
+
+```txt
+ServerStorage.Assets.Models.sbires
+ServerStorage.Assets.Models.Towers
+```
+
+`VisualConfig.luau` centralise les chemins cibles. `MinionVisualService` doit chercher les futurs modèles configurés avant de revenir aux anciens assets. Cette couche de compatibilité évite de casser le spawn actuel.
+
+### Règles Blender / Roblox à respecter
+
+- Origine au sol et au centre pour les sbires et monstres.
+- Pivot au centre de la base pour towers, inhibitors et nexus.
+- Mesh visuel avec `CanCollide=false`, `CanTouch=false`, `CanQuery=false`.
+- Root logique séparé : `HumanoidRootPart` recommandé, `PrimaryPart` obligatoire.
+- Pas de scripts legacy, sons de test, vieux AI scripts ou outils dans les modèles importés.
+- Silhouette lisible de loin, surtout pour les minions.
+- Peu de pièces séparées pour les towers et structures.
+- Attachment `TowerLaserOrigin` obligatoire pour les towers.
+- Prévoir `AttackOrigin` sur les minions/monstres si un projectile ou VFX sera ajouté plus tard.
+- Blue/Red doivent être identifiables visuellement sans lire l'UI.
+
+### Comment éviter de casser le gameplay
+
+- Ne pas renommer `Workspace.Map.Towers`, `Workspace.Map.Inhibitors`, `Workspace.Map.Nexus`, `Workspace.Map.JungleCamps`, `Workspace.Map.Paths` ou `Workspace.Map.MinionSpawns`.
+- Ne pas déplacer les modèles runtime directement dans `Workspace.Units` en édition ; les services le font au démarrage.
+- Ne pas supprimer les Attributes gameplay des structures : `UnitType`, `Team`, `Health`, `MaxHealth`, `AttackDamage`, `AttackRange`, `AttackCooldown`, `Dead`.
+- Pour les minions, garder `UnitFactory` comme créateur logique : le modèle Blender doit rester un `VisualModel` attaché au root gameplay.
+- Toujours conserver les anciens assets tant que le nouveau modèle n'est pas testé.
+
+### Test de chaque asset importé
+
+Checklist minimale :
+
+- importer le modèle dans le bon dossier ;
+- vérifier le nom exact Roblox ;
+- vérifier pivot, root et `PrimaryPart` ;
+- désactiver les collisions du mesh visuel ;
+- supprimer les scripts legacy ;
+- lancer Play Solo ;
+- vérifier `Workspace.Units` ;
+- vérifier spawn, déplacement, healthbar, attaque et mort ;
+- vérifier les warnings console ;
+- tester une vague complète pour les minions ;
+- tester la destruction pour towers, inhibitors et nexus.
+
+### Fichiers et services concernés plus tard
+
+- `docs/ASSET_PIPELINE_BLENDER.md` : documentation principale du pipeline.
+- `src/shared/modules/VisualConfig.luau` : chemins cibles des futurs assets.
+- `src/server/services/MinionVisualService.luau` : branchement des visuels de minions avec fallback.
+- `src/server/services/UnitFactory.luau` : base logique des minions et monstres jungle.
+- `src/server/services/JungleService.luau` : futur branchement visuel des monstres jungle.
+- `src/server/services/TowerService.luau` : structures placées dans la map puis enregistrées runtime.
+- `src/server/services/NexusService.luau` : inhibitors et nexus.
+- `src/server/services/MapValidatorService.luau` : validation future possible des attachments/roots.
+- `src/server/services/CombatService.luau` : origine visuelle des tirs de tower via `TowerLaserOrigin`.
+- `GameTest-editable.rbxlx` : import réel des meshes et placement Studio.
+
+Documentation détaillée : `docs/ASSET_PIPELINE_BLENDER.md`.
+
+---
+
 ## 7. Checklist anti-exploit
 
 Avant test public, vérifier :
@@ -1067,6 +1184,8 @@ ChampionService cleanup
 | 27/06/2026 | Priorisation P0/P1/P2 ajoutée | Fait |
 | 27/06/2026 | Checklists de test ajoutées | Fait |
 | 27/06/2026 | Roadmap par sprint ajoutée | Fait |
+| 27/06/2026 | Relecture Jarvis/Codex et vérification rapide du code : les priorités ChampionService cleanup, debug gold, rate limiter RemoteService et MinionService centralisé restent ouvertes | Confirmé |
+| 27/06/2026 | Ajout de la phase Blender / Asset Pipeline | Fait |
 
 
 
