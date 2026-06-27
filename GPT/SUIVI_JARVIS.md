@@ -1,231 +1,577 @@
-# Suivi partagé — GPT ↔ Jarvis
+# Rapport d'Analyse du Projet MOBA
 
-Dernière mise à jour : 25 juin 2026
+*Ce rapport a été généré suite à une analyse automatisée du code source.*
 
-Ce document est la source de vérité opérationnelle du projet `GameTest`. Tout assistant doit le lire avant une modification, vérifier l'état réel des fichiers et de Roblox Studio, puis consigner les changements et les tests réellement effectués.
+## 1. Architecture Générale
 
-## Objectif actuel
+Le projet est bien structuré sur une architecture Client-Serveur-Partagé classique. La séparation des responsabilités est claire :
+- **`src/server`** : Contient toute la logique de jeu (services). L'utilisation d'un `init.server.luau` pour charger les services est une bonne pratique.
+- **`src/client`** : Gère l'interface utilisateur et les contrôles, avec une structure de contrôleurs (MVC-like).
+- **`src/shared`** : Centralise les données et configurations partagées (`MinionData`, `ItemData`, `SharedConstants`), ce qui est excellent pour la maintenance.
 
-Construire un prototype MOBA Roblox original, jouable et lisible, inspiré du genre LoL sans en reproduire les contenus protégés.
+La communication est gérée par un `RemoteService` centralisé, qui agit comme un point d'entrée unique pour les RemoteEvents et RemoteFunctions, une pratique robuste qui simplifie la gestion du réseau.
 
-Périmètre volontairement limité :
+## 2. Points Forts
 
-- carte 5v5 à trois lanes ;
-- déplacement AZERTY `ZQSD` ;
-- caméra Roblox standard ;
-- auto-attaque et combat validés par le serveur ;
-- vagues de sbires, tours, Nexus et jungle simple ;
-- aucun sort QWER, boutique, ranked, skin, matchmaking ou nouveau champion pour l'instant.
+- **Architecture Solide :** La structure de services sur le serveur est modulaire et facile à comprendre. Chaque service a un rôle bien défini (en théorie).
+- **Code Orienté Données :** L'utilisation de `ModuleScript` dans `src/shared` pour définir les caractéristiques des sbires, champions et objets rend le jeu facile à équilibrer et à étendre sans modifier la logique de base.
+- **Séparation Client/Serveur :** La distinction entre les tâches du client (affichage, input) et du serveur (logique, autorité) est bien respectée.
 
-## Décisions actives
+## 3. Axes d'Amélioration (Qualité du Code)
 
-1. Les décisions les plus récentes de Lucas priment sur les anciennes notes.
-2. Le client envoie des intentions ; le serveur décide toujours des dégâts, portées et cooldowns.
-3. Le code vit dans `src` et reste synchronisé par Rojo.
-4. `Workspace.Map` appartient à Roblox Studio et doit rester éditable avec Move, Scale, Rotate, `⌘Z` et `⌘S`.
-5. `tools/generate_editable_place.mjs` est uniquement un générateur initial de secours. Ne jamais le relancer sur la carte actuelle sans demande explicite de Lucas et sauvegarde préalable.
-6. Aucun asset externe ne doit être importé sans validation.
-7. Les ajouts doivent rester petits, testables et utiles au gameplay immédiat.
-8. Les audits d'assets externes sont consignés dans `GPT/ASSET_AUDITS.md`.
+- **"God Script" - `AbilityService.luau` :**
+  - **Problème :** Le service, et plus particulièrement la fonction `castAbility`, est un énorme bloc de `if/elseif/else` qui gère toutes les compétences du jeu.
+  - **Impact :** C'est très difficile à maintenir, à déboguer et à étendre. Ajouter une nouvelle compétence complexifie davantage le script.
+  - **Suggestion :** Refactoriser en utilisant un patron de conception "Strategy" ou "Component". Chaque compétence pourrait être son propre `ModuleScript` avec une méthode `Cast`, et `AbilityService` se contenterait de charger et d'exécuter le bon module.
 
-## Environnement validé
+- **Duplication de Code - `ShopService.luau` :**
+  - **Problème :** Les fonctions `buyItem`, `sellItem`, et `craftItem` contiennent beaucoup de code dupliqué pour vérifier l'état du joueur, la distance, et pour logger les actions.
+  - **Impact :** Rend le code plus verbeux et augmente le risque d'erreurs si une modification n'est pas répercutée partout.
+  - **Suggestion :** Extraire cette logique répétitive dans des fonctions d'aide internes au module (ex: `canPlayerInteractWithShop`, `logShopAction`).
 
-- Projet local : `/Users/lucassimonnet/Dev/RobloxProjects/GameTest`.
-- Place de développement : `GameTest-editable.rbxlx`.
-- Projet Rojo : `default.project.json`.
-- Rojo serveur et plugin Studio : `7.6.1`, protocole compatible.
-- Roblox Studio MCP : configuré et fonctionnel pour inspecter la scène, l'Output et les tests Play.
-- Dépôt GitHub privé : `https://github.com/LuLu1357/Roblox_LOL`.
-- Branche publiée : `main`.
-- Première publication : commit `150a59f` (`Initial MOBA blockout prototype`).
-- Sauvegardes locales : dossier `backups/`, ignoré par Git.
+## 4. Axes d'Amélioration (Performances)
 
-## Architecture actuelle
+- **Fuite de Mémoire Critique - `ChampionService.luau` :**
+  - **Problème :** Dans la fonction `setupCharacter`, plus d'une dizaine de connexions d'événements (`:GetAttributeChangedSignal(...):Connect(...)`) sont créées pour le débogage. **Ces connexions ne sont jamais déconnectées.**
+  - **Impact :** À chaque respawn d'un joueur, de nouvelles connexions sont ajoutées sans que les anciennes soient supprimées. Cela va provoquer une augmentation continue de l'utilisation de la mémoire du serveur, menant inévitablement à des lags et des crashs.
+  - **Suggestion :** Stocker toutes les connexions dans une table et les déconnecter dans une fonction de nettoyage (`cleanupCharacter`) qui est appelée à la mort du personnage.
 
-### Partagé — `ReplicatedStorage.Modules`
+- **Goulot d'Étranglement - `MinionService.luau` :**
+  - **Problème :** L'IA des sbires utilise `task.spawn` pour créer un nouveau thread pour chaque sbire (`runMinionAI`).
+  - **Impact :** Cette approche ne passe pas à l'échelle. Avec des vagues de 6-7 sbires par lane, pour 3 lanes et 2 équipes, on arrive vite à plus de 40 threads qui tournent en parallèle pour les sbires seuls. Le `task-scheduler` de Roblox va peiner, causant des baisses de framerate serveur.
+  - **Suggestion :** Migrer vers un modèle centralisé. Avoir une seule boucle de jeu (par exemple dans le `MinionService` sur un `Heartbeat`) qui itère sur tous les sbires et met à jour leur état. C'est beaucoup plus performant.
 
-- `SharedConstants.luau` : équipes, lanes, combat, vision, mouvement et noms des RemoteEvents.
-- `ChampionData.luau` : statistiques du champion prototype.
-- `MinionData.luau` : statistiques et composition des vagues.
-- `JungleData.luau` : `SmallWolf`, `BigGolem` et `DragonPrototype`.
+- **Fuites de Mémoire Côté Client (Potentiel) - `HudController.luau` et autres :**
+  - **Problème :** Plusieurs contrôleurs client se connectent à des événements sur le modèle du personnage. Il n'est pas clair si ces connexions sont nettoyées lors du respawn.
+  - **Impact :** Similaire à la fuite côté serveur, cela peut dégrader les performances du client au fil de la partie.
+  - **Suggestion :** Adopter un système de `Maid` ou de nettoyage manuel pour toutes les connexions d'événements liées à un personnage.
 
-### Serveur — `ServerScriptService.Server`
+## 5. Recommandations et Prochaines Étapes
 
-- `Utility.luau` : racines, distances, équipes et santé.
-- `UnitFactory.luau` : modèles visuels simples des unités dynamiques.
-- `TeamService.luau` : attribution des équipes.
-- `ChampionService.luau` : statistiques et apparition du joueur.
-- `VisionService.luau` : visibilité prototype par distance.
-- `CombatService.luau` : validation serveur des attaques, dégâts, cooldowns et feedback réseau.
-- `TowerService.luau` : ciblage et attaque automatiques des tours.
-- `MapValidatorService.luau` : validation non bloquante des bâtiments, chemins, spawns, camps et barres de vie.
-- `JungleService.luau` : apparition, attaque et respawn des monstres.
-- `MinionService.luau` : vagues et déplacement par waypoints.
-- `NexusService.luau` : destruction du Nexus et victoire.
-- `MatchStateService.luau` : états de partie.
-- `RemoteService.luau` : création idempotente des RemoteEvents et validation des intentions client.
+1.  **Priorité #1 - Corriger les Fuites de Mémoire :** La fuite dans `ChampionService` est critique. Il faut implémenter un système de déconnexion pour les événements. C'est la tâche la plus urgente car elle garantit la stabilité du serveur.
 
-`init.server.luau` exige `Workspace.Map`, crée `Workspace.Units` si nécessaire, puis démarre les services. Il ne reconstruit jamais la carte pendant Play.
+2.  **Priorité #2 - Refactoriser l'IA des Sbires :** Remplacer le modèle `un-thread-par-sbire` par une boucle de mise à jour centralisée dans `MinionService`. Cela apportera un gain de performance majeur et rendra le jeu scalable.
 
-### Client — `StarterPlayerScripts.Client`
+3.  **Priorité #3 - Refactoriser `AbilityService` :** Commencer à extraire la logique d'une ou deux compétences dans leurs propres modules pour rendre le système plus maintenable à long terme.
 
-- `InputController.luau` : déplacement `ZQSD` relatif au regard.
-- `AutoAttackController.luau` : sélection d'une cible et intention d'attaque au clic gauche.
-- `CombatFeedbackController.luau` : flash rouge, rayon temporaire et avertissement HUD quand le joueur est touché.
-- `FogController.luau` : visibilité prototype.
-- `HudController.luau` : équipe, état du match et santé.
+---
 
-La caméra utilise le comportement Roblox standard, sans contrôleur personnalisé ni verrouillage de perspective.
+# Documentation Fonctionnelle du Projet
 
-## Blockout actuel de la carte
+*Ce rapport décrit le fonctionnement des principaux systèmes de jeu.*
 
-- Surface jouable : `760 × 760` studs, centrée autour de `(0, 0)`.
-- Base Blue : bas-gauche ; Nexus `(-300, 300)` ; spawn joueur `(-325, 325)`.
-- Base Red : haut-droite ; Nexus `(300, -300)` ; spawn joueur `(325, -325)`.
-- Mid : diagonale directe entre les deux bases.
-- Top : longe le côté gauche puis le côté supérieur.
-- Bot : longe le côté inférieur puis le côté droit.
-- Neuf waypoints par lane et par équipe ; les chemins Red sont les inverses exacts des chemins Blue.
-- Vingt-deux tours : Outer, Inner et Inhibitor Tower sur chaque lane, plus deux Nexus Towers par équipe.
-- Six inhibiteurs passifs et destructibles : Top, Mid et Bot pour chaque équipe. Aucun super-minion ni respawn d'inhibiteur.
-- Jungle : quatre camps symétriques par côté au maximum et un seul objectif neutre, le Dragon en `(70, 70)`.
-- Rivière simple en diagonale opposée à Mid.
-- Quatre murs périphériques empêchent la sortie de l'arène.
-- Aucun `MapBuilder` runtime ni `MapEditor` actif.
+## 1. Cycle de Vie d'une Partie (Match Lifecycle)
 
-## Combat et autorité serveur
+Le cycle de vie du jeu est orchestré par le `MatchStateService`.
+1.  **Initialisation :** Au démarrage du serveur (`init.server.luau`), tous les services sont initialisés.
+2.  **Attente :** Le `MatchStateService` attend que les joueurs se connectent et que les conditions de démarrage soient remplies.
+3.  **Démarrage du Match :** La fonction `startMatch` est appelée. Cet état déclenche les logiques de jeu principales. Notamment, le `MinionService` commence sa boucle (`MinionService.start`) pour faire apparaître les vagues de sbires à intervalles réguliers (`SharedConstants.MATCH.MINION_WAVE_INTERVAL`).
+4.  **Fin de Match :** Lorsqu'un Nexus est détruit (`NexusService`), il appelle `MatchStateService.endMatch`. Cela met fin à la partie, arrête le spawn des sbires et affiche l'écran de fin de partie.
 
-- Le clic client transmet uniquement la cible souhaitée.
-- Le serveur vérifie le propriétaire du champion, le type des unités, les équipes, la vision, la distance et le cooldown.
-- Une attaque acceptée applique les dégâts côté serveur puis diffuse `CombatFeedback` aux clients.
-- Une tour cible normalement l'ennemi valide le plus proche.
-- Si un champion attaque un champion allié sous une tour, un signal serveur partagé force l'aggro sur l'agresseur pendant 3 secondes, puis la tour revient à la cible valide la plus proche.
-- Feedback présent : cible sélectionnée, flash rouge sur la victime, rayon bref entre attaquant et cible, écran rouge et montant des dégâts pour le joueur.
-- Des barres de vie `MobaHealthBar` sont attachées aux champions, sbires, monstres, tours, inhibiteurs et Nexus.
-- Aucun son externe ou animation complexe n'a été ajouté.
+## 2. Création des Unités (Unit Factory)
 
-## Tests validés le 24 juin 2026
+La création d'entités dans le jeu suit deux logiques distinctes :
 
-### Structure et build
+-   **Unités non-joueurs (Sbires, Monstres) :** Celles-ci sont créées par le `UnitFactory`. Ce service utilise le "Factory Pattern" pour instancier un modèle de base, puis lui applique les statistiques et attributs définis dans les modules de `src/shared` (ex: `MinionData`).
+-   **Champions (Joueurs) :** La création des champions est gérée par le `ChampionService` et contourne l'UnitFactory. Lorsqu'un joueur choisit un champion, le service prend le `Player.Character` de base de Roblox et le transforme en champion : il lui ajoute toutes les statistiques de jeu (`Health`, `Mana`, `AttackDamage`, etc.) sous forme d'Attributs, le lie aux systèmes de compétences et d'inventaire.
 
-- `GameTest-editable.rbxlx` sauvegardé avec le blockout actuel.
-- XML de la place valide avec `xmllint`.
-- `rojo build default.project.json` réussi.
-- Sauvegarde préalable : `backups/GameTest-editable-before-map-v2-buildings-20260624-194238.rbxlx`.
-- Carte confirmée dans Studio avec 22 tours, 6 inhibiteurs, 2 Nexus et 9 camps/monstres de jungle.
+## 3. Intelligence Artificielle des Sbires (Minion AI)
 
-### Test Play Studio
+L'IA des sbires est contenue entièrement dans `MinionService`.
+1.  **Déplacement :** Les sbires ne font pas de pathfinding dynamique. Ils suivent une série de `Waypoints` (des `Parts` invisibles) prédéfinis pour chaque lane. La fonction `moveToward` les déplace d'un point au suivant.
+2.  **Ciblage :** Dans sa boucle principale (`runMinionAI`), un sbire recherche des cibles via `findNearestEnemy`. Il scanne toutes les unités dans `Workspace.Units` dans un rayon défini (`TARGET_SEARCH_RANGE`).
+3.  **Logique de Décision :**
+    - S'il n'a pas de cible, il avance vers le prochain waypoint.
+    - S'il trouve une cible, il la poursuit.
+    - Si la cible est à portée d'attaque, il arrête de bouger et appelle `CombatService.tryAutoAttack`.
+    - Si sa cible meurt ou sort de portée (`TARGET_DROP_RANGE`), il recherche une nouvelle cible. S'il n'en trouve pas, il reprend son chemin vers les waypoints.
 
-Output attendu observé sans erreur rouge :
+## 4. Système de Combat (Combat & Abilities)
 
-```text
-[MOBA] Server started — 3 lanes, jungle, ZQSD client ready
-[MOBA] Client started — ZQSD, default Roblox camera, attack and HUD ready
-[MOBA] Match started
-[MOBA] Wave 1 spawned
-[MOBA] Map validation passed — 22 towers, 6 inhibitors, 2 Nexus
-[MOBA] Health bar validation passed — 76 units checked
-```
+Le combat est géré par deux services principaux :
 
-- Top, Mid et Bot avancent sur leurs trajectoires respectives.
-- Les vagues opposées se rencontrent à environ 6 studs sur chaque lane.
-- Top et Bot restent symétriques et longent les côtés de la carte.
-- Les 22 tours sont présentes et les tours attaquent normalement la cible ennemie valide la plus proche.
-- Test d'aggro spéciale réussi : l'agresseur champion a reçu 150 dégâts tandis qu'un minion ennemi plus proche est resté à 1000/1000.
-- Après 3 secondes, la priorité spéciale expire et la tour revient au minion le plus proche.
-- Les 6 inhibiteurs sont présents, ont une barre de vie et acceptent les dégâts validés serveur (`3500 → 3499` au test).
-- Les identifiants de jungle sont valides et les neuf monstres apparaissent sans warning.
-- Les offsets de formation `-4`, `0`, `4` sont présents ; melee devant et ranged derrière.
-- Écart maximal des sbires à leur corridor : environ 8,4 studs ; ils ne traversent pas la jungle.
-- Test de dégâts joueur : santé `650 → 625`, rayon présent et HUD `-25` visible.
-- `CombatFeedbackGui`, `SelectedTarget` et le RemoteEvent `CombatFeedback` sont présents.
+-   **`CombatService` :** C'est le service central pour tous les dégâts.
+    - `tryAutoAttack` gère les attaques de base, en vérifiant la portée et le cooldown.
+    - `applyDamage` est la fonction clé. Elle reçoit une source, une cible et un montant de dégâts. Elle calcule les dégâts finaux (en prenant en compte les résistances futures), réduit la vie de la cible, et si la vie tombe à zéro, elle appelle `handleDeath`.
+    - `handleDeath` est responsable de lancer le processus de mort, qui inclut l'appel à `EconomyProgressionService` pour donner de l'or/XP.
+-   **`AbilityService` :** Gère la logique complexe des compétences.
+    - La fonction `castAbility` est appelée par le client via `RemoteService`.
+    - Elle contient la logique unique de chaque compétence (dégâts de zone, projectiles, buffs/debuffs).
+    - Pour les compétences qui infligent des dégâts, elle appelle à son tour `CombatService.applyDamage`, assurant que tous les dégâts passent par le même système centralisé.
 
-## Limites connues
+## 5. Économie et Progression
 
-- Le pathfinding est une succession simple de waypoints, sans évitement sophistiqué.
-- Les offsets réduisent l'agglutination en déplacement, mais les minions peuvent encore se rapprocher pendant un combat.
-- La vision reste un prototype client et n'est pas un fog of war sécurisé.
-- Pas encore de respawn complet du champion, gold, XP ou sélection de champion.
-- Pas de test multijoueur réel à dix joueurs ni de contrôle mobile.
-- Les proportions et la vitesse doivent encore être évaluées manuellement en conditions de jeu prolongées.
+La progression du joueur est gérée par `EconomyProgressionService`.
+-   **Récompenses :** Lorsque `CombatService` confirme une mort (`handleDeath`), il notifie `EconomyProgressionService`.
+-   **Attribution d'Or/XP :** La fonction `awardKillRewards` attribue de l'or et de l'expérience au joueur qui a fait le kill (et potentiellement aux alliés proches).
+-   **Montée de Niveau :** Le service vérifie si l'XP accumulée dépasse le seuil pour le niveau suivant (`tryLevelUp`) et, si c'est le cas, augmente le niveau du joueur et améliore ses statistiques de base.
 
-## Prochaines actions recommandées
+Le `ShopService` gère l'autre aspect de la progression : les objets.
+-   `buyItem` vérifie si le joueur a assez d'or et se trouve près de la boutique.
+-   `applyItemStats` modifie directement les attributs du champion pour lui ajouter les statistiques de l'objet. L'inventaire et les stats totales sont donc toujours synchronisés.
 
-1. Faire une session manuelle de cinq minutes et noter uniquement les problèmes de distance, vitesse et lisibilité.
-2. Ajuster les positions de tours et camps dans Studio si le ressenti le justifie, sans reconstruire la carte.
-3. Vérifier visuellement que les 22 tours restent lisibles autour des bases sur plusieurs résolutions.
-4. Décider plus tard si la destruction des objectifs doit être séquentielle ; ne pas ajouter ce système sans demande de Lucas.
-5. Conserver gold, XP, sorts et super-minions hors périmètre pour l'instant.
+## 6. Communication Client-Serveur et UI
 
-## Règle de transmission
+-   **`RemoteService` :** C'est la seule porte d'entrée et de sortie pour la communication réseau. Toutes les actions du client (lancer une compétence, acheter un objet, se déplacer) passent par un `RemoteEvent` ou `RemoteFunction` unique géré par ce service. Le `RemoteService` valide la requête et la redirige vers le service serveur approprié. C'est une architecture sécurisée et organisée.
+-   **`HudController` (et autres contrôleurs client) :** Le client affiche les informations de jeu de deux manières :
+    1.  **En écoutant les attributs :** L'UI (`HudController`) se "lie" directement aux attributs du modèle du champion (ex: `Health`, `MaxHealth`, `Mana`). Comme ces attributs sont répliqués automatiquement par Roblox, l'UI se met à jour en temps réel sans code réseau manuel.
+    2.  **En écoutant des événements serveur :** Pour des événements ponctuels (ex: "Vous avez reçu de l'or"), le serveur utilise `RemoteService` pour envoyer un événement au client concerné, qui met alors à jour l'UI.
 
-Après chaque changement important, consigner : date, décision, fichiers ou objets Studio modifiés, tests réellement exécutés, erreurs restantes et prochaine action. Ne jamais déclarer une fonction terminée uniquement parce qu'elle existe dans le code.
+---
 
-## Journal consolidé
+15:25:20.497  RAPPORT COMPLET D'ANALYSE DU PROJET ROBLOX
+Projet analyse : jeu MOBA type League of Legends
+Mode d'analyse : Edit + tentative runtime
+Note : SceneAnalysisService n'est pas active dans cette session, donc les mesures runtime avancees de triangles/draw calls/memoire VM/audio chargee n'ont pas pu etre recuperees. Le rapport ci-dessous combine l'exploration complete du DataModel et une analyse statique detaillee.
 
-### 26 juin 2026 - Jarvis
+1) VUE D'ENSEMBLE
+Le projet est un MOBA complet avec une architecture serveur/client bien separee. On retrouve les composants essentiels du genre :
+- 3 lanes : Top, Mid, Bot
+- 2 equipes : Blue et Red
+- Towers, inhibitors et nexus pour chaque equipe
+- Camps de jungle : Dragon, Golems, Wolves/Loups
+- Zones de shop
+- Systemes de champions, minions, combat, gold, XP, shop, recall, vision, nexus et etats de match
 
-- Correction du bug Lighting runtime : le preset fantasy MOBA est maintenant porte par `src/shared/modules/VisualConfig.luau` et reapplique en Play par `src/client/controllers/VisualController.luau`.
-- `VisualController` applique aussi `GlobalShadows`, `ShadowSoftness`, `EnvironmentDiffuseScale`, `EnvironmentSpecularScale`, tente `Technology = Future`, et loggue que `Lighting.Technology` peut demander une verification manuelle dans Studio.
-- Nettoyage Piggy corrige sans detruire l'apparence : nouvelle copie runtime `ServerStorage.Assets.Models.sbires.melee.PiggyMeleeVisual` creee depuis `candidates_sbire_piggy_MELEE`, avec l'original conserve intact dans `ServerStorage.Assets.Models.sbires.candidates`.
-- `PiggyMeleeVisual` conserve le corps, le `Humanoid`, les `CharacterMesh`, `SpecialMesh`, `MeshPart`, `Handle`, decals, attachments et `Motor6D`; 13 `WeldConstraint` propres ont ete crees pour garder les accessoires attaches apres suppression des scripts importes.
-- Validation Piggy : 70 descendants, 20 `BasePart`, 1 `MeshPart`, 5 `CharacterMesh`, 3 `SpecialMesh`, 3 decals, 2 handles, 6 `Motor6D`, 13 `WeldConstraint`, 1 animation, 0 `Script`, 0 `LocalScript`, 0 `ModuleScript`, 0 backpack, 0 part unsafe.
-- Organisation `ServerStorage.Assets.Models.sbires` : `candidates` garde les imports bruts, `melee` contient `PiggyMeleeVisual`, `ranged` contient `BlueRANGED`/`RedRANGED`, `cleaned` garde `KorbloxMeleeVisual_clean`, `archive` garde les essais non runtime.
-- `MinionVisualService` detecte dynamiquement les containers/modeles sous `ServerStorage.Assets.Models.sbires` : melee priorise `sbires.melee.PiggyMeleeVisual`, ranged priorise `sbires.ranged` par equipe (`BlueRANGED`/`RedRANGED`), siege en fallback actuel, et ignore `candidates`/`archive` pour le runtime.
-- Les spheres `HumanoidRootPart`/`Accent` ne sont masquees que lorsqu'un `VisualModel` est attache avec succes; elles restent visibles comme fallback debug si aucun visuel valide n'est trouve.
-- Test Play effectue : Lighting runtime conforme a `VisualConfig`; melee avec `PiggyMeleeVisual`, ranged avec visuel ranged, siege en default/current; `visibleAccentWithVisual = 0`, `visualsWithScripts = 0`, `visualsWithUnsafeParts = 0`.
-- Gameplay preserve : minions en mouvement observes, `AttackTick` positif, minions endommages, degats toujours via `CombatService`; pas de modification des stats `MinionData`, tours, Nexus, champions, shop, abilities, scoreboard, recall ou training dummies.
-- Prochaine etape conseillee : verifier visuellement la silhouette Piggy en camera de jeu et ajuster uniquement l'offset `VISUAL_OFFSET` ou les welds decoratifs si une piece parait mal placee.
+Le projet est deja structure comme un vrai framework de jeu : les donnees sont dans ReplicatedStorage, la logique serveur dans ServerScriptService, les controllers client dans StarterPlayerScripts, et les assets/modeles dans ServerStorage.
 
-### 25 juin 2026 - Jarvis
+2) COMPOSITION GLOBALE DU DATA MODEL
+Services principaux analyses : Workspace, ReplicatedStorage, ServerScriptService, ServerStorage, StarterGui, StarterPlayer, Lighting, SoundService, Teams, TextChatService, ReplicatedFirst, StarterPack.
 
-- Nouvel audit d'asset externe effectue sur `Japanese Sakura Stone Toro Lantern`, importe dans `Workspace`.
-- Risque confirme dans Studio : `Workspace.Japanese Sakura Stone Toro Lantern.Vines.qPerfectionWeld` utilisait les attributs de `AutomaticModel`, dont `MarketplaceService`, `GetProductInfo`, `Players`, `PlayerAdded`, `PromptPurchase` et `123823600358195`.
-- Sauvegarde locale creee avant nettoyage : `backups/GameTest-editable-before-asset-audit-lantern-20260625-125803.rbxlx`.
-- Asset nettoye en decor uniquement : suppression de `qPerfectionWeld`, `AutomaticModel` et `ThumbnailCamera`; renommage en `JungleLanternVisual`.
-- Les 25 `BasePart` de l'asset sont `Anchored = true`, `CanCollide = false`, `CanTouch = false`, `CanQuery = false` et `CastShadow = false`.
-- La `PointLight` de l'asset a ete limitee a `Brightness = 2`, `Range = 6`, `Shadows = false`.
-- Aucun gameplay serveur, RemoteEvent, RemoteFunction ou connexion de gameplay n'a ete modifie.
-- Rapport complet ajoute dans `GPT/ASSET_AUDITS.md`.
-- Verifications reussies : inspection Studio MCP, `xmllint --noout GameTest-editable.rbxlx`, scan local des signatures suspectes et `rojo build default.project.json --output /tmp/GameTest-audit.rbxlx`.
-- Test visuel de tour ajoute sans toucher au gameplay : `DragonTorchTowerVisual` nettoye depuis l'asset `239822675`, range dans `ServerStorage.Assets.Models.Towers`, puis clone en `VisualModel` uniquement sur `BlueTopOuterTower` et `RedTopOuterTower`.
-- Sauvegarde locale avant ce test : `backups/GameTest-editable-before-dragon-torch-tower-test-20260625-131931.rbxlx`.
-- Verification ciblee : 95 `BasePart`, 0 script, collisions/touch/query/shadow desactivees, `PointLight` limitee a `Brightness = 2` et `Range = 8`; attributs gameplay des deux tours inchanges.
-- Generalisation controlee du visuel de tour : backup `backups/GameTest-editable-before-all-tower-visuals-laser-origin-20260625-134649.rbxlx`, puis `VisualModel` applique aux 22 tours de `Workspace.Map.Towers` en conservant l'offset relatif du test `BlueTopOuterTower`.
-- Les 66 anciennes parts directes de tours sont invisibles et conservees comme hitbox/logique avec `CanQuery = true`; aucun attribut gameplay de tour n'a ete modifie.
-- `TowerLaserOrigin` cree dans les 22 `VisualModel`; `CombatService` envoie cette origine visuelle optionnelle au client, et `CombatFeedbackController` l'utilise pour faire partir le rayon de la flamme avec fallback ancien.
-- Test Play reussi : `Map validation passed`, `Health bar validation passed`, 22 tours runtime avec `VisualModel`, 22 barres de vie, anciennes parts invisibles, tour attaquant encore. Verification client : tir de `BlueTopOuterTower` avec origine a distance `0` de `TowerLaserOrigin` et environ `17.5` studs du `HumanoidRootPart`.
-- Collision physique des tours corrigee sans changer le gameplay : backup `backups/GameTest-editable-before-tower-hitbox-flame-20260625-135734.rbxlx`, creation de 22 `TowerHitbox` invisibles `CanCollide = true`, `CanQuery = true`, et conservation des 22 `VisualModel` decoratifs sans collision.
-- Flammes de tours renforcees : 22 `Fire` ajustes a `Size >= 7`, `Heat >= 9`, et 22 `PointLight` ajustes a `Brightness = 3.5`, `Range = 12`, couleur equipe. Test Play OK : healthbars visibles, tours attaquent, minions continuent a se battre, laser a distance `0` de `TowerLaserOrigin`, pas d'erreur console observee.
-- Propagation manuelle depuis `BlueMidOuterTower` : backup `backups/GameTest-editable-before-propagate-tower-hitbox2-20260625-142348.rbxlx`, puis `TowerHit2box` ajoute aux 21 autres tours et `TowerHitbox` de base aligne sur les 22 tours.
-- Dimensions/offsets verifies en Edit : `TowerHitbox` = `4, 14, 4` avec offset relatif Y `0.1471118927001953`; `TowerHit2box` = `10.99995231628418, 2.1499102115631104, 8.50000286102295` avec offset relatif Y `-6.77504825592041`.
-- Verification ciblee : 22 tours, 22 `TowerHitbox`, 22 `TowerHit2box`, 0 ecart de taille/position/proprietes, 0 part de `VisualModel` collidable. Aucun attribut gameplay ou service serveur modifie.
-- Nettoyage d'un candidat sbire : backup `backups/GameTest-editable-before-clean-drooling-zombie-minion-20260625-145533.rbxlx`, copie `Drooling Zombie` creee en `ServerStorage.Assets.Models.Minions.MeleeMinionVisual`, sans integration aux vagues.
-- La copie `MeleeMinionVisual` contient 7 parts, `Humanoid`, `Animator`, `HumanoidRootPart` et 3 animations propres (`IdleAnimation`, `WalkAnimation`, `AttackAnimation`), avec 0 script, 0 module, 0 remote et 0 son. `Animator:LoadAnimation` reussi sur les 3 animations.
-- Branchement runtime du visuel anime sur les sbires de lane dans `src/server/services/MinionService.luau` : helper `attachMinionVisual`, clone `ServerStorage.Assets.Models.Minions.MeleeMinionVisual` en `VisualModel`, weld au root gameplay, ancien visuel sphere/accent masque.
-- Animation minions ajoutee sans changement de gameplay : `WalkAnimation` boucle pendant les deplacements, `IdleAnimation` a l'arret, `AttackAnimation` declenchee seulement quand `CombatService.tryAutoAttack` accepte l'attaque. Degats, vitesse, vie, ciblage et pathfinding inchanges.
-- Test Studio Play : `rojo build` OK, 143 minions runtime observes avec `VisualModel`, 0 script dans les visuels, 0 part visuelle collidable/touch/query/anchored, 0 ancien visuel visible, healthbars presentes, walk et attack tracks en lecture, minions endommages et morts observes, aucune erreur console liee au visuel.
-- Reset complet des visuels de sbires a la demande de Lucas : backup `backups/GameTest-editable-before-reset-minion-visuals-20260625-160428.rbxlx`, suppression des modeles de test `MeleeMinionVisual`, `RangedMinionVisual`, `Drooling Zombie`, `Pixy`, `The Goldhunter Warlord`, `Ud'zal`, `badAss sbire` et du modele sans nom dans `ServerStorage.Assets.Models.sbires`.
-- `src/server/services/MinionService.luau` revenu au fonctionnement simple : plus de clone `VisualModel`, plus de reference `ServerStorage.Assets.Models.Minions`, plus de `Animator`, plus de `WalkAnimation`/`IdleAnimation`/`AttackAnimation`, plus de logs `[MOBA][MINION_VISUAL]`.
-- Verification Studio/Edit et fichier local : dossiers `ServerStorage.Assets.Models.Minions` et `ServerStorage.Assets.Models.sbires` conserves vides ; seuls les 22 `VisualModel` de tours restent presents avec 22 `TowerHitbox`.
-- Test Play apres reset : 36 sbires spawn initial, 36 healthbars, 36 sbires en mouvement, 0 `VisualModel` minion ; duel force BlueMelee/RedMelee confirme les attaques ; `BlueTopOuterTower` tue un `RedRanged` et garde `VisualModel` + `TowerHitbox`; console sans erreur.
+Nombre total approximatif d'instances scannees : 7 437
+Repartition par service :
+- Workspace : 4 064 descendants
+- ServerStorage : 3 294 descendants
+- ServerScriptService : 23 descendants
+- StarterPlayer : 18 descendants
+- Lighting : 14 descendants
+- ReplicatedStorage : 8 descendants
+- TextChatService : 4 descendants
+- StarterGui : 0 descendant
+- SoundService : 0 descendant
+- StarterPack : 0 descendant
+- ReplicatedFirst : 0 descendant
+- Teams : 0 descendant
 
-### 24 juin 2026 — Jarvis
+Classes les plus presentes :
+- Part : 3 023
+- Decal : 1 042
+- Snap : 998
+- WedgePart : 644
+- ManualWeld : 506
+- Weld : 348
+- Model : 155
+- Attachment : 92
+- CornerWedgePart : 69
+- Motor6D : 54
+- Folder : 52
+- PointLight : 50
+- ModuleScript : 48
+- CharacterMesh : 45
+- WeldConstraint : 44
+- Animation : 32
+- Fire : 24
+- Script : 20
+- MeshPart : 13
+- Humanoid : 9
 
-- Ancien prototype solo abandonné et remplacé par l'architecture MOBA 5v5 du starter pack GPT.
-- Caméra personnalisée et verrouillage première personne retirés à la demande de Lucas ; caméra Roblox standard conservée.
-- Workflow converti vers une carte statique détenue par Studio et du code détenu par Rojo.
-- Incompatibilité Rojo corrigée en alignant serveur et plugin sur `7.6.1`.
-- Mauvaise place Studio diagnostiquée : l'absence de `Workspace.Map` interrompait le serveur avant la création de `Remotes`.
-- Attentes client sécurisées avec délais et warnings explicites.
-- Sauvegarde locale créée avant le nouveau blockout et exclue de Git.
-- Map reconstruite en blockout `760 × 760`, avec Top/Bot périphériques, Mid diagonale, 12 tours, jungle symétrique et neuf waypoints par chemin.
-- Feedback de combat minimal ajouté sans réduire l'autorité serveur.
-- Tests Play instrumentés réussis sur les trois lanes, les tours, la jungle et le feedback joueur.
-- Place sauvegardée, build Rojo validé et projet publié dans le dépôt GitHub privé `LuLu1357/Roblox_LOL` sur `main`.
-- Information obsolète corrigée : les barres de vie existaient déjà dans Studio mais n'étaient pas reflétées dans les anciens fichiers locaux ; elles sont désormais consolidées dans `Utility`, `UnitFactory`, `ChampionService`, `TowerService` et `NexusService`.
-- Map V2 conservée sans reconstruction : Top/Bot périphériques, Mid diagonale et jungle inchangées car déjà conformes.
-- Structure étendue à 22 tours, 6 inhibiteurs et 2 Nexus ; place sauvegardée après une copie de sécurité locale.
-- Validateur de map ajouté et validé sans warning.
-- Aggro de tour champion contre champion corrigée avec un signal serveur partagé ; priorité 3 secondes et fallback sur la cible la plus proche testés.
-- Formation des sbires légèrement espacée avec trois offsets latéraux, sans pathfinding complexe.
+3) WORKSPACE / MAP
+Workspace contient principalement :
+- Map : 4 055 descendants
+- Environment : 4 descendants
+- Terrain : present mais sans descendants scannes
+- Units : dossier vide en edition, probablement rempli dynamiquement pendant la partie
+- Camera
+
+La map contient une structure MOBA claire :
+- Lanes Top/Mid/Bot
+- Bases Blue/Red
+- Towers par lane et par equipe
+- Inhibitors Blue/Red
+- Nexus Blue/Red
+- Camps de jungle
+- Zones shop
+- Elements environnementaux
+
+Points importants :
+- Les towers sont tres detaillees : la plupart des towers dans Workspace ont environ 177 descendants chacune.
+- Les VisualModel de towers ont environ 170 descendants chacun.
+- Le dossier Units est vide en edit mode, ce qui indique que les unites sont probablement creees par scripts pendant le runtime.
+- La map utilise beaucoup de Parts, WedgeParts, Decals, Welds et Snap joints.
+
+4) SERVERSTORAGE / ASSETS
+ServerStorage contient 3 294 descendants, principalement des modeles de tours et de sbires.
+
+Assets importants detectes :
+- Assets.Models.Towers.toaaa : modele tres volumineux, environ 2 556 descendants
+- Assets.Models.Towers.DragonTorchTowerVisual : environ 169 descendants
+- Assets.Models.Towers.jungleLanterVisual
+- Assets.Models.sbires.melee.PiggyMeleeVisual
+- Assets.Models.sbires.melee.RedMelee
+- Assets.Models.sbires.melee.BlueMelee
+- Assets.Models.sbires.ranged.BlueRANGED
+- Assets.Models.sbires.ranged.RedRANGED
+- Assets.Models.sbires.cleaned.KorbloxMeleeVisual_clean
+- Assets.Models.sbires.candidates avec plusieurs modeles candidats/legacy
+
+Observation :
+Les modeles detailles de minions existent dans ServerStorage, mais l'analyse de l'architecture indique que le systeme actuel cree aussi des visuels proceduraux simples. Il serait utile de verifier si les modeles detailles sont effectivement utilises par MinionVisualService ou s'ils restent en reserve.
+
+5) ARCHITECTURE SERVEUR
+Script principal :
+- ServerScriptService.Server
+- Role probable : initialisation globale des services serveur
+- Taille : 50 lignes
+
+Dossier serveur :
+- ServerScriptService.Server.services
+- Contient les principaux ModuleScripts serveur
+
+Services serveur detectes :
+- AbilityService : 766 lignes
+  Role : gestion des abilities des champions. C'est le plus gros module serveur. Il gere plusieurs types d'abilities : melee damage, ranged damage, AoE, dash, heal, execute, etc.
+
+- ShopService : 526 lignes
+  Role : achat/vente d'items, inventaire, recettes et logique de boutique.
+
+- MinionService : 394 lignes
+  Role : spawn des vagues, IA de deplacement, logique de combat des minions.
+
+- MinionVisualService : 386 lignes
+  Role : attachement/creation des visuels de minions.
+
+- RemoteService : 323 lignes
+  Role : creation/gestion des RemoteEvents et point d'entree client-serveur.
+
+- CombatService : 267 lignes
+  Role : combat general, auto-attacks, degats, morts, aggro.
+
+- ChampionService : 225 lignes
+  Role : champions joueurs, selection, spawn, progression.
+
+- EconomyProgressionService : 211 lignes
+  Role : gold, XP, niveaux, recompenses.
+
+- TrainingDummyService : 204 lignes
+  Role : dummies d'entrainement/debug.
+
+- RecallService : 175 lignes
+  Role : recall de 6 secondes, annulation au degat.
+
+- MapValidatorService : 169 lignes
+  Role : validation de la structure de map.
+
+- TowerService : 167 lignes
+  Role : IA des tours, priorites de cible.
+
+- JungleService : 159 lignes
+  Role : camps jungle, monstres, aggro, leash, respawn.
+
+- MinionAnimationService : 150 lignes
+  Role : animation des minions.
+
+- Utility : 139 lignes
+  Role : fonctions utilitaires, distance, health, healthbar, team, etc.
+
+- UnitFactory : 108 lignes
+  Role : creation procedurale d'unites/minions/monstres.
+
+- VisionService : 96 lignes
+  Role : vision par equipe, brouillard/revelation des ennemis.
+
+- MatchStateService : 57 lignes
+  Role : etats WaitingForPlayers, InGame, Ended.
+
+- NexusService : 56 lignes
+  Role : nexus, inhibitors, conditions de victoire.
+
+- TeamService : 35 lignes
+  Role : gestion equipes. Le module existe bien dans ServerScriptService.Server.services.
+
+6) DONNEES PARTAGEES / REPLICATEDSTORAGE
+ReplicatedStorage contient un dossier Modules avec les donnees centrales du jeu.
+
+Modules detectes :
+- AbilityData : 321 lignes
+  Contient les donnees des abilities. 5 champions x 4 abilities = 20 abilities environ.
+
+- ChampionData : 92 lignes
+  Contient 5 champions : Tank, Assassin, Mage, Marksman, Support.
+
+- SharedConstants : 89 lignes
+  Constantes globales : equipes, lanes, combat, vision, recall, debug, mouvement.
+
+- ItemData : 78 lignes
+  Contient 6 items avec systeme de recettes : LongSword, RubyCrystal, Boots, B.F. Sword, GiantBelt, SwiftBoots.
+
+- VisualConfig : 75 lignes
+  Configuration visuelle.
+
+- MinionData : 45 lignes
+  Types de minions : Melee, Ranged, Siege. Vagues de 6 minions + siege toutes les 3 waves.
+
+- JungleData : 40 lignes
+  Donnees des camps jungle.
+
+Remotes :
+- Aucun RemoteEvent visible en edit mode dans ReplicatedStorage.
+- L'architecture indique que les remotes sont probablement crees dynamiquement par RemoteService au runtime.
+- Le sous-agent a identifie environ 16 RemoteEvents crees dynamiquement.
+
+7) ARCHITECTURE CLIENT
+LocalScript principal :
+- StarterPlayer.StarterPlayerScripts.Client
+- 20 lignes
+- Role probable : initialisation des controllers client
+
+Controllers client detectes :
+- HudController : 420 lignes
+  Role : interface principale joueur.
+
+- VisualController : 201 lignes
+  Role : gestion des elements visuels client.
+
+- InputController : 165 lignes
+  Role : entrees clavier/souris. Mention ZQSD + souris.
+
+- CombatFeedbackController : 153 lignes
+  Role : feedback visuel combat.
+
+- AbilityVFXController : 222 lignes
+  Role : effets visuels des abilities.
+
+- AutoAttackController : 81 lignes
+  Role : auto-attacks cote client.
+
+- FogController : 63 lignes
+  Role : brouillard de guerre / fog of war.
+
+Sous-controllers HUD :
+- ShopController : 615 lignes
+  Role : interface boutique, gros module client.
+
+- SpellBarController : 445 lignes
+  Role : barre de sorts.
+
+- ScoreboardController : 272 lignes
+  Role : tableau des scores.
+
+- ChampionSelectPanelController : 151 lignes
+  Role : selection de champion.
+
+- TrainingPanelController : 147 lignes
+  Role : panel entrainement/debug.
+
+- StatsInventoryController : 118 lignes
+  Role : stats et inventaire.
+
+Observation importante :
+- StarterGui est vide.
+- L'UI est donc probablement creee dynamiquement par les controllers client, ce qui est coherent avec HudController, ShopController, SpellBarController, etc.
+
+8) LIGHTING / AMBIANCE
+Lighting contient 14 descendants, dont :
+- Sky : mountains_chain_best1
+- Atmosphere
+- BloomEffect
+- ColorCorrectionEffect
+- ColorGradingEffect
+- SunRaysEffect
+
+Le projet utilise deja une direction artistique avec effets de post-processing. Cela donne une ambiance plus travaillee, mais ces effets peuvent avoir un cout sur les appareils faibles. Sans SceneAnalysisService actif, les draw calls/post-process exacts n'ont pas pu etre mesures.
+
+9) AUDIO
+SoundService est vide.
+Un seul Sound detecte dans les assets :
+- ServerStorage.Assets.Models.sbires.candidates.candidat_sbire_1.RAWR
+- SoundId : asset 12222242
+
+Conclusion audio :
+- Le jeu n'a quasiment pas de sound design actuellement.
+- Opportunites : musiques d'ambiance, sons UI, sons d'abilities, hit feedback, mort de minions, tower shots, achat boutique, recall, victoire/defaite.
+
+10) ANIMATIONS
+32 Animation instances detectees, principalement dans les modeles de sbires de ServerStorage.
+Animations recurrentes :
+- Idle1 / Idle2
+- Walk / Run
+- Attack
+- Arms
+- Climb / Fall / Jump / ToolNone pour certains candidats
+
+Assets d'animation detectes plusieurs fois :
+- 125749145 : Walk/Run
+- 125750544 : Idle1
+- 125750618 : Idle2
+- 180416148 : Attack
+- 183294396 : Arms
+- 190149431 : Attack Piggy/minion
+
+Observation :
+Les animations sont surtout attachees aux modeles stockes. Il faut verifier pendant le runtime si les minions proceduraux utilisent vraiment ces animations ou non.
+
+11) PHYSIQUE / PARTS
+Statistiques physiques :
+- BaseParts : 3 765
+- Parts simples : 3 023
+- MeshParts : 13
+- Parts ancrees : 3 630
+- Parts non ancrees : 135
+- Parts collidables : 1 330
+- Parts transparentes partielles : 82
+- Constraints/Joints : environ 1 906 au total, dont beaucoup de Snap, Weld, ManualWeld, Motor6D, WeldConstraint
+
+Analyse :
+- La majorite des elements de map sont ancrees, ce qui est bon pour une map statique.
+- Beaucoup de Snap/Weld/ManualWeld viennent probablement des modeles de towers et minions importes.
+- Les 1 042 Decals peuvent contribuer a des draw calls supplementaires selon leur usage et leur visibilite.
+- Les towers sont tres detaillees et repetees 20+ fois, ce qui peut devenir le principal cout visuel.
+
+12) UI
+- StarterGui : vide
+- UI statique detectee : 0 element GUI
+- Controllers UI presents et nombreux cote client
+
+Conclusion UI :
+L'interface est vraisemblablement entierement generee par scripts. C'est flexible et centralise, mais il faut surveiller :
+- creation/destruction propre des Frames
+- nettoyage des connections d'evenements
+- compatibilite mobile/resolution
+- taille des scripts UI, notamment ShopController et SpellBarController
+
+13) RESEAU / REMOTES
+Aucun RemoteEvent visible en edition, mais RemoteService est present et semble responsable de leur creation runtime.
+C'est une bonne approche si :
+- les noms sont centralises
+- les events sont crees une seule fois
+- chaque requete client est validee cote serveur
+
+Points a verifier dans RemoteService/ShopService/AbilityService :
+- validation anti-exploit des achats
+- validation de distance/cooldown pour abilities
+- validation de target pour auto-attacks
+- verification team/enemy avant degats
+- protection contre spam de RemoteEvents
+
+14) GAMEPLAY SYSTEMS
+Le projet couvre deja beaucoup de systemes d'un MOBA :
+- Selection champion
+- Stats champion
+- Abilities multiples
+- Auto-attacks
+- Degats et mort
+- Minions avec vagues
+- Towers avec IA cible
+- Jungle camps
+- Gold et XP
+- Niveaux jusqu'a 18
+- Shop avec items et recipes
+- Recall
+- Vision/fog
+- Nexus/inhibitors
+- Etats de match
+- Dummies d'entrainement
+
+C'est un ensemble coherent et ambitieux. L'architecture est plutot propre : donnees, logique serveur et controllers client sont separes.
+
+15) POINTS D'ATTENTION FONCTIONNELS
+- Tank a 10 000 HP selon l'analyse des donnees, alors que les autres champions tournent autour de valeurs beaucoup plus basses. Cela peut etre volontaire pour debug, mais a verifier pour l'equilibrage.
+- SharedConstants.DEBUG.ALLOW_DEBUG_GOLD = true : a desactiver avant publication ou test public.
+- SPRINT_DISABLED_FOR_NOW = true : sprint desactive temporairement.
+- Units vide en edition : normal si spawn runtime, mais attention a bien nettoyer les unites mortes.
+- StarterGui vide : normal si UI dynamique, mais verifier l'adaptativite mobile.
+- SoundService vide : le jeu manque probablement de feedback audio.
+- Remotes dynamiques : verifier que tous les appels client sont valides cote serveur.
+- Beaucoup de decals et pieces sur les towers : potentiel cout de rendu.
+- Assets candidats/legacy dans ServerStorage : possible nettoyage a envisager si non utilises.
+
+16) PERFORMANCE / OPTIMISATION
+Mesures avancees indisponibles : SceneAnalysisService n'est pas active, donc impossible d'obtenir dans cette session :
+- triangles visibles
+- draw calls par pass
+- memoire VM par script
+- memoire audio chargee
+- memoire animation chargee
+- instances non parentees runtime
+
+Analyse statique :
+- 7 437 instances scannees : taille raisonnable pour un projet de ce type.
+- Workspace a 4 064 descendants : scene assez dense mais pas extreme.
+- ServerStorage a 3 294 descendants : beaucoup d'assets stockes, surtout towers/minions.
+- Les towers repetent un modele d'environ 177 descendants chacune, ce qui est probablement le plus gros contributeur visuel.
+- 1 042 Decals : a surveiller, car les decals peuvent ajouter du cout de rendu.
+- 50 PointLights + effets Lighting : ambiance riche, mais peut impacter les appareils bas de gamme.
+- Peu de MeshParts : beaucoup de construction par Parts/Wedges, ce qui peut augmenter le nombre d'instances et joints.
+
+Suggestions performance :
+- Auditer les towers : reduire le nombre de pieces, fusionner certains elements, remplacer des details repetes par MeshParts optimises si necessaire.
+- Limiter les Decals visibles ou convertir certains traitements de surface en MaterialVariants.
+- Verifier si tous les PointLights sont necessaires.
+- Nettoyer les assets candidats/legacy inutilises dans ServerStorage pour alleger la maintenance.
+- Ajouter un test runtime avec SceneAnalysisService active pour mesurer draw calls/triangles reels.
+
+17) QUALITE DU CODE / ARCHITECTURE
+Points positifs :
+- Architecture modulaire claire.
+- Separation serveur/client propre.
+- Donnees centralisees dans ReplicatedStorage.Modules.
+- Services serveur specialises.
+- Controllers client specialises.
+- Usage probable de RemoteService centralise.
+- Strict mode Luau indique par l'analyse precedente.
+- Usage d'Attributes pour les donnees d'unites.
+- Usage de task.spawn et os.clock pour les boucles/timers.
+
+Points a surveiller :
+- AbilityService est tres gros : 766 lignes. Il pourrait devenir difficile a maintenir si le nombre de champions augmente. Eventuellement separer par type d'ability ou par champion.
+- ShopController et SpellBarController sont aussi volumineux. L'UI dynamique peut devenir complexe ; il faut bien structurer la creation/nettoyage des elements.
+- Les scripts dans les modeles candidats ServerStorage contiennent des anciens systemes Roblox/ZombieAI/Pathfinding. S'ils ne sont pas utilises, ils peuvent etre archives ou retires.
+- Certains scripts d'assets legacy pourraient s'executer si les modeles sont clones sans nettoyage.
+
+18) SECURITE / ANTI-EXPLOIT
+Pour un MOBA, le serveur doit etre autoritaire. Les points critiques a verifier :
+- Le client ne doit jamais decider seul des degats.
+- Le client ne doit pas pouvoir donner du gold/XP directement.
+- Les achats doivent verifier gold, item existant, slots, recipes cote serveur.
+- Les abilities doivent verifier cooldown, mana/ressource si present, distance, cible, team, et etat du champion.
+- Les auto-attacks doivent verifier range et cooldown cote serveur.
+- Les mouvements importants/dash doivent etre controles ou valides cote serveur.
+- Les RemoteEvents doivent etre debounces/rate-limited contre le spam.
+
+19) PRIORITES RECOMMANDEES
+Priorite 1 : Securiser le gameplay serveur
+- Verifier toutes les validations dans RemoteService, AbilityService, ShopService, CombatService.
+- Desactiver DEBUG_GOLD avant publication.
+
+Priorite 2 : Equilibrage gameplay
+- Revoir les stats de champions, surtout Tank a 10 000 HP.
+- Tester les degats, ranges, cooldowns, gold/XP et rythme des minions.
+
+Priorite 3 : UX/UI
+- Tester l'UI sur plusieurs resolutions.
+- Ajouter feedback clair : cooldowns, degats, gold gagne, niveau, mort, recall, shop.
+
+Priorite 4 : Audio
+- Ajouter sons essentiels : clic UI, ability cast, hit, tower shot, minion death, recall, shop, victoire/defaite.
+
+Priorite 5 : Performance visuelle
+- Mesurer draw calls/triangles quand SceneAnalysisService sera disponible.
+- Optimiser towers/decals/lights si necessaire.
+- Nettoyer les assets candidats/legacy inutilises dans ServerStorage pour alleger la maintenance.
+
+Priorite 6 : Nettoyage assets
+- Identifier les modeles candidats/legacy non utilises.
+- Eviter que des scripts legacy soient clones dans Workspace par erreur.
+
+20) CONCLUSION
+Le projet est deja avance et possede une base solide pour un MOBA Roblox. L'architecture est claire, modulaire et separe correctement serveur, client et donnees partagees. Les systemes gameplay principaux sont presents : champions, abilities, minions, towers, jungle, shop, progression, vision et nexus.
+
+Les plus grosses opportunites d'amelioration sont :
+- securisation anti-exploit des RemoteEvents
+- equilibrage des champions et des stats
+- ajout d'un vrai sound design
+- verification de l'UI dynamique sur tous les formats
+- optimisation potentielle des towers, decals et lights
+- nettoyage des assets/scripts legacy dans ServerStorage
+
+Globalement, c'est un projet ambitieux, bien organise, et deja proche d'une structure de jeu live. La prochaine etape ideale serait un audit cible des scripts critiques : RemoteService, AbilityService, CombatService, ShopService et ChampionService.
