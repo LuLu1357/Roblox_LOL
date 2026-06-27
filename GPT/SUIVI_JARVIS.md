@@ -1,3 +1,1079 @@
+# SUIVI_JARVIS_FUSION_COMPLET.md — Suivi complet du projet Roblox MOBA
+
+**Projet :** Roblox_LOL / GameTest  
+**Type :** MOBA Roblox inspiré de League of Legends  
+**État :** pré-alpha technique jouable  
+**Dernière mise à jour :** 27 juin 2026  
+**Objectif du document :** fusionner le document de suivi amélioré avec le rapport d'analyse original, sans supprimer d'information.
+
+---
+
+## Mode de lecture du document
+
+Ce fichier fusionné contient deux blocs principaux :
+
+1. **Partie A — Document de suivi amélioré avec onboarding développeur.**  
+   Cette partie sert de document de pilotage opérationnel : contexte complet du projet, architecture, priorités, roadmap, checklists et prochaine tâche active.
+
+2. **Partie B — Rapport d'analyse original complet.**  
+   Cette partie conserve intégralement le rapport initial et les mesures/observations détaillées issues de l'analyse automatisée du code source et du DataModel.
+
+Les informations redondantes sont volontairement conservées afin de ne rien perdre. La Partie A reformule et organise les décisions ; la Partie B garde l'historique brut et détaillé.
+
+---
+
+# PARTIE A — DOCUMENT DE SUIVI AMÉLIORÉ AVEC ONBOARDING
+
+# SUIVI_JARVIS.md — Suivi technique du projet Roblox MOBA
+
+**Projet :** Roblox_LOL / GameTest  
+**Type :** MOBA Roblox inspiré de League of Legends  
+**État :** pré-alpha technique jouable  
+**Dernière mise à jour :** 27 juin 2026  
+**Objectif du document :** centraliser l'état du projet, les risques techniques, les décisions d'architecture et la prochaine feuille de route.
+
+---
+
+## 0. Rappel complet du projet pour un nouveau développeur
+
+Cette section sert d'onboarding. Un développeur qui arrive sur le projet doit pouvoir comprendre ici ce qu'est le jeu, comment il est organisé, quels systèmes existent déjà, quelles conventions sont utilisées et quelles sont les priorités actuelles.
+
+### 0.1 Vision du projet
+
+`Roblox_LOL` est un projet de jeu Roblox de type **MOBA**, inspiré de la structure générale de League of Legends. L'objectif est de construire une expérience multijoueur avec deux équipes, des lanes, des champions contrôlés par les joueurs, des vagues de sbires, des tours, de la jungle, un shop, de l'expérience, de l'or, des items, des compétences, de la vision et une condition de victoire par destruction du Nexus adverse.
+
+Le projet n'est pas une simple démo isolée. Il possède déjà une architecture serveur/client/shared, une map structurée, une logique de combat serveur, une économie, un système de progression, une UI dynamique et plusieurs systèmes gameplay fondamentaux. L'état actuel doit être considéré comme une **pré-alpha technique jouable** : les briques principales existent, mais la stabilité serveur, la sécurité réseau, l'équilibrage et les performances doivent être consolidés avant d'ajouter massivement du contenu.
+
+### 0.2 Dépôt et outils
+
+- Dépôt GitHub : `LuLu1357/Roblox_LOL`
+- Nom projet Rojo / Studio : `GameTest`
+- Langage : Luau strict (`--!strict` dans les principaux scripts)
+- Moteur : Roblox Studio
+- Synchronisation code : Rojo
+- Carte et modèles : Roblox Studio, fichier `GameTest-editable.rbxlx`
+- Code source : dossier `src`
+
+Le code est synchronisé avec Rojo, mais la carte n'est pas générée uniquement par code. La map statique, les modèles, les parts, les towers, les spawns, les waypoints et les éléments visuels sont principalement gérés dans Roblox Studio. Il ne faut donc pas lancer le serveur sur une Baseplate vide : le serveur attend une scène contenant `Workspace.Map`.
+
+### 0.3 Organisation générale du projet
+
+L'architecture suit une séparation classique Roblox :
+
+```txt
+src/
+├── server/                 # Logique serveur autoritaire
+│   ├── init.server.luau    # Point d'entrée serveur
+│   └── services/           # Services gameplay serveur
+│
+├── client/                 # Contrôleurs client
+│   ├── init.client.luau    # Point d'entrée client
+│   └── controllers/        # HUD, input, feedback, VFX, shop, scoreboard...
+│
+└── shared/modules/         # Données et constantes partagées
+    ├── SharedConstants.luau
+    ├── ChampionData.luau
+    ├── AbilityData.luau
+    ├── ItemData.luau
+    ├── MinionData.luau
+    ├── JungleData.luau
+    └── VisualConfig.luau
+```
+
+Dans Roblox, Rojo mappe ces dossiers vers :
+
+```txt
+ReplicatedStorage.Modules      <- src/shared/modules
+ServerScriptService.Server     <- src/server
+StarterPlayerScripts.Client    <- src/client
+Workspace.Map                  <- map statique créée dans Roblox Studio
+```
+
+Cette séparation est importante :
+
+- le **serveur** décide du gameplay réel : dégâts, morts, gold, XP, shop, victoire, IA ;
+- le **client** affiche l'UI, lit les inputs, joue des effets visuels et envoie des intentions au serveur ;
+- les **modules partagés** contiennent les données de configuration consultées par les deux côtés.
+
+### 0.4 Principe d'autorité serveur
+
+Le projet doit rester serveur-autoritaire. Le client ne doit jamais décider seul :
+
+- des dégâts infligés ;
+- du gold ou de l'XP gagnés ;
+- de l'achat réel d'un item ;
+- de la mort d'une unité ;
+- de la validité d'une attaque ou d'une compétence ;
+- du résultat d'un dash ou d'une action importante.
+
+Le client envoie une demande via un RemoteEvent. Le serveur vérifie ensuite la validité : joueur, champion, ownership, cooldown, distance, vision, équipe, état vivant/mort, gold, inventaire, recette, etc. Ce principe existe déjà dans plusieurs services, mais il doit être renforcé avec un rate limiter global dans `RemoteService`.
+
+### 0.5 Services serveur principaux
+
+#### `init.server.luau`
+
+Point d'entrée serveur. Il charge tous les services, vérifie que `Workspace.Map` existe, crée `Workspace.Units` si nécessaire, puis démarre les systèmes dans un ordre déterminé.
+
+#### `RemoteService`
+
+Porte d'entrée réseau. Il crée et centralise les RemoteEvents : attaques, abilities, shop, recall, champion select, scoreboard, debug, feedback combat, vision, etc. Les clients ne doivent pas appeler directement les services serveur : ils passent par ces remotes.
+
+À améliorer : ajouter un rate limiter par joueur et par remote pour limiter le spam.
+
+#### `ChampionService`
+
+Transforme le `Player.Character` Roblox en champion MOBA. Il applique les Attributes de gameplay : `UnitType`, `OwnerUserId`, `Team`, `ChampionId`, `MaxHealth`, `Health`, `AttackDamage`, `AttackRange`, `AttackCooldown`, `MoveSpeed`, `InventoryCount`, etc.
+
+Il gère aussi la sélection de champion et le respawn.
+
+Point critique actuel : plusieurs connexions `GetAttributeChangedSignal` sont créées pour logger les stats, mais elles ne sont pas encore nettoyées explicitement. C'est la priorité technique numéro 1.
+
+#### `CombatService`
+
+Service central du combat. Il vérifie les auto-attacks, applique les dégâts, émet le feedback de combat, déclenche les listeners de dégâts et gère la mort des unités.
+
+Il doit rester le passage central de tous les dégâts. Les abilities, towers, minions et monstres doivent appeler `CombatService.applyDamage` plutôt que modifier la vie directement.
+
+#### `AbilityService`
+
+Gère les compétences des champions. Il reçoit une demande du client, vérifie le slot, le champion, le cooldown, le type de spell, la cible ou la position souris, puis applique l'effet.
+
+Types déjà présents : self heal, damage target, ranged damage, dash damage, AoE, AoE à la souris, dash forward, bonus temporaire de vie, execute, heal allié/self, team heal.
+
+Point à améliorer : le service est fonctionnel mais monolithique. À terme, chaque type d'ability ou chaque champion devrait avoir son propre module handler.
+
+#### `MinionService`
+
+Gère les vagues de sbires. Il récupère les spawns, les lanes, les waypoints, crée les minions via `UnitFactory`, leur attache un visuel via `MinionVisualService`, puis lance leur IA.
+
+Point critique actuel : chaque sbire a sa propre coroutine `task.spawn` avec une boucle d'update. Ce modèle fonctionne en petit test, mais ne scale pas bien. Il faut le remplacer par une boucle centralisée qui met à jour tous les sbires actifs.
+
+#### `ShopService`
+
+Gère achat, vente et craft d'items. Il vérifie que le champion existe, qu'il est vivant, qu'il est dans sa zone shop, qu'il a assez d'or, que l'item existe, que l'inventaire a de la place, et que les contraintes unique/recipe sont respectées.
+
+Point à améliorer : factoriser les vérifications communes entre `buyItem`, `sellItem` et `craftItem`.
+
+#### `EconomyProgressionService`
+
+Gère gold, XP, niveaux, récompenses de kill et application de la progression aux champions. Il est appelé notamment lors des morts confirmées par `CombatService`.
+
+#### `TowerService`
+
+Gère les tours : ciblage, priorité, attaque et interaction avec les unités ennemies.
+
+#### `JungleService`
+
+Gère les camps jungle : monstres, aggro, leash, respawn et récompenses associées.
+
+#### `VisionService`
+
+Gère la vision par équipe et le fog of war côté client. Les informations de vision doivent être utilisées pour éviter qu'un joueur puisse attaquer une cible invisible.
+
+#### `RecallService`
+
+Gère le recall : canalisation, annulation au mouvement ou au dégât, retour base.
+
+#### `MatchStateService`
+
+Gère l'état de la partie : attente, partie en cours, fin de match. Il doit devenir le point central pour empêcher certains systèmes de tourner hors match.
+
+#### `NexusService`
+
+Gère la destruction des Nexus et la condition de victoire.
+
+#### `MapValidatorService`
+
+Vérifie la structure de la map : tours, inhibiteurs, Nexus, spawns, paths, waypoints, camps jungle. Aujourd'hui il log surtout des warnings. À terme, il devrait pouvoir empêcher le démarrage d'une partie si la map est invalide.
+
+### 0.6 Données partagées
+
+Les données de gameplay sont centralisées dans `ReplicatedStorage.Modules`.
+
+- `SharedConstants` : constantes globales, remotes, équipes, lanes, combat, vision, recall, debug.
+- `ChampionData` : champions disponibles, stats de base, rôle, portée, cooldown, vitesse.
+- `AbilityData` : liste des sorts par champion.
+- `ItemData` : items, coûts, stats, recettes, groupes uniques.
+- `MinionData` : types de sbires et composition des vagues.
+- `JungleData` : camps jungle, stats, respawns.
+- `VisualConfig` : paramètres visuels partagés.
+
+Un nouveau développeur doit éviter de coder des valeurs gameplay en dur dans les services. Les stats et paramètres doivent autant que possible rester dans ces modules.
+
+### 0.7 Map et DataModel attendu
+
+La map doit être présente dans `Workspace.Map`. Elle contient au minimum :
+
+```txt
+Workspace.Map
+├── Paths
+│   ├── Blue
+│   │   ├── Top
+│   │   ├── Mid
+│   │   └── Bot
+│   └── Red
+│       ├── Top
+│       ├── Mid
+│       └── Bot
+│
+├── PlayerSpawns
+│   ├── Blue
+│   └── Red
+│
+├── MinionSpawns
+│   ├── Blue/Top, Mid, Bot
+│   └── Red/Top, Mid, Bot
+│
+├── Towers
+├── Inhibitors
+├── Nexus
+├── JungleCamps
+└── ShopZones
+```
+
+Le projet actuel prévoit une map MOBA avec 3 lanes : Top, Mid, Bot. Les sbires suivent des waypoints par équipe et par lane. Les shops sont des zones de parts associées à chaque équipe.
+
+Le dossier `Workspace.Units` contient les unités runtime : champions, sbires, monstres, towers ou autres entités interactives selon les systèmes.
+
+### 0.8 Boucle de gameplay attendue
+
+1. Le serveur démarre.
+2. `init.server.luau` vérifie la map et crée `Workspace.Units`.
+3. Les services démarrent.
+4. Les joueurs rejoignent et reçoivent une équipe.
+5. Le joueur choisit un champion.
+6. `ChampionService` configure son character en champion MOBA.
+7. Le match démarre.
+8. Les vagues de sbires apparaissent sur les 3 lanes.
+9. Les champions peuvent attaquer, lancer des abilities, farmer, acheter des items, faire la jungle, recall.
+10. Les towers, inhibitors et Nexus structurent la progression.
+11. La destruction du Nexus adverse termine la partie.
+
+### 0.9 Systèmes déjà présents
+
+Le projet possède déjà :
+
+- sélection de champion ;
+- stats champion par Attributes ;
+- auto-attacks serveur ;
+- plusieurs types d'abilities ;
+- vagues de minions ;
+- IA minion basique ;
+- towers ;
+- jungle ;
+- shop avec achat, vente, craft et recettes ;
+- gold, XP et niveaux ;
+- recall ;
+- vision / fog ;
+- Nexus et inhibitors ;
+- scoreboard ;
+- dummies d'entraînement ;
+- UI dynamique ;
+- VFX d'abilities et feedback combat.
+
+Ce qui manque ou reste faible :
+
+- sound design quasi absent ;
+- équilibrage réel des champions/items ;
+- rate limiting réseau ;
+- nettoyage strict des connexions ;
+- IA minions scalable ;
+- tests runtime longs ;
+- documentation développeur formalisée ;
+- pipeline de validation avant publication.
+
+### 0.10 Priorité actuelle du projet
+
+La priorité actuelle n'est pas d'ajouter un nouveau champion ni une nouvelle grosse mécanique. La priorité est de rendre la base robuste.
+
+Ordre de travail recommandé :
+
+1. Corriger `ChampionService` pour nettoyer toutes les connexions liées aux personnages.
+2. Désactiver ou whitelister les RemoteEvents de debug, surtout le debug gold.
+3. Ajouter un rate limiter dans `RemoteService`.
+4. Refactoriser `MinionService` pour remplacer une coroutine par sbire par une boucle centralisée.
+5. Rééquilibrer les stats de champions, notamment le Tank actuellement beaucoup trop haut.
+6. Refactoriser progressivement `AbilityService` en handlers/modules.
+7. Ajouter une checklist de test de partie complète.
+8. Ajouter le sound design minimal.
+
+### 0.11 Règles à respecter pour les prochains développements
+
+- Toujours valider côté serveur.
+- Ne jamais faire confiance aux données envoyées par le client.
+- Garder `CombatService` comme point central des dégâts.
+- Garder les stats dans les modules partagés, pas dispersées dans les services.
+- Nettoyer toutes les connexions liées à un personnage ou à une unité temporaire.
+- Éviter les boucles infinies par unité quand une boucle centralisée suffit.
+- Protéger tous les RemoteEvents sensibles contre le spam.
+- Ne pas publier avec les flags debug ouverts.
+- Tester les changements après plusieurs respawns, pas seulement sur un spawn propre.
+- Documenter toute décision d'architecture dans ce fichier.
+
+### 0.12 Définition d'une version pré-alpha stable
+
+Le projet pourra être considéré comme pré-alpha stable quand :
+
+- une partie peut tourner 10 à 15 minutes sans fuite évidente ;
+- les respawns répétés ne dupliquent pas les logs ou callbacks ;
+- un joueur non autorisé ne peut pas utiliser les remotes debug ;
+- le spam de RemoteEvents est limité ;
+- les minions restent performants après plusieurs vagues ;
+- les towers, jungle, shop, recall, vision et Nexus fonctionnent ensemble ;
+- le Tank et les autres champions ont des stats testables ;
+- l'UI reste lisible et fonctionnelle sur plusieurs résolutions ;
+- les actions importantes ont au moins un feedback visuel ou audio minimal.
+
+
+## 1. Résumé exécutif
+
+Le projet dispose déjà d'une base solide : architecture Rojo claire, séparation serveur/client/shared, systèmes MOBA principaux présents, map structurée, shop, combat, abilities, minions, jungle, towers, vision, recall, nexus et UI dynamique.
+
+La priorité n'est plus d'ajouter beaucoup de fonctionnalités. La priorité actuelle est de rendre le jeu **stable, sécurisé et testable sur une vraie partie de plusieurs minutes**.
+
+### Priorités immédiates
+
+| Priorité | Sujet | Pourquoi c'est important | Statut |
+|---|---|---|---|
+| P0 | Nettoyage des connexions dans `ChampionService` | Risque de fuite mémoire au respawn/changement de champion | À faire |
+| P0 | Désactiver/debug-gater `ALLOW_DEBUG_GOLD` | Évite l'exploitation du RemoteEvent de debug | À faire |
+| P1 | Rate limit dans `RemoteService` | Protège le serveur contre le spam client | À faire |
+| P1 | Refactor IA des sbires | Une coroutine par sbire ne scale pas | À faire |
+| P2 | Rééquilibrage des champions | Le Tank à 10 000 HP casse les tests gameplay | À faire |
+| P2 | Refactor progressif d'`AbilityService` | Évite le fichier monolithique impossible à maintenir | À planifier |
+
+---
+
+## 2. Architecture actuelle
+
+### 2.1 Organisation générale
+
+Le projet suit une architecture Roblox propre :
+
+```txt
+ReplicatedStorage
+└── Modules                  # Données partagées : champions, items, minions, constantes
+
+ServerScriptService
+└── Server                   # Services serveur autoritaires
+    ├── init.server.luau
+    └── services/
+
+StarterPlayer
+└── StarterPlayerScripts
+    └── Client               # Contrôleurs client : HUD, input, VFX, shop, scoreboard
+
+Workspace
+└── Map                      # Carte statique créée/modifiée dans Roblox Studio
+```
+
+Le projet utilise Rojo pour synchroniser le code, mais la map reste gérée visuellement dans Roblox Studio via `GameTest-editable.rbxlx`.
+
+### 2.2 Points forts
+
+- Séparation claire entre logique serveur, affichage client et données partagées.
+- `RemoteService` centralise les RemoteEvents.
+- `CombatService` centralise les dégâts et les morts.
+- Les données de gameplay sont modifiables via des ModuleScripts.
+- La map possède déjà les éléments d'un MOBA : lanes, towers, inhibitors, nexus, jungle camps, shops.
+- L'UI est générée dynamiquement côté client, ce qui évite une dépendance forte à `StarterGui`.
+
+### 2.3 Point faible principal
+
+Le projet est déjà assez complet, mais plusieurs systèmes ont été développés en mode prototype/debug. Avant d'ajouter plus de contenu, il faut nettoyer la stabilité serveur, la sécurité réseau et les performances.
+
+---
+
+## 3. État fonctionnel du jeu
+
+### 3.1 Systèmes déjà présents
+
+| Système | Présent | Commentaire |
+|---|---:|---|
+| Sélection de champion | Oui | Via `ChampionService` et RemoteEvent dédié |
+| Stats champion | Oui | Stockées en Attributes sur le modèle du champion |
+| Auto-attaques | Oui | Validées côté serveur dans `CombatService` |
+| Abilities | Oui | Plusieurs types déjà supportés dans `AbilityService` |
+| Minions | Oui | Spawn par vague, lanes, ciblage, attaque |
+| Towers | Oui | IA de ciblage et attaque |
+| Jungle | Oui | Camps, monstres, respawn |
+| Shop | Oui | Achat, vente, craft, recettes, stats |
+| Gold / XP / level | Oui | Via `EconomyProgressionService` |
+| Recall | Oui | Canalisation et annulation au dégât/mouvement |
+| Vision / fog | Oui | Vision par équipe et RemoteEvents client |
+| Nexus / Inhibitors | Oui | Conditions de victoire |
+| Scoreboard | Oui | Payload généré serveur |
+| Training dummies | Oui | Fonctionnalité debug |
+| Audio | Très faible | Sound design quasiment absent |
+
+### 3.2 Boucle de partie attendue
+
+1. Le serveur démarre et charge les services.
+2. `MapValidatorService` vérifie la structure de `Workspace.Map`.
+3. Les joueurs reçoivent une équipe et choisissent un champion.
+4. `ChampionService` transforme le `Player.Character` en champion MOBA.
+5. `MatchStateService` lance la partie.
+6. `MinionService` génère les vagues.
+7. Combat, shop, jungle, towers et progression tournent en parallèle.
+8. La destruction d'un Nexus déclenche la fin de partie.
+
+---
+
+## 4. Audit technique priorisé
+
+## P0 — Stabilité serveur
+
+### 4.1 `ChampionService` : connexions non nettoyées
+
+**Constat :** `setupCharacter` connecte plusieurs `GetAttributeChangedSignal(...):Connect(...)` pour logger les changements de stats. Ces connexions ne sont pas stockées et ne sont pas explicitement déconnectées.
+
+**Risque :** au fil des respawns ou changements de champion, le serveur peut accumuler des connexions et des closures inutiles. Cela peut produire une hausse mémoire, plus de logs, et des comportements difficiles à diagnostiquer.
+
+**Décision :** ajouter un nettoyage explicite des connexions liées à chaque personnage.
+
+**Plan d'action :**
+
+```lua
+local characterConnections: { [Model]: { RBXScriptConnection } } = {}
+
+local function cleanupCharacter(character: Model)
+    local connections = characterConnections[character]
+    if connections then
+        for _, connection in connections do
+            connection:Disconnect()
+        end
+        characterConnections[character] = nil
+    end
+end
+
+local function trackCharacterConnection(character: Model, connection: RBXScriptConnection)
+    characterConnections[character] = characterConnections[character] or {}
+    table.insert(characterConnections[character], connection)
+end
+```
+
+Puis, dans `setupCharacter` :
+
+```lua
+cleanupCharacter(character)
+
+trackCharacterConnection(character, character.Destroying:Connect(function()
+    cleanupCharacter(character)
+end))
+```
+
+Et pour les logs d'attributs :
+
+```lua
+trackCharacterConnection(character,
+    character:GetAttributeChangedSignal(attributeName):Connect(function()
+        -- log debug
+    end)
+)
+```
+
+**Critère d'acceptation :** après 20 respawns/changements de champion, il ne doit pas y avoir d'augmentation anormale du nombre de callbacks ni de logs dupliqués.
+
+---
+
+### 4.2 Debug gold exposé
+
+**Constat :** `SharedConstants.DEBUG.ALLOW_DEBUG_GOLD = true` et `DEBUG_GOLD_AMOUNT = 10000`.
+
+**Risque :** si le jeu est testé avec d'autres joueurs, n'importe quel client pouvant déclencher le RemoteEvent de debug peut recevoir de l'or.
+
+**Décision :** désactiver par défaut ou limiter à une whitelist d'UserIds.
+
+**Option minimale :**
+
+```lua
+SharedConstants.DEBUG = {
+    GAME_SPEED = 1,
+    SPAWN_BLUE_MINIONS = true,
+    SPAWN_RED_MINIONS = true,
+    ALLOW_DEBUG_GOLD = false,
+    DEBUG_GOLD_AMOUNT = 10000,
+    ALLOW_TRAINING_DUMMIES = false,
+}
+```
+
+**Option recommandée :**
+
+```lua
+SharedConstants.DEBUG = {
+    ALLOW_DEBUG_GOLD = true,
+    ALLOW_TRAINING_DUMMIES = true,
+    ALLOWED_DEBUG_USER_IDS = {
+        [123456789] = true,
+    },
+}
+```
+
+Puis dans `RemoteService` :
+
+```lua
+local function canUseDebug(player: Player): boolean
+    local debugConfig = SharedConstants.DEBUG
+    return typeof(debugConfig) == "table"
+        and typeof(debugConfig.ALLOWED_DEBUG_USER_IDS) == "table"
+        and debugConfig.ALLOWED_DEBUG_USER_IDS[player.UserId] == true
+end
+```
+
+**Critère d'acceptation :** un joueur non autorisé ne peut pas obtenir d'or ni spawn/clear des dummies.
+
+---
+
+## P1 — Sécurité réseau
+
+### 4.3 Ajouter un rate limiter dans `RemoteService`
+
+**Constat :** les RemoteEvents sont centralisés, mais il n'y a pas encore de limitation générique par joueur/RemoteEvent.
+
+**Risque :** un client peut spammer les events. Même si les services refusent l'action, le serveur doit traiter les appels.
+
+**Décision :** ajouter un rate limiter simple dans `RemoteService`.
+
+**Exemple :**
+
+```lua
+local lastRemoteCall: { [string]: number } = {}
+
+local function canCall(player: Player, remoteName: string, minInterval: number): boolean
+    local key = tostring(player.UserId) .. ":" .. remoteName
+    local now = os.clock()
+    local last = lastRemoteCall[key] or 0
+
+    if now - last < minInterval then
+        return false
+    end
+
+    lastRemoteCall[key] = now
+    return true
+end
+
+Players.PlayerRemoving:Connect(function(player)
+    local prefix = tostring(player.UserId) .. ":"
+    for key in pairs(lastRemoteCall) do
+        if string.sub(key, 1, #prefix) == prefix then
+            lastRemoteCall[key] = nil
+        end
+    end
+end)
+```
+
+**Intervalles conseillés :**
+
+| RemoteEvent | Intervalle minimal |
+|---|---:|
+| `AbilityRequest` | 0.05–0.10 s |
+| `AutoAttackRequest` | 0.05–0.10 s |
+| `ScoreboardRequest` | 0.25–0.50 s |
+| `ShopBuyRequest` | 0.10–0.20 s |
+| `ShopSellRequest` | 0.10–0.20 s |
+| `ShopCraftRequest` | 0.10–0.20 s |
+| Debug remotes | 0.50–1.00 s |
+
+**Critère d'acceptation :** un spam RemoteEvent ne doit pas faire monter significativement le temps serveur.
+
+---
+
+## P1 — Performance gameplay
+
+### 3.4 `MinionService` : remplacer une coroutine par sbire
+
+**Constat :** chaque sbire lance sa propre boucle via `task.spawn`. La boucle tourne avec un intervalle très court.
+
+**Risque :** le nombre de coroutines augmente avec les vagues. Cela peut devenir un goulot d'étranglement serveur.
+
+**Décision :** passer à une boucle centralisée.
+
+**Architecture cible :**
+
+```lua
+local RunService = game:GetService("RunService")
+
+local activeMinions: { [Model]: table } = {}
+local accumulator = 0
+local UPDATE_INTERVAL = 0.10
+
+RunService.Heartbeat:Connect(function(dt)
+    accumulator += dt
+    if accumulator < UPDATE_INTERVAL then
+        return
+    end
+
+    local step = accumulator
+    accumulator = 0
+
+    for minion, state in pairs(activeMinions) do
+        if not minion.Parent or not Utility.isAlive(minion) then
+            activeMinions[minion] = nil
+            if minion.Parent then
+                minion:SetAttribute("MinionState", "Dead")
+                task.delay(2, function()
+                    if minion.Parent then
+                        minion:Destroy()
+                    end
+                end)
+            end
+        else
+            updateMinionAI(minion, state, step)
+        end
+    end
+end)
+```
+
+**À conserver du système actuel :**
+
+- les waypoints par team/lane ;
+- la logique `findNearestEnemy` ;
+- la logique d'attaque via `CombatService.tryAutoAttack` ;
+- les Attributes `MinionState`, `AggroTarget`, `AttackTick`.
+
+**Critère d'acceptation :** 10 minutes de partie avec plusieurs vagues ne doivent pas dégrader progressivement le serveur.
+
+---
+
+## P2 — Maintenabilité
+
+### 3.5 `AbilityService` : découpage en handlers
+
+**Constat :** `castAbility` contient beaucoup de branches conditionnelles. C'est acceptable pour 5 champions, mais pas pour une vraie montée en contenu.
+
+**Décision :** garder `AbilityService` comme routeur et déplacer la logique par type d'ability.
+
+**Structure cible :**
+
+```txt
+src/server/services/abilities/
+├── SelfHeal.luau
+├── TargetDamage.luau
+├── LineDamage.luau
+├── AoEDamage.luau
+├── DashForward.luau
+├── ExecuteDamage.luau
+├── TemporaryMaxHealth.luau
+├── AllyOrSelfHeal.luau
+└── TeamHeal.luau
+```
+
+**Contexte passé au handler :**
+
+```lua
+local context = {
+    Player = player,
+    Champion = champion,
+    Spell = spell,
+    Slot = slot,
+    OptionalTarget = optionalTarget,
+    OptionalMousePosition = optionalMousePosition,
+    Services = {
+        CombatService = CombatService,
+        Utility = Utility,
+    },
+}
+```
+
+**Critère d'acceptation :** ajouter un nouveau type d'ability ne doit plus nécessiter de modifier une énorme fonction centrale.
+
+---
+
+### 3.6 `ShopService` : réduire la duplication
+
+**Constat :** `buyItem`, `sellItem` et `craftItem` répètent les mêmes validations.
+
+**Décision :** introduire une fonction commune.
+
+```lua
+local function getValidShopChampion(player: Player): (Model?, string?)
+    local champion = ChampionService.getChampionFromPlayer(player)
+    if not champion then
+        return nil, "Champion not found"
+    end
+
+    if champion:GetAttribute("Dead") == true then
+        return nil, "Champion is dead"
+    end
+
+    if not canUseShop(player, champion) then
+        return nil, "Not in shop zone"
+    end
+
+    return champion, nil
+end
+```
+
+**Critère d'acceptation :** les trois fonctions shop partagent la même validation de base.
+
+---
+
+## P2 — Équilibrage gameplay
+
+### 3.7 ChampionData : revoir les valeurs debug
+
+**Constat :** le Tank a une valeur de vie très supérieure aux autres champions. Cela fausse les tests de combat, tower damage, minion damage et abilities.
+
+**Décision :** distinguer stats de debug et stats de gameplay.
+
+**Proposition initiale :**
+
+| Champion | HP cible | AD cible | Rôle |
+|---|---:|---:|---|
+| Tank | 750–900 | 40–55 | frontline |
+| Assassin | 500–600 | 65–80 | burst |
+| Mage | 480–580 | 35–50 | spells |
+| Marksman | 480–560 | 55–70 | DPS range |
+| Support | 550–700 | 30–45 | utility/heal |
+
+**Critère d'acceptation :** un duel ou une phase de lane doit produire des résultats exploitables sans valeurs debug extrêmes.
+
+---
+
+## 4. Documentation fonctionnelle consolidée
+
+### 4.1 Création des unités
+
+Deux logiques coexistent :
+
+- **Champions joueurs :** transformés depuis `Player.Character` par `ChampionService`.
+- **Unités non-joueurs :** créées via `UnitFactory` puis attachées à `Workspace.Units`.
+
+Cette distinction est correcte. Il faut seulement s'assurer que les deux familles utilisent les mêmes conventions d'Attributes :
+
+```txt
+UnitType
+Team
+Health
+MaxHealth
+AttackDamage
+AttackRange
+AttackCooldown
+MoveSpeed
+Dead
+```
+
+### 4.2 Combat
+
+Le serveur doit rester autoritaire.
+
+Règles à conserver :
+
+- le client demande une action ;
+- le serveur valide ;
+- le serveur applique les dégâts ;
+- le serveur déclenche les feedbacks visuels ;
+- le client n'invente jamais de dégâts, d'or ou d'XP.
+
+### 4.3 Shop
+
+Le shop fonctionne comme système de progression par items. Les stats d'items sont appliquées directement sur les Attributes du champion.
+
+À surveiller :
+
+- synchronisation `Health` / `Humanoid.Health` ;
+- recalcul propre de `InventoryCount` ;
+- items uniques ;
+- crafts avec composants multiples ;
+- vente après craft.
+
+### 4.4 Vision
+
+Le système de vision est essentiel pour un MOBA. Il faut vérifier que toutes les actions joueur liées à une cible ennemie respectent la vision :
+
+- auto-attaque ;
+- certains sorts ciblés ;
+- scoreboard ou UI ne doivent pas révéler d'informations critiques non voulues.
+
+### 4.5 UI
+
+L'UI est dynamique côté client. C'est flexible, mais cela impose une discipline stricte :
+
+- cleanup des connexions au respawn ;
+- compatibilité plusieurs résolutions ;
+- feedback clair sur cooldowns, gold, XP, mort, recall, dégâts ;
+- pas de Frames dupliquées après respawn.
+
+---
+
+## 5. Audit DataModel / scène Roblox
+
+### 5.1 Résumé scène
+
+Le projet contient une map déjà avancée :
+
+- 3 lanes : Top, Mid, Bot ;
+- 2 équipes : Blue et Red ;
+- towers, inhibitors, nexus ;
+- jungle camps ;
+- shop zones ;
+- assets de sbires et tours dans `ServerStorage`.
+
+### 5.2 Points performance visuelle à surveiller
+
+| Élément | Risque | Action |
+|---|---|---|
+| Towers très détaillées | Beaucoup de descendants répétés | Réduire ou convertir certains détails en MeshPart optimisé |
+| Decals nombreux | Coût rendu/draw calls | Auditer les decals visibles et utiles |
+| PointLights nombreux | Coût GPU sur machines faibles | Tester avec Lighting simplifié |
+| Assets legacy/candidates | Maintenance confuse | Archiver ou supprimer ce qui n'est pas utilisé |
+| Scripts legacy dans assets | Risque si clonés en runtime | Nettoyer les modèles avant usage |
+
+### 5.3 Mesure manquante
+
+Le rapport initial indique que les mesures runtime avancées n'ont pas pu être récupérées. Il faut donc faire un test Studio avec :
+
+- MicroProfiler ;
+- Script Performance ;
+- Memory ;
+- Network receive/send ;
+- stats serveur avec plusieurs vagues de sbires.
+
+---
+
+## 6. Roadmap opérationnelle
+
+## Sprint 1 — Stabilisation serveur
+
+**Objectif :** obtenir une partie de test stable sans fuite évidente.
+
+- [ ] Implémenter `cleanupCharacter` dans `ChampionService`.
+- [ ] Désactiver ou whitelist les debug remotes.
+- [ ] Ajouter rate limiter dans `RemoteService`.
+- [ ] Ajouter cleanup PlayerRemoving pour cooldowns/rate limits/debug state.
+- [ ] Vérifier que `MapValidatorService` peut bloquer le démarrage si la map est invalide.
+
+**Résultat attendu :** test local 10 minutes sans explosion de logs ni comportements fantômes.
+
+---
+
+## Sprint 2 — Minions scalable
+
+**Objectif :** remplacer les boucles individuelles par une IA centralisée.
+
+- [ ] Créer `activeMinions`.
+- [ ] Créer `updateMinionAI(minion, state, dt)`.
+- [ ] Remplacer `runMinionAI` par enregistrement dans `activeMinions`.
+- [ ] Tester 10 minutes de vagues.
+- [ ] Vérifier destruction propre des minions morts.
+
+**Résultat attendu :** le nombre de sbires peut augmenter sans multiplier les threads.
+
+---
+
+## Sprint 3 — Gameplay testable
+
+**Objectif :** obtenir une boucle de partie équilibrable.
+
+- [ ] Ramener les stats Tank à une plage normale.
+- [ ] Vérifier dégâts minions/towers/champions.
+- [ ] Vérifier gold/XP par kill et last hit.
+- [ ] Tester achat, vente, craft.
+- [ ] Tester recall sous dégâts et mouvement.
+- [ ] Tester destruction tower → inhibitor → nexus.
+
+**Résultat attendu :** une partie solo/dev permet d'observer le rythme réel du jeu.
+
+---
+
+## Sprint 4 — Refactor maintenabilité
+
+**Objectif :** préparer l'ajout de nouveaux champions.
+
+- [ ] Créer dossier `services/abilities`.
+- [ ] Extraire `SelfHeal`.
+- [ ] Extraire `TargetDamage`.
+- [ ] Extraire `AoEDamage`.
+- [ ] Extraire `DashForward`.
+- [ ] Garder `AbilityService` comme routeur.
+
+**Résultat attendu :** ajouter une nouvelle ability ne nécessite plus d'alourdir `castAbility`.
+
+---
+
+## Sprint 5 — UX, audio et polish
+
+**Objectif :** rendre le jeu compréhensible et agréable.
+
+- [ ] Ajouter son achat boutique.
+- [ ] Ajouter son ability cast.
+- [ ] Ajouter hit feedback sonore.
+- [ ] Ajouter son tower shot.
+- [ ] Ajouter son mort de minion.
+- [ ] Ajouter son recall.
+- [ ] Ajouter victoire/défaite.
+- [ ] Tester UI en plusieurs résolutions.
+
+**Résultat attendu :** le joueur comprend ce qui se passe sans lire la console.
+
+---
+
+## 7. Checklist anti-exploit
+
+Avant test public, vérifier :
+
+- [ ] Le client ne peut pas donner d'or directement.
+- [ ] Le client ne peut pas donner d'XP directement.
+- [ ] Le client ne peut pas infliger des dégâts directement.
+- [ ] Les achats vérifient gold, item, slot, shop zone côté serveur.
+- [ ] Les abilities vérifient cooldown, slot, cible, range, équipe et état vivant.
+- [ ] Les auto-attaques vérifient owner, range, cooldown, vision et équipe.
+- [ ] Les debug remotes sont désactivés ou whitelistés.
+- [ ] Les RemoteEvents critiques sont rate-limited.
+- [ ] Les dashes ne permettent pas de sortir de la map ou traverser des zones interdites.
+
+---
+
+## 8. Checklist de test manuel
+
+### Test champion
+
+- [ ] Spawn correct Blue.
+- [ ] Spawn correct Red.
+- [ ] Changement champion sans duplication de stats.
+- [ ] Respawn sans duplication de logs.
+- [ ] HealthBar présente.
+- [ ] Attributes cohérents.
+
+### Test combat
+
+- [ ] Auto-attaque ennemi en range.
+- [ ] Auto-attaque refusée hors range.
+- [ ] Auto-attaque refusée sur allié.
+- [ ] Mort déclenchée correctement.
+- [ ] Gold/XP donnés au bon joueur.
+
+### Test abilities
+
+- [ ] Slot invalide refusé.
+- [ ] Cooldown appliqué.
+- [ ] Cible invalide refusée.
+- [ ] Sort directionnel fonctionne.
+- [ ] AoE applique les dégâts aux bonnes cibles.
+- [ ] Heal ne dépasse pas MaxHealth.
+
+### Test minions
+
+- [ ] Spawn Blue/Red sur les 3 lanes.
+- [ ] Suivi waypoint correct.
+- [ ] Aggro sur ennemi proche.
+- [ ] Reprise de chemin après mort/perte de cible.
+- [ ] Destruction propre après mort.
+
+### Test shop
+
+- [ ] Achat en zone shop.
+- [ ] Achat refusé hors zone shop.
+- [ ] Vente rembourse correctement.
+- [ ] Craft consomme les composants.
+- [ ] Unique item respecté.
+- [ ] InventoryCount correct.
+
+### Test fin de partie
+
+- [ ] Tower peut mourir.
+- [ ] Inhibitor peut mourir.
+- [ ] Nexus peut mourir.
+- [ ] `MatchStateService.endMatch` appelé.
+- [ ] Les minions arrêtent de spawn.
+- [ ] UI de fin affichée.
+
+---
+
+## 9. Dette technique connue
+
+| Dette | Gravité | Action |
+|---|---:|---|
+| Connexions non nettoyées côté serveur | Haute | Sprint 1 |
+| Une coroutine par sbire | Haute | Sprint 2 |
+| Debug gold activé | Haute | Sprint 1 |
+| Pas de rate limit RemoteEvents | Haute | Sprint 1 |
+| `AbilityService` monolithique | Moyenne | Sprint 4 |
+| `ShopService` répétitif | Moyenne | Sprint 4 |
+| UI dynamique à tester au respawn | Moyenne | Sprint 5 |
+| Sound design absent | Moyenne | Sprint 5 |
+| Assets legacy/candidates | Basse à moyenne | Nettoyage assets |
+| Towers/decals potentiellement lourds | Moyenne | Profiling Studio |
+
+---
+
+## 10. Décisions d'architecture
+
+### Décision 1 — Le serveur reste autoritaire
+
+Le client demande, le serveur décide. Toutes les actions critiques doivent être validées côté serveur.
+
+### Décision 2 — Les Attributes restent la source principale de stats runtime
+
+Les champions et unités utilisent des Attributes pour exposer Health, MaxHealth, Team, UnitType, stats et inventaire. C'est compatible avec la réplication Roblox et l'UI dynamique.
+
+### Décision 3 — Le contenu gameplay doit rester data-driven
+
+Champions, items, minions, jungle et abilities doivent rester configurables dans `src/shared/modules` autant que possible.
+
+### Décision 4 — Les systèmes debug doivent être isolés
+
+Les outils debug sont utiles, mais ils ne doivent jamais être accessibles à tous les joueurs.
+
+---
+
+## 11. Prochaine tâche active recommandée
+
+### Tâche : corriger `ChampionService` cleanup
+
+**Pourquoi :** c'est le risque stabilité le plus direct.
+
+**Fichiers concernés :**
+
+```txt
+src/server/services/ChampionService.luau
+```
+
+**Étapes :**
+
+1. Ajouter une table `characterConnections`.
+2. Ajouter `cleanupCharacter(character)`.
+3. Ajouter `trackCharacterConnection(character, connection)`.
+4. Remplacer les `:Connect(...)` directs par `trackCharacterConnection(...)`.
+5. Connecter `character.Destroying`.
+6. Tester respawn/changement champion 20 fois.
+
+**Critère fini :** aucun log dupliqué après plusieurs respawns, aucune connexion debug persistante inutile.
+
+---
+
+## 12. Notes pour la suite
+
+Ne pas ajouter de nouveau champion tant que les points P0/P1 ne sont pas corrigés. Le projet est déjà assez riche : maintenant il faut solidifier le socle.
+
+Ordre recommandé :
+
+```txt
+ChampionService cleanup
+→ Debug/RemoteService sécurité
+→ MinionService centralisé
+→ Équilibrage Tank/stats
+→ AbilityService refactor
+→ UX/audio/polish
+```
+
+---
+
+## 13. Journal de suivi
+
+| Date | Modification | Statut |
+|---|---|---|
+| 27/06/2026 | Restructuration du suivi en document de pilotage | Fait |
+| 27/06/2026 | Priorisation P0/P1/P2 ajoutée | Fait |
+| 27/06/2026 | Checklists de test ajoutées | Fait |
+| 27/06/2026 | Roadmap par sprint ajoutée | Fait |
+
+
+
+---
+
+# PARTIE B — RAPPORT D'ANALYSE ORIGINAL COMPLET CONSERVÉ
+
 # Rapport d'Analyse du Projet MOBA
 
 *Ce rapport a été généré suite à une analyse automatisée du code source.*
