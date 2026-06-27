@@ -5,22 +5,46 @@ local ServerStorage = game:GetService("ServerStorage")
 local MinionVisualService = {}
 
 local LOG_PREFIX = "[MOBA][MinionVisual]"
-local PIGGY_VISUAL_NAME = "PiggyFlyingMinion"
-local VISUAL_OFFSET = Vector3.new(0, 5, 0)
-local loggedChoices: { [string]: boolean } = {}
+local DEFAULT_MELEE_VISUAL_NAME = "PiggyMeleeVisual"
+local DEFAULT_VISUAL_OFFSET = Vector3.new(0, 2.5, 0)
+local VISUAL_OFFSETS: { [string]: Vector3 } = {
+	Melee = Vector3.new(0, 0.5, 0),
+	Ranged = Vector3.new(0, 4, 0),
+	Siege = Vector3.new(0, 2.5, 0),
+}
+
+local TARGET_HITBOX_NAME = "TargetHitbox"
+local TARGET_HITBOX_PADDING = Vector3.new(1.5, 1, 1.5)
+local loggedMessages: { [string]: boolean } = {}
 
 local function warnLog(message: string)
 	warn(LOG_PREFIX .. " " .. message)
 end
 
-local function logChoice(minionType: string, choice: string)
-	local key = minionType .. ":" .. choice
-	if loggedChoices[key] then
+local function logOnce(key: string, message: string)
+	if loggedMessages[key] then
 		return
 	end
 
-	loggedChoices[key] = true
-	print(LOG_PREFIX .. " " .. minionType .. " visual = " .. choice)
+	loggedMessages[key] = true
+	print(LOG_PREFIX .. " " .. message)
+end
+
+local function warnOnce(key: string, message: string)
+	if loggedMessages[key] then
+		return
+	end
+
+	loggedMessages[key] = true
+	warnLog(message)
+end
+
+local function lowerName(instanceOrValue: any): string
+	if typeof(instanceOrValue) == "Instance" then
+		return string.lower(instanceOrValue.Name)
+	end
+
+	return string.lower(tostring(instanceOrValue))
 end
 
 local function getRoot(model: Model): BasePart?
@@ -32,6 +56,10 @@ local function getRoot(model: Model): BasePart?
 	return model.PrimaryPart
 end
 
+local function getVisualOffset(minionType: string): Vector3
+	return VISUAL_OFFSETS[minionType] or DEFAULT_VISUAL_OFFSET
+end
+
 local function getSbiresFolder(): Instance?
 	local assets = ServerStorage:FindFirstChild("Assets")
 	local models = assets and assets:FindFirstChild("Models")
@@ -40,27 +68,168 @@ local function getSbiresFolder(): Instance?
 	return sbires
 end
 
-local function getPiggyVisualSource(): Model?
+local function getVisualRoot(model: Model): BasePart?
+	local visualRoot = model:FindFirstChild("HumanoidRootPart")
+	if visualRoot and visualRoot:IsA("BasePart") then
+		return visualRoot
+	end
+
+	return model.PrimaryPart
+end
+
+local function isValidVisualSource(model: Model): boolean
+	return getVisualRoot(model) ~= nil
+end
+
+local function isRuntimeVisualCandidate(model: Model): boolean
+	return model:FindFirstAncestor("archive") == nil and model:FindFirstAncestor("candidates") == nil
+end
+
+local function getFolderPreferenceScore(model: Model, preferredFolderName: string): number
+	if model:FindFirstAncestor(preferredFolderName) then
+		return 100
+	end
+
+	if model:FindFirstAncestor("cleaned") then
+		return 30
+	end
+
+	if model.Parent == getSbiresFolder() then
+		return 10
+	end
+
+	return 0
+end
+
+local function findModelByExactName(root: Instance, name: string, preferredFolderName: string): Model?
+	local bestSource: Model? = nil
+	local bestScore = -math.huge
+
+	for _, descendant in root:GetDescendants() do
+		if
+			descendant:IsA("Model")
+			and descendant.Name == name
+			and isRuntimeVisualCandidate(descendant)
+			and isValidVisualSource(descendant)
+		then
+			local score = getFolderPreferenceScore(descendant, preferredFolderName)
+			if score > bestScore then
+				bestSource = descendant
+				bestScore = score
+			end
+		end
+	end
+
+	return bestSource
+end
+
+local function findMeleeVisualSource(sbires: Instance, teamName: string?): Model?
+	local visualNames: { string } = {}
+	if typeof(teamName) == "string" then
+		table.insert(visualNames, teamName .. "Melee")
+	end
+	table.insert(visualNames, DEFAULT_MELEE_VISUAL_NAME)
+
+	for _, visualName in visualNames do
+		local source = findModelByExactName(sbires, visualName, "melee")
+		if source then
+			return source
+		end
+	end
+
+	return nil
+end
+
+local function scoreRangedSource(model: Model, teamName: string?): number
+	local name = lowerName(model)
+	if not string.find(name, "ranged") then
+		return -math.huge
+	end
+	if not isRuntimeVisualCandidate(model) then
+		return -math.huge
+	end
+	if not isValidVisualSource(model) then
+		return -math.huge
+	end
+
+	local score = 100
+	if typeof(teamName) == "string" and string.find(name, string.lower(teamName)) then
+		score += 50
+	end
+	if model:FindFirstAncestor("ranged") then
+		score += 25
+	end
+	if model.Parent == getSbiresFolder() then
+		score += 5
+	end
+
+	return score
+end
+
+local function findRangedVisualSource(sbires: Instance, teamName: string?): Model?
+	local bestSource: Model? = nil
+	local bestScore = -math.huge
+
+	for _, descendant in sbires:GetDescendants() do
+		if descendant:IsA("Model") then
+			local score = scoreRangedSource(descendant, teamName)
+			if score > bestScore then
+				bestScore = score
+				bestSource = descendant
+			end
+		end
+	end
+
+	return bestSource
+end
+
+local function logResolvedContainer(minionType: string, source: Model)
+	local container = source.Parent
+	local containerPath = if container then container:GetFullName() else source:GetFullName()
+	logOnce("container:" .. minionType .. ":" .. containerPath, "Resolved " .. string.lower(minionType) .. " container: " .. containerPath)
+end
+
+local function getVisualSource(teamName: string?, minionType: string): Model?
 	local sbires = getSbiresFolder()
 	if not sbires then
-		warnLog("Missing ServerStorage.Assets.Models.sbires; minion gameplay continues without VisualModel")
+		warnOnce(
+			"missing-sbires",
+			"Fallback to default visual because ServerStorage.Assets.Models.sbires is missing"
+		)
 		return nil
 	end
 
-	local cleaned = sbires:FindFirstChild("cleaned")
-	local source = cleaned and cleaned:FindFirstChild(PIGGY_VISUAL_NAME)
-	if not source or not source:IsA("Model") then
-		warnLog("Missing ServerStorage.Assets.Models.sbires.cleaned.PiggyFlyingMinion; Melee minion keeps default/current visual")
-		return nil
+	if minionType == "Melee" then
+		local source = findMeleeVisualSource(sbires, teamName)
+		if not source then
+			warnOnce("missing-melee", "Fallback to default visual because no valid melee visual was found")
+			return nil
+		end
+
+		logResolvedContainer("Melee", source)
+		logOnce("selected:Melee:" .. source:GetFullName(), "Melee visual selected: " .. source:GetFullName())
+		return source
 	end
 
-	local visualRoot = source:FindFirstChild("HumanoidRootPart")
-	if not visualRoot or not visualRoot:IsA("BasePart") then
-		warnLog("PiggyFlyingMinion has no HumanoidRootPart; Melee minion keeps default/current visual")
-		return nil
+	if minionType == "Ranged" then
+		local source = findRangedVisualSource(sbires, teamName)
+		if not source then
+			warnOnce("missing-ranged", "Fallback to default visual because no valid ranged visual was found")
+			return nil
+		end
+
+		logResolvedContainer("Ranged", source)
+		logOnce("selected:Ranged:" .. source:GetFullName(), "Ranged visual selected: " .. source:GetFullName())
+		return source
 	end
 
-	return source
+	if minionType == "Siege" then
+		logOnce("selected:Siege:default", "Siege visual selected: default/current")
+	else
+		warnOnce("unknown:" .. minionType, "Fallback to default visual because MinionType is unknown: " .. minionType)
+	end
+
+	return nil
 end
 
 local function sanitizeVisualClone(visualModel: Model)
@@ -110,6 +279,38 @@ local function hideLegacyVisual(minionModel: Model, gameplayRoot: BasePart)
 	end
 end
 
+local function createTargetHitbox(minionModel: Model, gameplayRoot: BasePart, visualModel: Model)
+	local existingHitbox = minionModel:FindFirstChild(TARGET_HITBOX_NAME)
+	if existingHitbox then
+		existingHitbox:Destroy()
+	end
+
+	local visualCFrame, visualSize = visualModel:GetBoundingBox()
+	local hitbox = Instance.new("Part")
+	hitbox.Name = TARGET_HITBOX_NAME
+	hitbox.Transparency = 1
+	hitbox.Anchored = false
+	hitbox.CanCollide = false
+	hitbox.CanTouch = false
+	hitbox.CanQuery = true
+	hitbox.Massless = true
+	hitbox.CastShadow = false
+	hitbox.Size = Vector3.new(
+		math.max(visualSize.X + TARGET_HITBOX_PADDING.X, gameplayRoot.Size.X + TARGET_HITBOX_PADDING.X, 3),
+		math.max(visualSize.Y + TARGET_HITBOX_PADDING.Y, gameplayRoot.Size.Y + TARGET_HITBOX_PADDING.Y, 4),
+		math.max(visualSize.Z + TARGET_HITBOX_PADDING.Z, gameplayRoot.Size.Z + TARGET_HITBOX_PADDING.Z, 3)
+	)
+	hitbox.CFrame = visualCFrame
+	hitbox:SetAttribute("IsTargetHitbox", true)
+	hitbox.Parent = minionModel
+
+	local weld = Instance.new("WeldConstraint")
+	weld.Name = "TargetHitboxWeld"
+	weld.Part0 = gameplayRoot
+	weld.Part1 = hitbox
+	weld.Parent = hitbox
+end
+
 local function getResolvedMinionType(minionModel: Model, minionType: string?): string?
 	if typeof(minionType) == "string" then
 		return minionType
@@ -119,17 +320,22 @@ local function getResolvedMinionType(minionModel: Model, minionType: string?): s
 	return if typeof(attribute) == "string" then attribute else nil
 end
 
-function MinionVisualService.AttachVisual(minionModel: Model, _teamName: string?, minionType: string?)
-	local resolvedMinionType = getResolvedMinionType(minionModel, minionType)
-	if resolvedMinionType == "Ranged" or resolvedMinionType == "Siege" then
-		logChoice(resolvedMinionType, "default/current")
-		return
+local function getResolvedTeamName(minionModel: Model, teamName: string?): string?
+	if typeof(teamName) == "string" then
+		return teamName
 	end
 
-	if resolvedMinionType ~= "Melee" then
+	local attribute = minionModel:GetAttribute("Team")
+	return if typeof(attribute) == "string" then attribute else nil
+end
+
+function MinionVisualService.AttachVisual(minionModel: Model, teamName: string?, minionType: string?)
+	local resolvedMinionType = getResolvedMinionType(minionModel, minionType)
+	if not resolvedMinionType then
 		warnLog("Unknown MinionType; minion keeps default/current visual: " .. minionModel:GetFullName())
 		return
 	end
+	local resolvedTeamName = getResolvedTeamName(minionModel, teamName)
 
 	local existingVisual = minionModel:FindFirstChild("VisualModel")
 	if existingVisual and existingVisual:IsA("Model") then
@@ -144,12 +350,10 @@ function MinionVisualService.AttachVisual(minionModel: Model, _teamName: string?
 		return
 	end
 
-	local source = getPiggyVisualSource()
+	local source = getVisualSource(resolvedTeamName, resolvedMinionType)
 	if not source then
-		logChoice("Melee", "default/current")
 		return
 	end
-	logChoice("Melee", PIGGY_VISUAL_NAME)
 
 	local visualModel = source:Clone()
 	visualModel.Name = "VisualModel"
@@ -162,9 +366,9 @@ function MinionVisualService.AttachVisual(minionModel: Model, _teamName: string?
 		return
 	end
 
-	visualModel.PrimaryPart = visualRoot
+	visualModel.PrimaryPart = visualRoot :: BasePart
 	visualModel.Parent = minionModel
-	visualModel:PivotTo(gameplayRoot.CFrame * CFrame.new(VISUAL_OFFSET))
+	visualModel:PivotTo(gameplayRoot.CFrame * CFrame.new(getVisualOffset(resolvedMinionType)))
 	sanitizeVisualClone(visualModel)
 
 	local weld = Instance.new("WeldConstraint")
@@ -174,6 +378,8 @@ function MinionVisualService.AttachVisual(minionModel: Model, _teamName: string?
 	weld.Parent = visualRoot
 
 	hideLegacyVisual(minionModel, gameplayRoot)
+	createTargetHitbox(minionModel, gameplayRoot, visualModel)
+	logOnce("attached:" .. resolvedMinionType, "Visual attached successfully")
 end
 
 return MinionVisualService

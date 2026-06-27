@@ -36,11 +36,52 @@
     "Lighting": {
       "$ignoreUnknownInstances": true,
       "$properties": {
-        "Ambient": [0.24, 0.27, 0.30],
-        "Brightness": 2.4,
-        "ClockTime": 15.2,
+        "Ambient": [0.2745098039, 0.2745098039, 0.3725490196],
+        "Brightness": 2,
+        "ClockTime": 17.8,
+        "EnvironmentDiffuseScale": 0.7,
+        "EnvironmentSpecularScale": 0.8,
+        "ExposureCompensation": 0,
         "GlobalShadows": true,
-        "Outlines": false
+        "OutdoorAmbient": [0.3921568627, 0.3921568627, 0.5098039216],
+        "Outlines": false,
+        "ShadowSoftness": 0.55,
+        "Technology": "Future"
+      },
+      "MOBA_Atmosphere": {
+        "$className": "Atmosphere",
+        "$properties": {
+          "Color": [0.7450980392, 0.8039215686, 0.9019607843],
+          "Decay": [0.3137254902, 0.3529411765, 0.5098039216],
+          "Density": 0.25,
+          "Glare": 0.15,
+          "Haze": 2,
+          "Offset": 0.1
+        }
+      },
+      "MOBA_Bloom": {
+        "$className": "BloomEffect",
+        "$properties": {
+          "Intensity": 0.2,
+          "Size": 24,
+          "Threshold": 1.2
+        }
+      },
+      "MOBA_ColorCorrection": {
+        "$className": "ColorCorrectionEffect",
+        "$properties": {
+          "Brightness": 0.02,
+          "Contrast": 0.12,
+          "Saturation": -0.03,
+          "TintColor": [0.8823529412, 0.9019607843, 1]
+        }
+      },
+      "MOBA_SunRays": {
+        "$className": "SunRaysEffect",
+        "$properties": {
+          "Intensity": 0.04,
+          "Spread": 0.7
+        }
       }
     },
     "SoundService": {

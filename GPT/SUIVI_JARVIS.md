@@ -163,6 +163,20 @@ Après chaque changement important, consigner : date, décision, fichiers ou obj
 
 ## Journal consolidé
 
+### 26 juin 2026 - Jarvis
+
+- Correction du bug Lighting runtime : le preset fantasy MOBA est maintenant porte par `src/shared/modules/VisualConfig.luau` et reapplique en Play par `src/client/controllers/VisualController.luau`.
+- `VisualController` applique aussi `GlobalShadows`, `ShadowSoftness`, `EnvironmentDiffuseScale`, `EnvironmentSpecularScale`, tente `Technology = Future`, et loggue que `Lighting.Technology` peut demander une verification manuelle dans Studio.
+- Nettoyage Piggy corrige sans detruire l'apparence : nouvelle copie runtime `ServerStorage.Assets.Models.sbires.melee.PiggyMeleeVisual` creee depuis `candidates_sbire_piggy_MELEE`, avec l'original conserve intact dans `ServerStorage.Assets.Models.sbires.candidates`.
+- `PiggyMeleeVisual` conserve le corps, le `Humanoid`, les `CharacterMesh`, `SpecialMesh`, `MeshPart`, `Handle`, decals, attachments et `Motor6D`; 13 `WeldConstraint` propres ont ete crees pour garder les accessoires attaches apres suppression des scripts importes.
+- Validation Piggy : 70 descendants, 20 `BasePart`, 1 `MeshPart`, 5 `CharacterMesh`, 3 `SpecialMesh`, 3 decals, 2 handles, 6 `Motor6D`, 13 `WeldConstraint`, 1 animation, 0 `Script`, 0 `LocalScript`, 0 `ModuleScript`, 0 backpack, 0 part unsafe.
+- Organisation `ServerStorage.Assets.Models.sbires` : `candidates` garde les imports bruts, `melee` contient `PiggyMeleeVisual`, `ranged` contient `BlueRANGED`/`RedRANGED`, `cleaned` garde `KorbloxMeleeVisual_clean`, `archive` garde les essais non runtime.
+- `MinionVisualService` detecte dynamiquement les containers/modeles sous `ServerStorage.Assets.Models.sbires` : melee priorise `sbires.melee.PiggyMeleeVisual`, ranged priorise `sbires.ranged` par equipe (`BlueRANGED`/`RedRANGED`), siege en fallback actuel, et ignore `candidates`/`archive` pour le runtime.
+- Les spheres `HumanoidRootPart`/`Accent` ne sont masquees que lorsqu'un `VisualModel` est attache avec succes; elles restent visibles comme fallback debug si aucun visuel valide n'est trouve.
+- Test Play effectue : Lighting runtime conforme a `VisualConfig`; melee avec `PiggyMeleeVisual`, ranged avec visuel ranged, siege en default/current; `visibleAccentWithVisual = 0`, `visualsWithScripts = 0`, `visualsWithUnsafeParts = 0`.
+- Gameplay preserve : minions en mouvement observes, `AttackTick` positif, minions endommages, degats toujours via `CombatService`; pas de modification des stats `MinionData`, tours, Nexus, champions, shop, abilities, scoreboard, recall ou training dummies.
+- Prochaine etape conseillee : verifier visuellement la silhouette Piggy en camera de jeu et ajuster uniquement l'offset `VISUAL_OFFSET` ou les welds decoratifs si une piece parait mal placee.
+
 ### 25 juin 2026 - Jarvis
 
 - Nouvel audit d'asset externe effectue sur `Japanese Sakura Stone Toro Lantern`, importe dans `Workspace`.

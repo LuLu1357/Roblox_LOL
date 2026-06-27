@@ -37,6 +37,24 @@ local function getPlayerNumberAttribute(player: Player, attributeName: string, f
 	return if typeof(value) == "number" then value else fallback
 end
 
+local function resolveUnitTarget(instance: Instance?): Model?
+	local units = Workspace:FindFirstChild("Units")
+	if not instance or not units or not units:IsA("Folder") or not instance:IsDescendantOf(units) then
+		return nil
+	end
+
+	local current: Instance? = instance
+	while current and current ~= units do
+		if current:IsA("Model") and typeof(current:GetAttribute("UnitType")) == "string" then
+			return current
+		end
+
+		current = current.Parent
+	end
+
+	return nil
+end
+
 local function buildScoreboardEntry(player: Player): table
 	local champion = ChampionService.getChampionFromPlayer(player)
 	local championId = "None"
@@ -185,8 +203,8 @@ function RemoteService.start()
 			return
 		end
 
-		local units = Workspace:FindFirstChild("Units")
-		if not units or not units:IsA("Folder") or not target:IsDescendantOf(units) then
+		local resolvedTarget = resolveUnitTarget(target)
+		if not resolvedTarget then
 			return
 		end
 
@@ -195,7 +213,7 @@ function RemoteService.start()
 			return
 		end
 
-		CombatService.tryAutoAttack(champion, target, player)
+		CombatService.tryAutoAttack(champion, resolvedTarget, player)
 	end)
 
 	abilityRequest.OnServerEvent:Connect(function(player, slot, target, mousePosition)
@@ -203,7 +221,7 @@ function RemoteService.start()
 			return
 		end
 
-		local optionalTarget = if typeof(target) == "Instance" then target else nil
+		local optionalTarget = if typeof(target) == "Instance" then resolveUnitTarget(target) else nil
 		local optionalMousePosition = if typeof(mousePosition) == "Vector3" then mousePosition else nil
 		local success, reason = AbilityService.castAbility(player, slot, optionalTarget, optionalMousePosition)
 		if not success then

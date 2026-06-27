@@ -33,6 +33,21 @@ local function applyLighting()
 	Lighting.OutdoorAmbient = lightingConfig.OutdoorAmbient
 	Lighting.ClockTime = lightingConfig.ClockTime
 	Lighting.ExposureCompensation = lightingConfig.ExposureCompensation
+	Lighting.GlobalShadows = lightingConfig.GlobalShadows == true
+
+	if typeof(lightingConfig.ShadowSoftness) == "number" then
+		Lighting.ShadowSoftness = lightingConfig.ShadowSoftness
+	end
+	if typeof(lightingConfig.EnvironmentDiffuseScale) == "number" then
+		Lighting.EnvironmentDiffuseScale = lightingConfig.EnvironmentDiffuseScale
+	end
+	if typeof(lightingConfig.EnvironmentSpecularScale) == "number" then
+		Lighting.EnvironmentSpecularScale = lightingConfig.EnvironmentSpecularScale
+	end
+	pcall(function()
+		Lighting.Technology = Enum.Technology.Future
+	end)
+	warn("[MOBA][VISUAL] Lighting.Technology may need manual verification in Studio Properties.")
 
 	local effects = VisualConfig.PostEffects
 
@@ -58,6 +73,9 @@ local function applyLighting()
 		colorCorrection.Saturation = effects.ColorSaturation
 		colorCorrection.Contrast = effects.ColorContrast
 		colorCorrection.Brightness = effects.ColorBrightness
+		if typeof(effects.ColorTint) == "Color3" then
+			colorCorrection.TintColor = effects.ColorTint
+		end
 	end
 
 	local atmosphere = Lighting:FindFirstChild("MOBA_Atmosphere")
@@ -71,7 +89,26 @@ local function applyLighting()
 		atmosphere.Offset = effects.AtmosphereOffset
 		atmosphere.Color = effects.AtmosphereColor
 		atmosphere.Decay = effects.AtmosphereDecay
+		if typeof(effects.AtmosphereHaze) == "number" then
+			atmosphere.Haze = effects.AtmosphereHaze
+		end
+		if typeof(effects.AtmosphereGlare) == "number" then
+			atmosphere.Glare = effects.AtmosphereGlare
+		end
 	end
+
+	local sunRays = Lighting:FindFirstChild("MOBA_SunRays")
+	if not sunRays then
+		sunRays = Instance.new("SunRaysEffect")
+		sunRays.Name = "MOBA_SunRays"
+		sunRays.Parent = Lighting
+	end
+	if sunRays:IsA("SunRaysEffect") then
+		sunRays.Intensity = effects.SunRaysIntensity
+		sunRays.Spread = effects.SunRaysSpread
+	end
+
+	print("[MOBA][VISUAL] Runtime lighting preset applied from VisualConfig")
 end
 local function applyMaterialToPart(part: BasePart, visual: any)
 	if typeof(visual) ~= "table" then

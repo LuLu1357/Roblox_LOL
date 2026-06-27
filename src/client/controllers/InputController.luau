@@ -71,6 +71,22 @@ local function getMoveVector(): Vector3
 	return if vector.Magnitude > 1 then vector.Unit else vector
 end
 
+local function requestJump()
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.Health <= 0 then
+		return
+	end
+
+	local state = humanoid:GetState()
+	if state == Enum.HumanoidStateType.Seated or state == Enum.HumanoidStateType.Dead then
+		return
+	end
+
+	humanoid.Jump = true
+	humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+end
+
 function InputController.start()
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local shopBuyRequest = remotes:WaitForChild(SharedConstants.REMOTES.SHOP_BUY_REQUEST) :: RemoteEvent
@@ -103,6 +119,9 @@ function InputController.start()
 				return
 			elseif input.KeyCode == Enum.KeyCode.R then
 				recallRequest:FireServer()
+				return
+			elseif input.KeyCode == Enum.KeyCode.Space then
+				requestJump()
 				return
 			end
 		end

@@ -10,20 +10,31 @@ local SharedConstants = require(ReplicatedStorage.Modules.SharedConstants)
 local AutoAttackController = {}
 local player = Players.LocalPlayer
 
+local function resolveUnitTarget(instance: Instance?): Model?
+	local units = Workspace:FindFirstChild("Units")
+	if not instance or not units or not instance:IsDescendantOf(units) then
+		return nil
+	end
+
+	local current: Instance? = instance
+	while current and current ~= units do
+		if current:IsA("Model") and typeof(current:GetAttribute("UnitType")) == "string" then
+			return current
+		end
+
+		current = current.Parent
+	end
+
+	return nil
+end
+
 local function getTargetFromMouse(): Model?
 	local mouse = player:GetMouse()
-	local targetPart = mouse.Target
-	if not targetPart then
+	local model = resolveUnitTarget(mouse.Target)
+	if not model or model == player.Character then
 		return nil
 	end
-	local model = targetPart:FindFirstAncestorOfClass("Model")
-	local units = Workspace:FindFirstChild("Units")
-	if not model or not units or not model:IsDescendantOf(units) then
-		return nil
-	end
-	if model == player.Character then
-		return nil
-	end
+
 	return model
 end
 
